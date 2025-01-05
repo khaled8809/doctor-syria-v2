@@ -1,86 +1,132 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Doctor, Patient, Pharmacy, Laboratory, PharmaceuticalCompany
+from django.utils.translation import gettext_lazy as _
+from core.serializers import BaseModelSerializer
+from .validators import validate_password_strength
 
 User = get_user_model()
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(BaseModelSerializer):
+    """
+    المسلسل الأساسي للمستخدم
+    """
+    full_name = serializers.CharField(source='get_full_name', read_only=True)
+    password = serializers.CharField(write_only=True, required=False, validators=[validate_password_strength])
+
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'role', 
-                 'phone_number', 'address', 'profile_image')
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = BaseModelSerializer.Meta.fields + [
+            'email', 'phone', 'user_type', 'full_name',
+            'first_name', 'last_name', 'father_name', 'mother_name',
+            'birth_date', 'gender', 'marital_status', 'blood_type',
+            'id_type', 'id_number', 'address', 'city', 'region',
+            'is_verified', 'password'
+        ]
+        read_only_fields = ['is_verified', 'verification_date', 'last_login_ip']
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
+        password = validated_data.pop('password', None)
+        user = super().create(validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
         return user
 
-class DoctorSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
+class DoctorSerializer(UserSerializer):
+    """
+    مسلسل خاص بالأطباء
+    """
+    rating = serializers.FloatField(read_only=True)
+    reviews_count = serializers.IntegerField(read_only=True)
 
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + [
+            'specialty', 'license_number', 'qualification',
+            'experience_years', 'rating', 'reviews_count',
+            'license_picture'
+        ]
+
+    def validate(self, data):
+        if data.get('user_type') != 'doctor':
+            raise serializers.ValidationError(_('نوع المستخدم يجب أن يكون طبيب'))
+        return data
+
+class PatientSerializer(UserSerializer):
+    """
+    مسلسل خاص بالمرضى
+    """
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + [
+            'blood_type', 'emergency_contact'
+        ]
+
+    def validate(self, data):
+        if data.get('user_type') != 'patient':
+            raise serializers.ValidationError(_('نوع المستخدم يجب أن يكون مريض'))
+        return data
+
+class PharmacySerializer(UserSerializer):
+    """
+    مسلسل خاص بالصيدليات
+    """
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + [
+            'license_number', 'license_picture',
+            'working_hours', 'delivery_available'
+        ]
+
+    def validate(self, data):
+        if data.get('user_type') != 'pharmacy':
+            raise serializers.ValidationError(_('نوع المستخدم يجب أن يكون صيدلية'))
+        return data
+
+class LaboratorySerializer(UserSerializer):
+    """
+    مسلسل خاص بالمختبرات
+    """
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + [
+            'license_number', 'license_picture',
+            'working_hours', 'home_service_available'
+        ]
+
+    def validate(self, data):
+        if data.get('user_type') != 'lab':
+            raise serializers.ValidationError(_('نوع المستخدم يجب أن يكون مختبر'))
+        return data
+
+class PharmaceuticalCompanySerializer(UserSerializer):
+    """
+    مسلسل خاص بشركات الأدوية
+    """
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + [
+            'license_number', 'license_picture',
+            'company_name', 'registration_number'
+        ]
+
+    def validate(self, data):
+        if data.get('user_type') != 'company':
+            raise serializers.ValidationError(_('نوع المستخدم يجب أن يكون شركة أدوية'))
+        return data
+
+class UserProfilePictureSerializer(serializers.ModelSerializer):
+    """
+    مسلسل خاص بتحديث الصورة الشخصية
+    """
     class Meta:
-        model = Doctor
-        fields = '__all__'
+        model = User
+        fields = ['profile_picture']
 
-    def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user_data['role'] = 'doctor'
-        user = User.objects.create_user(**user_data)
-        doctor = Doctor.objects.create(user=user, **validated_data)
-        return doctor
+class ChangePasswordSerializer(serializers.Serializer):
+    """
+    مسلسل خاص بتغيير كلمة المرور
+    """
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, validators=[validate_password_strength])
 
-class PatientSerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-
-    class Meta:
-        model = Patient
-        fields = '__all__'
-
-    def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user_data['role'] = 'patient'
-        user = User.objects.create_user(**user_data)
-        patient = Patient.objects.create(user=user, **validated_data)
-        return patient
-
-class PharmacySerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-
-    class Meta:
-        model = Pharmacy
-        fields = '__all__'
-
-    def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user_data['role'] = 'pharmacy'
-        user = User.objects.create_user(**user_data)
-        pharmacy = Pharmacy.objects.create(user=user, **validated_data)
-        return pharmacy
-
-class LaboratorySerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-
-    class Meta:
-        model = Laboratory
-        fields = '__all__'
-
-    def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user_data['role'] = 'laboratory'
-        user = User.objects.create_user(**user_data)
-        laboratory = Laboratory.objects.create(user=user, **validated_data)
-        return laboratory
-
-class PharmaceuticalCompanySerializer(serializers.ModelSerializer):
-    user = UserSerializer()
-
-    class Meta:
-        model = PharmaceuticalCompany
-        fields = '__all__'
-
-    def create(self, validated_data):
-        user_data = validated_data.pop('user')
-        user_data['role'] = 'company'
-        user = User.objects.create_user(**user_data)
-        company = PharmaceuticalCompany.objects.create(user=user, **validated_data)
-        return company
+    def validate_old_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError(_('كلمة المرور الحالية غير صحيحة'))
+        return value

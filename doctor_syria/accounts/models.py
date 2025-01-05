@@ -3,28 +3,143 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from django.db.models import Avg
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import EmailValidator
+from core.mixins import TimestampMixin, SoftDeleteMixin, AuditMixin
+from .managers import CustomUserManager
+from .validators import validate_phone_number, validate_syrian_id, validate_medical_license
+from .choices import UserType, GenderType, MaritalStatus, BloodType, SpecialtyType, IdentificationType
+from django.utils import timezone
 
-class User(AbstractUser):
-    ROLE_CHOICES = (
-        ('patient', _('Patient')),
-        ('doctor', _('Doctor')),
-        ('pharmacy', _('Pharmacy')),
-        ('laboratory', _('Laboratory')),
-        ('company', _('Pharmaceutical Company')),
-        ('nurse', _('Nurse')),
-        ('staff', _('Staff')),
+class User(AbstractUser, TimestampMixin, SoftDeleteMixin, AuditMixin):
+    """
+    نموذج المستخدم المخصص
+    """
+    username = None  # تعطيل حقل اسم المستخدم
+    email = models.EmailField(_('البريد الإلكتروني'), unique=True, validators=[EmailValidator()])
+    phone = models.CharField(_('رقم الهاتف'), max_length=20, validators=[validate_phone_number], null=True, blank=True)
+    user_type = models.CharField(_('نوع المستخدم'), max_length=20, choices=UserType.choices, default=UserType.PATIENT)
+    
+    # معلومات شخصية
+    first_name = models.CharField(_('الاسم الأول'), max_length=150)
+    last_name = models.CharField(_('الاسم الأخير'), max_length=150)
+    father_name = models.CharField(_('اسم الأب'), max_length=150, blank=True)
+    mother_name = models.CharField(_('اسم الأم'), max_length=150, blank=True)
+    birth_date = models.DateField(_('تاريخ الميلاد'), null=True, blank=True)
+    gender = models.CharField(_('الجنس'), max_length=1, choices=GenderType.choices, default=GenderType.MALE)
+    marital_status = models.CharField(_('الحالة الاجتماعية'), max_length=10, choices=MaritalStatus.choices, blank=True)
+    blood_type = models.CharField(_('فصيلة الدم'), max_length=3, choices=BloodType.choices, blank=True)
+    
+    # معلومات الهوية
+    id_type = models.CharField(_('نوع الهوية'), max_length=20, choices=IdentificationType.choices, default=IdentificationType.NATIONAL_ID)
+    id_number = models.CharField(_('رقم الهوية'), max_length=20, validators=[validate_syrian_id], null=True, blank=True)
+    
+    # معلومات الموقع
+    address = models.TextField(_('العنوان'), blank=True)
+    city = models.CharField(_('المدينة'), max_length=100, blank=True)
+    region = models.CharField(_('المنطقة'), max_length=100, blank=True)
+    
+    # معلومات إضافية للأطباء
+    specialty = models.CharField(_('التخصص'), max_length=50, choices=SpecialtyType.choices, blank=True)
+    license_number = models.CharField(_('رقم الترخيص'), max_length=20, validators=[validate_medical_license], blank=True)
+    qualification = models.CharField(_('المؤهل العلمي'), max_length=200, blank=True)
+    experience_years = models.PositiveIntegerField(_('سنوات الخبرة'), default=0)
+    
+    # معلومات إضافية للشركات
+    company_name = models.CharField(_('اسم الشركة'), max_length=200, blank=True)
+    registration_number = models.CharField(_('رقم السجل التجاري'), max_length=50, blank=True)
+    
+    # الصور
+    profile_picture = models.ImageField(_('الصورة الشخصية'), upload_to='profile_pictures/', null=True, blank=True)
+    id_picture = models.ImageField(_('صورة الهوية'), upload_to='id_pictures/', null=True, blank=True)
+    license_picture = models.ImageField(_('صورة الترخيص'), upload_to='license_pictures/', null=True, blank=True)
+    
+    # إعدادات الحساب
+    is_verified = models.BooleanField(_('تم التحقق'), default=False)
+    verification_date = models.DateTimeField(_('تاريخ التحقق'), null=True, blank=True)
+    last_login_ip = models.GenericIPAddressField(_('آخر عنوان IP'), null=True, blank=True)
+    
+    # حقول التتبع
+    created_at = models.DateTimeField(_('تاريخ الإنشاء'), default=timezone.now)
+    updated_at = models.DateTimeField(_('تاريخ التحديث'), auto_now=True)
+    deleted_at = models.DateTimeField(_('تاريخ الحذف'), null=True, blank=True)
+    is_deleted = models.BooleanField(_('محذوف'), default=False)
+    
+    # حقول التدقيق
+    created_by = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='created_users', verbose_name=_('تم الإنشاء بواسطة')
+    )
+    updated_by = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='updated_users', verbose_name=_('تم التحديث بواسطة')
+    )
+    deleted_by = models.ForeignKey(
+        'self', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='deleted_users', verbose_name=_('تم الحذف بواسطة')
     )
     
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
-    phone_number = PhoneNumberField(unique=True)
-    address = models.TextField()
-    profile_image = models.ImageField(upload_to='profile_images/', null=True, blank=True)
-    phone = models.CharField(max_length=20, blank=True)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-
+    objects = CustomUserManager()
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['phone', 'first_name', 'last_name', 'user_type']
+    
     class Meta:
-        verbose_name = _('User')
-        verbose_name_plural = _('Users')
+        verbose_name = _('مستخدم')
+        verbose_name_plural = _('المستخدمين')
+        ordering = ['-date_joined']
+    
+    def __str__(self):
+        return f"{self.get_full_name()} ({self.email})"
+    
+    def get_full_name(self):
+        """
+        إرجاع الاسم الكامل للمستخدم
+        """
+        full_name = f"{self.first_name} {self.father_name} {self.last_name}"
+        return full_name.strip()
+    
+    def soft_delete(self, deleted_by=None):
+        """
+        حذف ناعم للمستخدم
+        """
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.deleted_by = deleted_by
+        self.save()
+    
+    def restore(self):
+        """
+        استعادة المستخدم المحذوف
+        """
+        self.is_deleted = False
+        self.deleted_at = None
+        self.deleted_by = None
+        self.save()
+    
+    @property
+    def is_doctor(self):
+        return self.user_type == UserType.DOCTOR
+    
+    @property
+    def is_patient(self):
+        return self.user_type == UserType.PATIENT
+    
+    @property
+    def is_pharmacy(self):
+        return self.user_type == UserType.PHARMACY
+    
+    @property
+    def is_lab(self):
+        return self.user_type == UserType.LAB
+    
+    @property
+    def is_hospital(self):
+        return self.user_type == UserType.HOSPITAL
+    
+    @property
+    def is_company(self):
+        return self.user_type == UserType.COMPANY
 
 class Area(models.Model):
     name = models.CharField(max_length=100)

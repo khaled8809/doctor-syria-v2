@@ -1,61 +1,124 @@
 from rest_framework import serializers
-from .models import (Medicine, PharmacyInventory, MedicineOrder, OrderItem,
-                    DeliveryAddress, MedicineCategory, MedicineCategoryRelation)
-from accounts.serializers import PharmacySerializer, PharmaceuticalCompanySerializer
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
+from accounts.serializers import UserSerializer
+from medical_records.models import Prescription
+from medical_records.serializers import PrescriptionSerializer
+from .models import (
+    Medicine, Inventory, Order, OrderItem,
+    StockAlert, ExpiryAlert
+)
 
-class MedicineCategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MedicineCategory
-        fields = '__all__'
+User = get_user_model()
 
 class MedicineSerializer(serializers.ModelSerializer):
-    manufacturer = PharmaceuticalCompanySerializer(read_only=True)
-    categories = serializers.SerializerMethodField()
+    """
+    مسلسل الأدوية
+    """
+    is_expired = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Medicine
         fields = '__all__'
 
-    def get_categories(self, obj):
-        category_relations = obj.categories.all()
-        categories = [relation.category for relation in category_relations]
-        return MedicineCategorySerializer(categories, many=True).data
-
-class PharmacyInventorySerializer(serializers.ModelSerializer):
-    pharmacy = PharmacySerializer(read_only=True)
+class InventorySerializer(serializers.ModelSerializer):
+    """
+    مسلسل المخزون
+    """
     medicine = MedicineSerializer(read_only=True)
+    medicine_id = serializers.PrimaryKeyRelatedField(
+        queryset=Medicine.objects.all(),
+        write_only=True,
+        source='medicine'
+    )
+    total_cost = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        read_only=True
+    )
 
     class Meta:
-        model = PharmacyInventory
+        model = Inventory
         fields = '__all__'
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    """
+    مسلسل عناصر الطلب
+    """
     medicine = MedicineSerializer(read_only=True)
-    total_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    medicine_id = serializers.PrimaryKeyRelatedField(
+        queryset=Medicine.objects.all(),
+        write_only=True,
+        source='medicine'
+    )
 
     class Meta:
         model = OrderItem
         fields = '__all__'
 
-class MedicineOrderSerializer(serializers.ModelSerializer):
-    pharmacy = PharmacySerializer(read_only=True)
+class OrderSerializer(serializers.ModelSerializer):
+    """
+    مسلسل الطلبات
+    """
+    patient = UserSerializer(read_only=True)
+    patient_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.filter(user_type='patient'),
+        write_only=True,
+        source='patient'
+    )
+    prescription = PrescriptionSerializer(read_only=True)
+    prescription_id = serializers.PrimaryKeyRelatedField(
+        queryset=Prescription.objects.all(),
+        write_only=True,
+        source='prescription',
+        required=False,
+        allow_null=True
+    )
     items = OrderItemSerializer(many=True, read_only=True)
 
     class Meta:
-        model = MedicineOrder
+        model = Order
         fields = '__all__'
+        read_only_fields = ('final_amount',)
 
-class DeliveryAddressSerializer(serializers.ModelSerializer):
-    pharmacy = PharmacySerializer(read_only=True)
+    def validate(self, data):
+        """
+        التحقق من صحة البيانات
+        """
+        if data.get('prescription') and not data['requires_prescription']:
+            raise serializers.ValidationError(
+                _('لا يمكن إضافة وصفة طبية لطلب لا يتطلب وصفة')
+            )
+        return data
 
-    class Meta:
-        model = DeliveryAddress
-        fields = '__all__'
-
-class MedicineCategoryRelationSerializer(serializers.ModelSerializer):
+class StockAlertSerializer(serializers.ModelSerializer):
+    """
+    مسلسل تنبيهات المخزون
+    """
     medicine = MedicineSerializer(read_only=True)
-    category = MedicineCategorySerializer(read_only=True)
+    medicine_id = serializers.PrimaryKeyRelatedField(
+        queryset=Medicine.objects.all(),
+        write_only=True,
+        source='medicine'
+    )
 
     class Meta:
-        model = MedicineCategoryRelation
+        model = StockAlert
         fields = '__all__'
+        read_only_fields = ('is_resolved', 'resolved_at')
+
+class ExpiryAlertSerializer(serializers.ModelSerializer):
+    """
+    مسلسل تنبيهات انتهاء الصلاحية
+    """
+    medicine = MedicineSerializer(read_only=True)
+    medicine_id = serializers.PrimaryKeyRelatedField(
+        queryset=Medicine.objects.all(),
+        write_only=True,
+        source='medicine'
+    )
+
+    class Meta:
+        model = ExpiryAlert
+        fields = '__all__'
+        read_only_fields = ('is_resolved', 'resolved_at')

@@ -1,12 +1,18 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import (
+    MedicalRecordViewSet, AppointmentViewSet,
+    PrescriptionViewSet, AllergyViewSet,
+    VaccinationViewSet
+)
 
-app_name = 'medical_records'
+router = DefaultRouter()
+router.register(r'medical-records', MedicalRecordViewSet)
+router.register(r'appointments', AppointmentViewSet)
+router.register(r'prescriptions', PrescriptionViewSet)
+router.register(r'allergies', AllergyViewSet)
+router.register(r'vaccinations', VaccinationViewSet)
 
 urlpatterns = [
-    path('', views.RecordListView.as_view(), name='record_list'),
-    path('<int:pk>/', views.RecordDetailView.as_view(), name='record_detail'),
-    path('create/', views.RecordCreateView.as_view(), name='record_create'),
-    path('<int:pk>/update/', views.RecordUpdateView.as_view(), name='record_update'),
-    path('<int:pk>/delete/', views.RecordDeleteView.as_view(), name='record_delete'),
+    path('', include(router.urls)),
 ]

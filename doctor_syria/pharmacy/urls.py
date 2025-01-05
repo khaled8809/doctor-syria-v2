@@ -1,17 +1,21 @@
-from django.urls import path
-from . import views
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import (
+    MedicineViewSet, InventoryViewSet,
+    OrderViewSet, OrderItemViewSet,
+    StockAlertViewSet, ExpiryAlertViewSet
+)
+
+router = DefaultRouter()
+router.register('medicines', MedicineViewSet)
+router.register('inventory', InventoryViewSet)
+router.register('orders', OrderViewSet)
+router.register('order-items', OrderItemViewSet)
+router.register('stock-alerts', StockAlertViewSet)
+router.register('expiry-alerts', ExpiryAlertViewSet)
 
 app_name = 'pharmacy'
 
 urlpatterns = [
-    path('', views.PharmacyListView.as_view(), name='pharmacy_list'),
-    path('<int:pk>/', views.PharmacyDetailView.as_view(), name='pharmacy_detail'),
-    path('medicines/', views.MedicineListCreateView.as_view(), name='medicine_list'),
-    path('medicines/<int:pk>/', views.MedicineDetailView.as_view(), name='medicine_detail'),
-    path('inventory/', views.PharmacyInventoryListView.as_view(), name='inventory_list'),
-    path('inventory/<int:pk>/', views.PharmacyInventoryDetailView.as_view(), name='inventory_detail'),
-    path('orders/', views.MedicineOrderListCreateView.as_view(), name='order_list'),
-    path('orders/<int:pk>/', views.MedicineOrderDetailView.as_view(), name='order_detail'),
-    path('categories/', views.MedicineCategoryListView.as_view(), name='category_list'),
-    path('categories/<int:pk>/', views.MedicineCategoryDetailView.as_view(), name='category_detail'),
+    path('api/', include(router.urls)),
 ]

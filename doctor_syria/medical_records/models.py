@@ -1,9 +1,15 @@
 from django.db import models
 from django.utils import timezone
-from accounts.models import Patient, Doctor
 from django.core.validators import MinValueValidator, MaxValueValidator
+from accounts.models import Patient, Doctor
+from django.utils.translation import gettext_lazy as _
+from core.models import TimestampMixin, SoftDeleteMixin, AuditMixin
+from .choices import (
+    AppointmentStatus, AppointmentType, RecordType, Severity,
+    AllergyType, AllergyReaction, VaccinationType
+)
 
-class MedicalRecord(models.Model):
+class MedicalRecord(TimestampMixin, SoftDeleteMixin, AuditMixin):
     """الملف الطبي الأساسي"""
     patient = models.OneToOneField(Patient, on_delete=models.CASCADE)
     blood_type = models.CharField(max_length=5, choices=[
@@ -21,9 +27,40 @@ class MedicalRecord(models.Model):
     emergency_phone = models.CharField(max_length=20)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    doctor = models.ForeignKey(
+        Doctor, on_delete=models.PROTECT,
+        related_name='doctor_records',
+        verbose_name=_('الطبيب')
+    )
+    record_type = models.CharField(
+        _('نوع السجل'),
+        max_length=20,
+        choices=RecordType.choices
+    )
+    title = models.CharField(_('العنوان'), max_length=200)
+    description = models.TextField(_('الوصف'))
+    date = models.DateTimeField(_('التاريخ'), default=timezone.now)
+    severity = models.CharField(
+        _('مستوى الخطورة'),
+        max_length=10,
+        choices=Severity.choices,
+        default=Severity.LOW
+    )
+    notes = models.TextField(_('ملاحظات'), blank=True)
+    attachments = models.FileField(
+        _('المرفقات'),
+        upload_to='medical_records/',
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        verbose_name = _('سجل طبي')
+        verbose_name_plural = _('السجلات الطبية')
+        ordering = ['-date']
 
     def __str__(self):
-        return f"الملف الطبي لـ {self.patient.user.get_full_name()}"
+        return f"{self.patient.user.get_full_name()} - {self.get_record_type_display()} - {self.date}"
 
     @property
     def bmi(self):
@@ -99,7 +136,7 @@ class MedicationReminder(models.Model):
         self.taken_at = timezone.now()
         self.save()
 
-class Appointment(models.Model):
+class Appointment(TimestampMixin, SoftDeleteMixin, AuditMixin):
     """المواعيد الطبية"""
     STATUS_CHOICES = [
         ('scheduled', 'مجدول'),
@@ -111,17 +148,48 @@ class Appointment(models.Model):
 
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
-    date_time = models.DateTimeField()
-    reason = models.TextField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='scheduled')
-    notes = models.TextField(blank=True)
+    appointment_type = models.CharField(
+        _('نوع الموعد'),
+        max_length=20,
+        choices=AppointmentType.choices
+    )
+    status = models.CharField(
+        _('حالة الموعد'),
+        max_length=20,
+        choices=AppointmentStatus.choices,
+        default=AppointmentStatus.PENDING
+    )
+    scheduled_time = models.DateTimeField(_('وقت الموعد'))
+    duration = models.PositiveIntegerField(
+        _('المدة (بالدقائق)'),
+        default=30,
+        validators=[MinValueValidator(15), MaxValueValidator(180)]
+    )
+    reason = models.TextField(_('سبب الزيارة'))
+    notes = models.TextField(_('ملاحظات'), blank=True)
+    cancellation_reason = models.TextField(_('سبب الإلغاء'), blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['date_time']
+        verbose_name = _('موعد')
+        verbose_name_plural = _('المواعيد')
+        ordering = ['-scheduled_time']
+        indexes = [
+            models.Index(fields=['doctor', 'scheduled_time']),
+            models.Index(fields=['patient', 'scheduled_time']),
+            models.Index(fields=['status', 'scheduled_time']),
+        ]
 
     def __str__(self):
-        return f"موعد {self.patient.user.get_full_name()} مع د.{self.doctor.user.get_full_name()}"
+        return f"{self.patient.user.get_full_name()} - {self.doctor.user.get_full_name()} - {self.scheduled_time}"
+
+    def cancel(self, reason):
+        """
+        إلغاء الموعد
+        """
+        self.status = AppointmentStatus.CANCELLED
+        self.cancellation_reason = reason
+        self.save()
 
 class HealthGoal(models.Model):
     """أهداف صحية"""
@@ -197,3 +265,115 @@ class Vaccination(models.Model):
 
     def __str__(self):
         return f"{self.vaccine_name} - {self.patient.user.get_full_name()}"
+
+class Prescription(TimestampMixin, SoftDeleteMixin, AuditMixin):
+    """
+    الوصفات الطبية
+    """
+    medical_record = models.ForeignKey(
+        MedicalRecord,
+        on_delete=models.PROTECT,
+        related_name='prescriptions',
+        verbose_name=_('السجل الطبي')
+    )
+    medicine_name = models.CharField(_('اسم الدواء'), max_length=200)
+    dosage = models.CharField(_('الجرعة'), max_length=100)
+    frequency = models.CharField(_('عدد مرات الأخذ'), max_length=100)
+    duration = models.CharField(_('مدة العلاج'), max_length=100)
+    instructions = models.TextField(_('تعليمات'), blank=True)
+    is_chronic = models.BooleanField(_('دواء مزمن'), default=False)
+    refills = models.PositiveIntegerField(_('عدد مرات إعادة الصرف'), default=0)
+    notes = models.TextField(_('ملاحظات'), blank=True)
+
+    class Meta:
+        verbose_name = _('وصفة طبية')
+        verbose_name_plural = _('الوصفات الطبية')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.medicine_name} - {self.medical_record.patient.user.get_full_name()}"
+
+class Allergy(TimestampMixin, SoftDeleteMixin, AuditMixin):
+    """
+    الحساسية
+    """
+    patient = models.ForeignKey(
+        'accounts.User', on_delete=models.PROTECT,
+        related_name='patient_allergies',
+        limit_choices_to={'user_type': 'patient'},
+        verbose_name=_('المريض')
+    )
+    allergy_type = models.CharField(
+        _('نوع الحساسية'),
+        max_length=20,
+        choices=AllergyType.choices
+    )
+    allergen = models.CharField(_('المسبب'), max_length=200)
+    reaction = models.CharField(
+        _('رد الفعل'),
+        max_length=20,
+        choices=AllergyReaction.choices
+    )
+    diagnosis_date = models.DateField(_('تاريخ التشخيص'))
+    notes = models.TextField(_('ملاحظات'), blank=True)
+
+    class Meta:
+        verbose_name = _('حساسية')
+        verbose_name_plural = _('الحساسيات')
+        ordering = ['-diagnosis_date']
+        unique_together = ['patient', 'allergen']
+
+    def __str__(self):
+        return f"{self.patient.user.get_full_name()} - {self.allergen}"
+
+class AllergyReaction(models.Model):
+    """
+    ردود أفعال الحساسية
+    """
+    allergy = models.ForeignKey(
+        Allergy, on_delete=models.CASCADE,
+        related_name='reactions',
+        verbose_name=_('الحساسية')
+    )
+    reaction = models.CharField(_('رد الفعل'), max_length=200)
+    notes = models.TextField(_('ملاحظات'), blank=True)
+
+    def __str__(self):
+        return f"{self.allergy.patient.user.get_full_name()} - {self.reaction}"
+
+class Vaccination(TimestampMixin, SoftDeleteMixin, AuditMixin):
+    """
+    التطعيمات
+    """
+    patient = models.ForeignKey(
+        'accounts.User', on_delete=models.PROTECT,
+        related_name='patient_vaccinations',
+        limit_choices_to={'user_type': 'patient'},
+        verbose_name=_('المريض')
+    )
+    vaccine_type = models.CharField(
+        _('نوع التطعيم'),
+        max_length=20,
+        choices=VaccinationType.choices
+    )
+    vaccine_name = models.CharField(_('اسم التطعيم'), max_length=200)
+    dose_number = models.PositiveIntegerField(_('رقم الجرعة'), default=1)
+    date_given = models.DateField(_('تاريخ الأخذ'))
+    given_by = models.ForeignKey(
+        Doctor, on_delete=models.PROTECT,
+        related_name='administered_vaccinations',
+        verbose_name=_('الطبيب المعطي')
+    )
+    next_dose_date = models.DateField(_('تاريخ الجرعة القادمة'), null=True, blank=True)
+    batch_number = models.CharField(_('رقم التشغيلة'), max_length=50, blank=True)
+    manufacturer = models.CharField(_('الشركة المصنعة'), max_length=200, blank=True)
+    notes = models.TextField(_('ملاحظات'), blank=True)
+
+    class Meta:
+        verbose_name = _('تطعيم')
+        verbose_name_plural = _('التطعيمات')
+        ordering = ['-date_given']
+        unique_together = ['patient', 'vaccine_type', 'dose_number']
+
+    def __str__(self):
+        return f"{self.patient.user.get_full_name()} - {self.vaccine_name} - الجرعة {self.dose_number}"
