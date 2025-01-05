@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="ambulance-list">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">سيارات الإسعاف</h1>
+        <div class="actions">
+            <a href="{% url 'emergency:ambulance_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة سيارة إسعاف
+            </a>
+            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#filterModal">
+                <i class="fas fa-filter"></i> تصفية
+            </button>
+        </div>
+    </div>
+
+    <!-- Status Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">متاحة</h6>
+                    <h2 class="mb-0">{{ available_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-title">في مهمة</h6>
+                    <h2 class="mb-0">{{ busy_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6 class="card-title">في الصيانة</h6>
+                    <h2 class="mb-0">{{ maintenance_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">المجموع</h6>
+                    <h2 class="mb-0">{{ total_count }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تصفية سيارات الإسعاف</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="get">
+                        <div class="form-group">
+                            <label>الحالة</label>
+                            <select name="status" class="form-control">
+                                <option value="">الكل</option>
+                                <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>متاحة</option>
+                                <option value="busy" {% if request.GET.status == 'busy' %}selected{% endif %}>في مهمة</option>
+                                <option value="maintenance" {% if request.GET.status == 'maintenance' %}selected{% endif %}>في الصيانة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>النوع</label>
+                            <select name="type" class="form-control">
+                                <option value="">الكل</option>
+                                <option value="basic" {% if request.GET.type == 'basic' %}selected{% endif %}>أساسية</option>
+                                <option value="advanced" {% if request.GET.type == 'advanced' %}selected{% endif %}>متقدمة</option>
+                                <option value="icu" {% if request.GET.type == 'icu' %}selected{% endif %}>عناية مركزة</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">تطبيق</button>
+                        <a href="{% url 'emergency:ambulance_list' %}" class="btn btn-secondary">إعادة تعيين</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ambulance Grid -->
+    <div class="row">
+        {% for ambulance in ambulances %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ ambulance.number }}</h5>
+                    <span class="badge {% if ambulance.status == 'available' %}badge-success
+                               {% elif ambulance.status == 'busy' %}badge-warning
+                               {% else %}badge-danger{% endif %}">
+                        {{ ambulance.get_status_display }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="ambulance-info">
+                        <div class="info-item">
+                            <i class="fas fa-ambulance"></i>
+                            <span>{{ ambulance.get_type_display }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>{{ ambulance.current_location }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-user-md"></i>
+                            <span>{{ ambulance.current_team|default:"لا يوجد فريق" }}</span>
+                        </div>
+                        {% if ambulance.current_case %}
+                        <div class="info-item text-warning">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span>في مهمة: #{{ ambulance.current_case.case_number }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="stats mt-3">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted">المهام اليوم</small>
+                                <h5 class="mb-0">{{ ambulance.today_cases_count }}</h5>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">المسافة</small>
+                                <h5 class="mb-0">{{ ambulance.today_distance }} كم</h5>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">وقت الاستجابة</small>
+                                <h5 class="mb-0">{{ ambulance.avg_response_time }} د</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group w-100">
+                        <a href="{% url 'emergency:ambulance_detail' ambulance.pk %}" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i> عرض
+                        </a>
+                        <a href="{% url 'emergency:ambulance_edit' ambulance.pk %}" 
+                           class="btn btn-outline-secondary">
+                            <i class="fas fa-edit"></i> تعديل
+                        </a>
+                        <button type="button" class="btn btn-outline-info" 
+                                onclick="showLocationModal('{{ ambulance.pk }}')">
+                            <i class="fas fa-map-marked-alt"></i> الموقع
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                لا يوجد سيارات إسعاف مطابقة للمعايير المحددة.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Location Modal -->
+    <div class="modal fade" id="locationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">موقع سيارة الإسعاف</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="ambulanceMap" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if ambulances.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if ambulances.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ ambulances.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    السابق
+                </a>
+            </li>
+            {% endif %}
+
+            {% for i in ambulances.paginator.page_range %}
+            <li class="page-item {% if ambulances.number == i %}active{% endif %}">
+                <a class="page-link" href="?page={{ i }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    {{ i }}
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if ambulances.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ ambulances.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    التالي
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .ambulance-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-item i {
+        width: 20px;
+        text-align: center;
+        color: #6c757d;
+    }
+
+    .stats {
+        padding-top: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
+<script>
+    let map;
+
+    function showLocationModal(ambulanceId) {
+        $('#locationModal').modal('show');
+        
+        // Initialize map after modal is shown
+        $('#locationModal').on('shown.bs.modal', function() {
+            $.get(`{% url 'emergency:ambulance_location' %}?id=${ambulanceId}`, function(data) {
+                const location = { lat: data.lat, lng: data.lng };
+                
+                map = new google.maps.Map(document.getElementById('ambulanceMap'), {
+                    center: location,
+                    zoom: 15
+                });
+
+                new google.maps.Marker({
+                    position: location,
+                    map: map,
+                    title: data.number,
+                    icon: '{% static "emergency/img/ambulance-marker.png" %}'
+                });
+            });
+        });
+    }
+
+    $(document).ready(function() {
+        // Initialize select2
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl'
+        });
+    });
+</script>
+{% endblock %}

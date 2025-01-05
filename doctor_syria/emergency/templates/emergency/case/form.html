@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="emergency-case-form">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">
+            {% if form.instance.pk %}
+            تعديل حالة طارئة
+            {% else %}
+            حالة طارئة جديدة
+            {% endif %}
+        </h1>
+    </div>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-8">
+                <!-- Basic Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">المعلومات الأساسية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.case_type|as_crispy_field }}
+                                {{ form.priority|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.reported_time|as_crispy_field }}
+                                {{ form.status|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">معلومات الموقع</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div id="locationMap" style="height: 300px;"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                {{ form.location|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.district|as_crispy_field }}
+                                {{ form.latitude|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.building_info|as_crispy_field }}
+                                {{ form.longitude|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">معلومات المريض</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.patient_name|as_crispy_field }}
+                                {{ form.patient_age|as_crispy_field }}
+                                {{ form.patient_gender|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.contact_phone|as_crispy_field }}
+                                {{ form.is_insured|as_crispy_field }}
+                                {{ form.insurance_number|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medical Information -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">المعلومات الطبية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                {{ form.symptoms|as_crispy_field }}
+                                {{ form.initial_diagnosis|as_crispy_field }}
+                                {{ form.notes|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- Ambulance Assignment -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">تعيين سيارة إسعاف</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ form.ambulance|as_crispy_field }}
+                        <div id="ambulanceInfo" class="mt-3" style="display: none;">
+                            <h6>معلومات سيارة الإسعاف</h6>
+                            <table class="table">
+                                <tr>
+                                    <th>الحالة</th>
+                                    <td id="ambulanceStatus"></td>
+                                </tr>
+                                <tr>
+                                    <th>الموقع الحالي</th>
+                                    <td id="ambulanceLocation"></td>
+                                </tr>
+                                <tr>
+                                    <th>المسافة</th>
+                                    <td id="ambulanceDistance"></td>
+                                </tr>
+                                <tr>
+                                    <th>الوقت المتوقع</th>
+                                    <td id="ambulanceETA"></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Team -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">فريق الطوارئ</h5>
+                    </div>
+                    <div class="card-body">
+                        {{ form.team_members|as_crispy_field }}
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                {% if form.instance.pk %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">التسلسل الزمني</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="timeline">
+                            {% for event in form.instance.timeline.all %}
+                            <div class="timeline-item">
+                                <div class="timeline-marker"></div>
+                                <div class="timeline-content">
+                                    <h6>{{ event.get_event_type_display }}</h6>
+                                    <p>{{ event.description }}</p>
+                                    <small>{{ event.timestamp|date:"Y-m-d H:i" }}</small>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-center">لا يوجد أحداث مسجلة</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-actions mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i>
+                {% if form.instance.pk %}
+                حفظ التغييرات
+                {% else %}
+                إضافة الحالة
+                {% endif %}
+            </button>
+            <a href="{% url 'emergency:case_list' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> إلغاء
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .timeline {
+        position: relative;
+        padding: 1rem 0;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 1rem;
+        height: 100%;
+        width: 2px;
+        background: #dee2e6;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 3rem;
+        margin-bottom: 2rem;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: 0.35rem;
+        width: 1.3rem;
+        height: 1.3rem;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 3px solid #fff;
+    }
+
+    .timeline-content {
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .timeline-content h6 {
+        margin: 0;
+        color: #0d6efd;
+    }
+
+    .timeline-content p {
+        margin: 0.5rem 0;
+    }
+
+    .timeline-content small {
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places"></script>
+<script>
+    let map;
+    let marker;
+    let geocoder;
+    let autocomplete;
+
+    function initMap() {
+        // Initialize map
+        const defaultLocation = { 
+            lat: {{ form.instance.latitude|default:34.7324 }}, 
+            lng: {{ form.instance.longitude|default:36.7137 }} 
+        };
+        
+        map = new google.maps.Map(document.getElementById('locationMap'), {
+            center: defaultLocation,
+            zoom: 13
+        });
+
+        // Initialize geocoder
+        geocoder = new google.maps.Geocoder();
+
+        // Initialize marker
+        marker = new google.maps.Marker({
+            position: defaultLocation,
+            map: map,
+            draggable: true
+        });
+
+        // Initialize autocomplete
+        autocomplete = new google.maps.places.Autocomplete(
+            document.getElementById('id_location'),
+            { types: ['address'] }
+        );
+
+        // Event listeners
+        google.maps.event.addListener(marker, 'dragend', function() {
+            updateLocationFields(marker.getPosition());
+        });
+
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+                map.setCenter(place.geometry.location);
+                marker.setPosition(place.geometry.location);
+                updateLocationFields(place.geometry.location);
+            }
+        });
+
+        // Click on map to set marker
+        map.addListener('click', function(e) {
+            marker.setPosition(e.latLng);
+            updateLocationFields(e.latLng);
+        });
+    }
+
+    function updateLocationFields(location) {
+        $('#id_latitude').val(location.lat());
+        $('#id_longitude').val(location.lng());
+
+        geocoder.geocode({ location: location }, function(results, status) {
+            if (status === 'OK') {
+                if (results[0]) {
+                    $('#id_location').val(results[0].formatted_address);
+                    
+                    // Extract district from address components
+                    for (const component of results[0].address_components) {
+                        if (component.types.includes('sublocality') || 
+                            component.types.includes('neighborhood')) {
+                            $('#id_district').val(component.long_name);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Update ambulance information when selected
+    function updateAmbulanceInfo() {
+        const ambulanceId = $('#id_ambulance').val();
+        if (ambulanceId) {
+            $.get(`{% url 'emergency:ambulance_info' %}?id=${ambulanceId}`, function(data) {
+                $('#ambulanceStatus').text(data.status);
+                $('#ambulanceLocation').text(data.location);
+                $('#ambulanceDistance').text(data.distance + ' كم');
+                $('#ambulanceETA').text(data.eta + ' دقيقة');
+                $('#ambulanceInfo').show();
+
+                // Add ambulance marker to map
+                new google.maps.Marker({
+                    position: { lat: data.lat, lng: data.lng },
+                    map: map,
+                    icon: '{% static "emergency/img/ambulance-marker.png" %}',
+                    title: 'سيارة الإسعاف ' + data.number
+                });
+            });
+        } else {
+            $('#ambulanceInfo').hide();
+        }
+    }
+
+    $(document).ready(function() {
+        initMap();
+
+        // Initialize select2 for multiple select fields
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl'
+        });
+
+        // Update ambulance info when changed
+        $('#id_ambulance').change(updateAmbulanceInfo);
+        if ($('#id_ambulance').val()) {
+            updateAmbulanceInfo();
+        }
+
+        // Show/hide insurance number field based on insurance checkbox
+        $('#id_is_insured').change(function() {
+            if ($(this).is(':checked')) {
+                $('#div_id_insurance_number').show();
+            } else {
+                $('#div_id_insurance_number').hide();
+                $('#id_insurance_number').val('');
+            }
+        }).trigger('change');
+    });
+</script>
+{% endblock %}

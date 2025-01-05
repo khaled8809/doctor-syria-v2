@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="laboratory-test-detail">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title">فحص #{{ test.test_number }}</h1>
+            <p class="text-muted">{{ test.get_test_type_display }}</p>
+        </div>
+        <div class="actions">
+            {% if test.status != 'completed' and test.status != 'cancelled' %}
+            <a href="{% url 'laboratory:test_edit' test.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تعديل
+            </a>
+            {% endif %}
+            <button type="button" class="btn btn-info" onclick="printTestReport()">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+            {% if test.status == 'completed' %}
+            <button type="button" class="btn btn-success" onclick="sendResults()">
+                <i class="fas fa-paper-plane"></i> إرسال النتائج
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Basic Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">المعلومات الأساسية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>رقم الفحص:</th>
+                                    <td>{{ test.test_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>نوع الفحص:</th>
+                                    <td>{{ test.get_test_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>القسم:</th>
+                                    <td>{{ test.department.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>الأولوية:</th>
+                                    <td>
+                                        <span class="badge {% if test.priority == 'urgent' %}badge-danger
+                                                   {% elif test.priority == 'high' %}badge-warning
+                                                   {% else %}badge-info{% endif %}">
+                                            {{ test.get_priority_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>تاريخ الطلب:</th>
+                                    <td>{{ test.created_at|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>تاريخ الإنجاز:</th>
+                                    <td>{{ test.completed_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>الحالة:</th>
+                                    <td>
+                                        <span class="badge {% if test.status == 'completed' %}badge-success
+                                                   {% elif test.status == 'processing' %}badge-info
+                                                   {% elif test.status == 'cancelled' %}badge-danger
+                                                   {% else %}badge-warning{% endif %}">
+                                            {{ test.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>الطبيب المعالج:</th>
+                                    <td>{{ test.requesting_doctor.name }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات المريض</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2">
+                            <img src="{{ test.patient.photo.url }}" alt="{{ test.patient.name }}" 
+                                 class="img-fluid rounded-circle mb-3">
+                        </div>
+                        <div class="col-md-5">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>الاسم:</th>
+                                    <td>
+                                        <a href="{% url 'patients:patient_detail' test.patient.pk %}">
+                                            {{ test.patient.name }}
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>رقم الملف:</th>
+                                    <td>{{ test.patient.file_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>العمر:</th>
+                                    <td>{{ test.patient.age }} سنة</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-5">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>الجنس:</th>
+                                    <td>{{ test.patient.get_gender_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>فصيلة الدم:</th>
+                                    <td>{{ test.patient.blood_type }}</td>
+                                </tr>
+                                <tr>
+                                    <th>الحساسية:</th>
+                                    <td>{{ test.patient.allergies|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sample Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات العينة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>رقم العينة:</th>
+                                    <td>{{ test.sample.sample_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>نوع العينة:</th>
+                                    <td>{{ test.sample.get_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>حالة العينة:</th>
+                                    <td>{{ test.sample.get_condition_display }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>تاريخ الجمع:</th>
+                                    <td>{{ test.sample.collected_at|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>جامع العينة:</th>
+                                    <td>{{ test.sample.collected_by.name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>ملاحظات:</th>
+                                    <td>{{ test.sample.notes|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Status Timeline -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">مسار الحالة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for status in test.status_timeline.all %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6>{{ status.get_status_display }}</h6>
+                                <p class="text-muted">{{ status.created_at|date:"Y-m-d H:i" }}</p>
+                                <p>{{ status.notes|default:"" }}</p>
+                                <small>{{ status.created_by.name }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 40px;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 2px solid #fff;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 7px;
+        top: 15px;
+        height: 100%;
+        width: 2px;
+        background: #dee2e6;
+    }
+
+    .timeline-item:last-child::before {
+        display: none;
+    }
+
+    .timeline-content {
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function printTestReport() {
+        window.open('{% url "laboratory:test_report" test.pk %}', '_blank');
+    }
+
+    function sendResults() {
+        $.post('{% url "laboratory:send_results" %}', {
+            test_id: '{{ test.pk }}',
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }).done(function(response) {
+            if (response.success) {
+                toastr.success('تم إرسال النتائج بنجاح');
+            } else {
+                toastr.error('حدث خطأ أثناء إرسال النتائج');
+            }
+        });
+    }
+
+    function editResults() {
+        $('#editResultsModal').modal('show');
+    }
+
+    function saveResults() {
+        const formData = new FormData($('#resultsForm')[0]);
+        
+        $.ajax({
+            url: '{% url "laboratory:save_results" test.pk %}',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.success) {
+                    toastr.success('تم حفظ النتائج بنجاح');
+                    $('#editResultsModal').modal('hide');
+                    location.reload();
+                } else {
+                    toastr.error(response.message || 'حدث خطأ أثناء حفظ النتائج');
+                }
+            },
+            error: function() {
+                toastr.error('حدث خطأ أثناء حفظ النتائج');
+            }
+        });
+    }
+
+    {% if test.has_numeric_results %}
+    // Initialize Results Chart
+    const ctx = document.getElementById('resultsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_dates|safe }},
+            datasets: [
+                {% for parameter in test.parameters.all %}
+                {% if parameter.range_type == 'numeric' %}
+                {
+                    label: '{{ parameter.name }}',
+                    data: {{ parameter.chart_values|safe }},
+                    borderColor: '{{ parameter.chart_color }}',
+                    tension: 0.1,
+                    fill: false
+                },
+                {% endif %}
+                {% endfor %}
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            },
+            plugins: {
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            }
+        }
+    });
+    {% endif %}
+
+    // Form Validation
+    $(document).ready(function() {
+        $('#resultsForm input[type="text"]').each(function() {
+            const min = $(this).data('min');
+            const max = $(this).data('max');
+            
+            if (min !== undefined && max !== undefined) {
+                $(this).on('change', function() {
+                    const value = parseFloat($(this).val());
+                    if (value < min || value > max) {
+                        $(this).addClass('is-invalid');
+                        toastr.warning(`القيمة خارج النطاق المرجعي (${min} - ${max})`);
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

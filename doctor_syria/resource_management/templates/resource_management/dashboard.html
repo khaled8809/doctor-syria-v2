@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-primary">نظام إدارة الموارد</h2>
+        </div>
+    </div>
+
+    <!-- Resource Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">الأسرّة المتاحة</h5>
+                    <h2 class="display-4">{{ available_beds }}</h2>
+                    <p class="card-text">من إجمالي {{ total_beds }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">غرف العمليات</h5>
+                    <h2 class="display-4">{{ available_ors }}</h2>
+                    <p class="card-text">متاحة حالياً</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">المعدات الطبية</h5>
+                    <h2 class="display-4">{{ equipment_count }}</h2>
+                    <p class="card-text">في الخدمة</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">الصيانة المطلوبة</h5>
+                    <h2 class="display-4">{{ maintenance_count }}</h2>
+                    <p class="card-text">معدات تحتاج صيانة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">إجراءات سريعة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'resource_management:bed-assign' %}" class="btn btn-primary btn-lg btn-block">
+                                <i class="fas fa-bed"></i> تخصيص سرير
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'resource_management:or-schedule' %}" class="btn btn-success btn-lg btn-block">
+                                <i class="fas fa-calendar-plus"></i> جدولة عملية
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'resource_management:equipment-request' %}" class="btn btn-info btn-lg btn-block">
+                                <i class="fas fa-tools"></i> طلب معدات
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'resource_management:maintenance-request' %}" class="btn btn-warning btn-lg btn-block">
+                                <i class="fas fa-wrench"></i> طلب صيانة
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Status -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">حالة الأسرّة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>رقم السرير</th>
+                                    <th>القسم</th>
+                                    <th>الحالة</th>
+                                    <th>المريض</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bed in beds %}
+                                <tr>
+                                    <td>{{ bed.number }}</td>
+                                    <td>{{ bed.department }}</td>
+                                    <td>
+                                        {% if bed.is_occupied %}
+                                        <span class="badge bg-danger">مشغول</span>
+                                        {% else %}
+                                        <span class="badge bg-success">متاح</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ bed.patient|default:"-" }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">تفاصيل</button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">لا توجد أسرّة مسجلة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">جدول العمليات</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>الوقت</th>
+                                    <th>غرفة العمليات</th>
+                                    <th>نوع العملية</th>
+                                    <th>الطبيب</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for surgery in surgeries %}
+                                <tr>
+                                    <td>{{ surgery.scheduled_time }}</td>
+                                    <td>{{ surgery.operating_room }}</td>
+                                    <td>{{ surgery.surgery_type }}</td>
+                                    <td>{{ surgery.surgeon }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ surgery.status_color }}">
+                                            {{ surgery.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">لا توجد عمليات مجدولة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize tooltips
+        $('[data-toggle="tooltip"]').tooltip();
+
+        // Add any additional JavaScript functionality here
+    });
+</script>
+{% endblock %}

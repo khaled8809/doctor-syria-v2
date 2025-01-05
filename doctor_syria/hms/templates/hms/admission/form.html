@@ -1,0 +1,253 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block hms_content %}
+<div class="admission-form">
+    <h1 class="page-title">
+        {% if form.instance.pk %}
+        تعديل إدخال
+        {% else %}
+        إدخال مريض جديد
+        {% endif %}
+    </h1>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <!-- Patient Selection -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">معلومات المريض</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.patient|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="patient-info" id="patientInfo" style="display: none;">
+                                    <table class="table">
+                                        <tr>
+                                            <th>رقم الهوية</th>
+                                            <td id="patientIdNumber"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>العمر</th>
+                                            <td id="patientAge"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>فصيلة الدم</th>
+                                            <td id="patientBloodType"></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bed Assignment -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">تخصيص السرير</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                {{ form.department|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.ward|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.room|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.bed|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medical Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">المعلومات الطبية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.admitting_doctor|as_crispy_field }}
+                                {{ form.admission_type|as_crispy_field }}
+                                {{ form.diagnosis|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.symptoms|as_crispy_field }}
+                                {{ form.required_tests|as_crispy_field }}
+                                {{ form.medications|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vital Signs -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">العلامات الحيوية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                {{ form.temperature|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.pulse|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.blood_pressure|as_crispy_field }}
+                            </div>
+                            <div class="col-md-3">
+                                {{ form.respiratory_rate|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">معلومات إضافية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.expected_stay_days|as_crispy_field }}
+                                {{ form.insurance_details|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.special_requirements|as_crispy_field }}
+                                {{ form.notes|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% if form.instance.pk %}
+                        حفظ التغييرات
+                        {% else %}
+                        إدخال المريض
+                        {% endif %}
+                    </button>
+                    <a href="{% url 'hms:admission_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    $(document).ready(function() {
+        // Initialize Select2
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl'
+        });
+
+        // Patient information loading
+        $('#id_patient').change(function() {
+            var patientId = $(this).val();
+            if (patientId) {
+                $.get('/api/patients/' + patientId + '/', function(data) {
+                    $('#patientIdNumber').text(data.id_number);
+                    $('#patientAge').text(data.age + ' سنة');
+                    $('#patientBloodType').text(data.blood_type);
+                    $('#patientInfo').show();
+                });
+            } else {
+                $('#patientInfo').hide();
+            }
+        });
+
+        // Dynamic loading of wards, rooms, and beds
+        $('#id_department').change(function() {
+            var departmentId = $(this).val();
+            var wardSelect = $('#id_ward');
+            
+            wardSelect.empty().append('<option value="">اختر الجناح</option>');
+            $('#id_room').empty().append('<option value="">اختر الغرفة</option>');
+            $('#id_bed').empty().append('<option value="">اختر السرير</option>');
+            
+            if (departmentId) {
+                $.get('/api/wards/', { department: departmentId }, function(data) {
+                    data.forEach(function(ward) {
+                        wardSelect.append(
+                            $('<option></option>')
+                                .attr('value', ward.id)
+                                .text(ward.name)
+                        );
+                    });
+                });
+            }
+        });
+
+        $('#id_ward').change(function() {
+            var wardId = $(this).val();
+            var roomSelect = $('#id_room');
+            
+            roomSelect.empty().append('<option value="">اختر الغرفة</option>');
+            $('#id_bed').empty().append('<option value="">اختر السرير</option>');
+            
+            if (wardId) {
+                $.get('/api/rooms/', { ward: wardId }, function(data) {
+                    data.forEach(function(room) {
+                        roomSelect.append(
+                            $('<option></option>')
+                                .attr('value', room.id)
+                                .text('غرفة ' + room.room_number)
+                        );
+                    });
+                });
+            }
+        });
+
+        $('#id_room').change(function() {
+            var roomId = $(this).val();
+            var bedSelect = $('#id_bed');
+            
+            bedSelect.empty().append('<option value="">اختر السرير</option>');
+            
+            if (roomId) {
+                $.get('/api/beds/', { room: roomId, status: 'available' }, function(data) {
+                    data.forEach(function(bed) {
+                        bedSelect.append(
+                            $('<option></option>')
+                                .attr('value', bed.id)
+                                .text('سرير ' + bed.bed_number)
+                        );
+                    });
+                });
+            }
+        });
+
+        // Required tests and medications multiple select
+        $('#id_required_tests, #id_medications').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl',
+            tags: true,
+            tokenSeparators: [','],
+            placeholder: 'اختر أو أضف جديد'
+        });
+    });
+</script>
+{% endblock %}

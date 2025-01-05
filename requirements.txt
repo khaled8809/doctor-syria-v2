@@ -1,0 +1,16 @@
+Django==4.2.0
+djangorestframework==3.14.0
+django-cors-headers==4.1.0
+python-dotenv==1.0.0
+Pillow==9.5.0
+django-allauth==0.54.0
+django-rest-auth==0.9.5
+django-filter==23.2
+psycopg2-binary==2.9.6
+celery==5.3.1
+redis==4.5.5
+channels==4.0.0
+channels-redis==4.1.0
+stripe==5.4.0
+django-phonenumber-field==7.1.0
+phonenumbers==8.13.11

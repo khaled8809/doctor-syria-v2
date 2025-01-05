@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="emergency-cases">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">حالات الطوارئ</h1>
+        <div class="actions">
+            <a href="{% url 'emergency:case_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إضافة حالة طارئة
+            </a>
+            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#filterModal">
+                <i class="fas fa-filter"></i> تصفية
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تصفية الحالات</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="get">
+                        <div class="form-group">
+                            <label>الحالة</label>
+                            <select name="status" class="form-control">
+                                <option value="">الكل</option>
+                                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+                                <option value="dispatched" {% if request.GET.status == 'dispatched' %}selected{% endif %}>تم الإرسال</option>
+                                <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>قيد التنفيذ</option>
+                                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>مكتملة</option>
+                                <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>ملغاة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>الأولوية</label>
+                            <select name="priority" class="form-control">
+                                <option value="">الكل</option>
+                                <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>عالية</option>
+                                <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>متوسطة</option>
+                                <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>منخفضة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>التاريخ من</label>
+                            <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+                        </div>
+                        <div class="form-group">
+                            <label>التاريخ إلى</label>
+                            <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+                        </div>
+                        <div class="form-group">
+                            <label>سيارة الإسعاف</label>
+                            <select name="ambulance" class="form-control">
+                                <option value="">الكل</option>
+                                {% for ambulance in ambulances %}
+                                <option value="{{ ambulance.id }}" {% if request.GET.ambulance == ambulance.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ ambulance.number }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">تطبيق</button>
+                        <a href="{% url 'emergency:case_list' %}" class="btn btn-secondary">إعادة تعيين</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cases List -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>رقم الحالة</th>
+                            <th>التاريخ والوقت</th>
+                            <th>الموقع</th>
+                            <th>نوع الحالة</th>
+                            <th>الأولوية</th>
+                            <th>سيارة الإسعاف</th>
+                            <th>الحالة</th>
+                            <th>وقت الاستجابة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for case in cases %}
+                        <tr>
+                            <td>{{ case.case_number }}</td>
+                            <td>{{ case.reported_time|date:"Y-m-d H:i" }}</td>
+                            <td>{{ case.location }}</td>
+                            <td>{{ case.get_case_type_display }}</td>
+                            <td>
+                                <span class="badge {% if case.priority == 'high' %}badge-danger
+                                           {% elif case.priority == 'medium' %}badge-warning
+                                           {% else %}badge-info{% endif %}">
+                                    {{ case.get_priority_display }}
+                                </span>
+                            </td>
+                            <td>{{ case.ambulance.number|default:"-" }}</td>
+                            <td>
+                                <span class="badge {% if case.status == 'completed' %}badge-success
+                                           {% elif case.status == 'cancelled' %}badge-danger
+                                           {% else %}badge-warning{% endif %}">
+                                    {{ case.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ case.response_time }} دقيقة</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'emergency:case_detail' case.pk %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if case.status != 'completed' and case.status != 'cancelled' %}
+                                    <a href="{% url 'emergency:case_update' case.pk %}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% endif %}
+                                    <button type="button" class="btn btn-sm btn-outline-info"
+                                            onclick="printCaseReport('{{ case.pk }}')">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center">لا يوجد حالات طوارئ</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if cases.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if cases.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ cases.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            السابق
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for i in cases.paginator.page_range %}
+                    <li class="page-item {% if cases.number == i %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {{ i }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    {% if cases.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ cases.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            التالي
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    function printCaseReport(caseId) {
+        window.open(`{% url 'emergency:case_report' 0 %}`.replace('0', caseId), '_blank');
+    }
+
+    $(document).ready(function() {
+        // Initialize select2
+        $('.form-control').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl'
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}السجلات الطبية{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">السجلات الطبية</h2>
+        {% if user.role == 'doctor' %}
+        <a href="{% url 'medical_records:record_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة سجل جديد
+        </a>
+        {% endif %}
+    </div>
+
+    {% if records %}
+    <div class="row">
+        {% for record in records %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        {% if user.role == 'doctor' %}
+                        {{ record.patient.get_full_name }}
+                        {% else %}
+                        {{ record.doctor.get_full_name }}
+                        {% endif %}
+                    </h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ record.date|date:"Y/m/d" }}</h6>
+                    <p class="card-text"><strong>التشخيص:</strong> {{ record.diagnosis }}</p>
+                    <p class="card-text"><strong>العلاج:</strong> {{ record.treatment }}</p>
+                    {% if record.notes %}
+                    <p class="card-text"><strong>ملاحظات:</strong> {{ record.notes }}</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'medical_records:record_detail' record.pk %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-eye"></i> عرض التفاصيل
+                    </a>
+                    {% if user.role == 'doctor' and record.doctor == user.doctor %}
+                    <a href="{% url 'medical_records:record_update' record.pk %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                    <a href="{% url 'medical_records:record_delete' record.pk %}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> حذف
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">السابق</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">التالي</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="alert alert-info text-center">
+        لا توجد سجلات طبية حالياً.
+        {% if user.role == 'doctor' %}
+        <a href="{% url 'medical_records:record_create' %}" class="alert-link">إضافة سجل جديد</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        transition: transform 0.2s;
+        border-radius: 10px;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card-footer {
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+    }
+    .btn-sm {
+        margin-right: 5px;
+    }
+    .pagination {
+        direction: ltr;
+    }
+</style>
+{% endblock %}
