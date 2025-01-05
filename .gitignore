@@ -1,44 +1,79 @@
 # Python
-*.py[cod]
 __pycache__/
+*.py[cod]
+*$py.class
 *.so
 .Python
-env/
-venv/
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
+lib/
 lib64/
 parts/
 sdist/
 var/
+wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 
 # Django
 *.log
-*.pot
-*.pyc
-db.sqlite3
-media/
-static/
 local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
 
-# Environment variables
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Environment Variables
 .env
 .env.local
+.env.*.local
 
 # IDE
 .idea/
 .vscode/
 *.swp
 *.swo
+.DS_Store
+
+# Database
+*.db
+*.sqlite3
+
+# Temporary files
+*.bak
+*.tmp
 *~
 
-# OS
-.DS_Store
-Thumbs.db
+# Coverage
+.coverage
+htmlcov/
+
+# pytest
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Local development settings
+/local/
+
+# Compiled translations
+*.mo
+*.pot
+
+# Redis
+*.rdb
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
