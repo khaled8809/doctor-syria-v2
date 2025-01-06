@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}الملف الشخصي{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="صورة الملف الشخصي" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px; font-size: 4rem;">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    {% endif %}
+                    <h4 class="card-title">{{ user.get_full_name }}</h4>
+                    <p class="text-muted">{{ user.get_role_display }}</p>
+                    {% if user.specialization %}
+                    <p class="mb-0"><strong>التخصص:</strong> {{ user.specialization }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">معلومات الاتصال</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <i class="fas fa-envelope me-2 text-primary"></i>
+                        {{ user.email }}
+                    </p>
+                    {% if user.phone_number %}
+                    <p class="mb-2">
+                        <i class="fas fa-phone me-2 text-primary"></i>
+                        {{ user.phone_number }}
+                    </p>
+                    {% endif %}
+                    {% if user.address %}
+                    <p class="mb-0">
+                        <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                        {{ user.address }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">المعلومات الشخصية</h5>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                        <i class="fas fa-edit me-1"></i>
+                        تعديل
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">الاسم الكامل</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.get_full_name }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">البريد الإلكتروني</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.email }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">رقم الهاتف</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.phone_number|default:"غير محدد" }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">تاريخ الميلاد</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.birth_date|date:"j F Y"|default:"غير محدد" }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">العنوان</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.address|default:"غير محدد" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if user.role == 'doctor' %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">معلومات مهنية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">التخصص</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.specialization|default:"غير محدد" }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">رقم الترخيص</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.license_number|default:"غير محدد" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if user.role == 'patient' %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">معلومات طبية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">فصيلة الدم</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.blood_type|default:"غير محدد" }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">الحساسية</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.allergies|default:"لا يوجد" }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">الأمراض المزمنة</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.chronic_diseases|default:"لا يوجد" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal تعديل الملف الشخصي -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تعديل الملف الشخصي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data" action="{% url 'accounts:profile_update' %}">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <!-- سيتم إضافة حقول النموذج لاحقاً -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
