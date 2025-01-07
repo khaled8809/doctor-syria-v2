@@ -1,62 +1,62 @@
 # Core requirements
-Django==4.2.17
-djangorestframework==3.15.2
-django-cors-headers==4.4.0
-django-filter==24.3
-django-allauth==65.3.1
-drf-yasg==1.21.1
-channels==4.2.0
+Django==4.2.8
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
+django-filter==23.5
+django-allauth==0.59.0
+drf-yasg==1.21.7
+channels==4.0.0
 
 # Database and caching
-psycopg2-binary==2.9.10
-django-redis==5.3.0
-redis==5.2.1
+psycopg2-binary==2.9.9
+django-redis==5.4.0
+redis==5.0.1
 
 # Authentication and security
 django-rest-auth==0.9.5
-djangorestframework-simplejwt==5.3.1
-django-phonenumber-field==8.0.0
-phonenumbers==8.13.52
-python-dotenv==1.0.1
+djangorestframework-simplejwt==5.3.0
+django-phonenumber-field==7.2.0
+phonenumbers==8.13.27
+python-dotenv==1.0.0
 pyotp==2.9.0
 django-user-sessions==2.0.0
 django-axes==6.1.1
 
 # File handling and media
-Pillow==10.4.0
+Pillow==10.1.0
 python-magic==0.4.27
 
 # Task Queue and Async
-celery==5.4.0
+celery==5.3.6
 flower==2.0.1
-channels-redis==4.2.1
+channels-redis==4.1.0
 
 # AI and Machine Learning
-tensorflow-cpu==2.13.1  # Using CPU version to avoid GPU dependencies
+tensorflow==2.14.0  # Updated to latest stable version
 scikit-learn==1.3.2
-opencv-python==4.10.0.84
+opencv-python==4.8.1.78
 numpy==1.24.3
 
 # Medical Imaging
-pydicom==2.4.4
-nibabel==5.2.1
+pydicom==2.4.3
+nibabel==5.1.0
 
 # Development and Testing
-black==24.8.0
-flake8==7.1.1
-pytest==8.3.4
-pytest-django==4.9.0
-factory-boy==3.3.1
-coverage==7.4.1
-mypy==1.10.1
+black==23.12.1
+flake8==6.1.0
+pytest==7.4.3
+pytest-django==4.7.0
+factory-boy==3.3.0
+coverage==7.3.2
+mypy==1.7.1
 
 # Documentation
 sphinx==7.1.2
-sphinx-rtd-theme==3.0.2
+sphinx-rtd-theme==1.3.0
 
 # Monitoring and Error Tracking
-sentry-sdk==1.40.4
+sentry-sdk==1.39.1
 
 # Additional dependencies
-Faker==33.3.0
-stripe==11.4.1
+Faker==20.1.0
+stripe==7.9.0
