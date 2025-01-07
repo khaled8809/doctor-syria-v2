@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="ambulance-detail">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title">سيارة إسعاف #{{ ambulance.number }}</h1>
+            <p class="text-muted">{{ ambulance.get_type_display }}</p>
+        </div>
+        <div class="actions">
+            <a href="{% url 'emergency:ambulance_edit' ambulance.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تعديل
+            </a>
+            <a href="{% url 'emergency:maintenance_add' %}?ambulance={{ ambulance.pk }}" class="btn btn-info">
+                <i class="fas fa-tools"></i> إضافة صيانة
+            </a>
+            <button type="button" class="btn btn-secondary" onclick="printAmbulanceReport()">
+                <i class="fas fa-print"></i> طباعة التقرير
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Current Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">الحالة الحالية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="status-info">
+                                <div class="status-item">
+                                    <span class="status-label">الحالة:</span>
+                                    <span class="badge {% if ambulance.status == 'available' %}badge-success
+                                               {% elif ambulance.status == 'busy' %}badge-warning
+                                               {% else %}badge-danger{% endif %}">
+                                        {{ ambulance.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">الموقع الحالي:</span>
+                                    <span>{{ ambulance.current_location }}</span>
+                                </div>
+                                {% if ambulance.current_case %}
+                                <div class="status-item">
+                                    <span class="status-label">المهمة الحالية:</span>
+                                    <a href="{% url 'emergency:case_detail' ambulance.current_case.pk %}">
+                                        حالة #{{ ambulance.current_case.case_number }}
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="currentLocationMap" style="height: 200px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Basic Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">المعلومات الأساسية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <th>رقم السيارة</th>
+                                    <td>{{ ambulance.number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>النوع</th>
+                                    <td>{{ ambulance.get_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>الموديل</th>
+                                    <td>{{ ambulance.model }}</td>
+                                </tr>
+                                <tr>
+                                    <th>سنة الصنع</th>
+                                    <td>{{ ambulance.year }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <th>رقم الهيكل</th>
+                                    <td>{{ ambulance.vin }}</td>
+                                </tr>
+                                <tr>
+                                    <th>رقم المحرك</th>
+                                    <td>{{ ambulance.engine_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>تاريخ التسجيل</th>
+                                    <td>{{ ambulance.registration_date|date:"Y-m-d" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>تاريخ آخر صيانة</th>
+                                    <td>{{ ambulance.last_maintenance|date:"Y-m-d"|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Current Team -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">الفريق الحالي</h5>
+                </div>
+                <div class="card-body">
+                    {% for member in ambulance.current_team.all %}
+                    <div class="team-member">
+                        <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="member-photo">
+                        <div class="member-info">
+                            <h6>{{ member.name }}</h6>
+                            <p>{{ member.get_role_display }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-center">لا يوجد فريق معين حالياً</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">إحصائيات سريعة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">مهام اليوم</span>
+                            <span class="stat-value">{{ today_cases_count }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">المسافة (كم)</span>
+                            <span class="stat-value">{{ today_distance }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">وقت الاستجابة</span>
+                            <span class="stat-value">{{ avg_response_time }} د</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">نسبة الجاهزية</span>
+                            <span class="stat-value">{{ readiness_rate }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .status-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-label {
+        font-weight: bold;
+        color: #6c757d;
+    }
+
+    .team-member {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .member-photo {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .member-info h6 {
+        margin: 0;
+    }
+
+    .member-info p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .stat-label {
+        display: block;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .stat-value {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
+<script>
+    function initMap() {
+        const location = { 
+            lat: {{ ambulance.current_latitude }}, 
+            lng: {{ ambulance.current_longitude }} 
+        };
+        
+        const map = new google.maps.Map(document.getElementById('currentLocationMap'), {
+            center: location,
+            zoom: 15
+        });
+
+        new google.maps.Marker({
+            position: location,
+            map: map,
+            title: 'سيارة إسعاف #{{ ambulance.number }}',
+            icon: '{% static "emergency/img/ambulance-marker.png" %}'
+        });
+    }
+
+    function printAmbulanceReport() {
+        window.open('{% url "emergency:ambulance_report" ambulance.pk %}', '_blank');
+    }
+
+    $(document).ready(function() {
+        initMap();
+    });
+</script>
+{% endblock %}

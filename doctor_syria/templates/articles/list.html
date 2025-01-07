@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}المقالات الطبية - دكتور سوريا{% endblock %}
+
+{% block content %}
+<div class="articles-page">
+    <div class="container">
+        <h1 class="page-title">المقالات الطبية</h1>
+        
+        <div class="articles-grid">
+            {% for article in articles %}
+            <article class="article-card">
+                {% if article.image %}
+                    <img src="{{ article.image.url }}" alt="{{ article.title }}" class="article-image">
+                {% endif %}
+                <div class="article-content">
+                    <h2>{{ article.title }}</h2>
+                    <p class="article-excerpt">{{ article.excerpt }}</p>
+                    <div class="article-meta">
+                        <span class="article-date">{{ article.published_at|date:"d/m/Y" }}</span>
+                        <span class="article-author">{{ article.author.get_full_name }}</span>
+                    </div>
+                    <a href="{% url 'core:article_detail' article.slug %}" class="btn btn-primary">اقرأ المزيد</a>
+                </div>
+            </article>
+            {% empty %}
+            <div class="no-articles">
+                <p>لا توجد مقالات حالياً</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+        <div class="pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary">&laquo; السابق</a>
+            {% endif %}
+
+            <span class="current-page">
+                الصفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">التالي &raquo;</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="laboratory-tests">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">الفحوصات المخبرية</h1>
+        <div class="actions">
+            <a href="{% url 'laboratory:test_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> فحص جديد
+            </a>
+            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#filterModal">
+                <i class="fas fa-filter"></i> تصفية
+            </button>
+            <div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown">
+                    <i class="fas fa-download"></i> تصدير
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="{% url 'laboratory:export_tests' %}?format=pdf">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </a>
+                    <a class="dropdown-item" href="{% url 'laboratory:export_tests' %}?format=excel">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Modal -->
+    <div class="modal fade" id="filterModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تصفية الفحوصات</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form method="get">
+                        <div class="form-group">
+                            <label>نوع الفحص</label>
+                            <select name="test_type" class="form-control select2">
+                                <option value="">الكل</option>
+                                {% for type_code, type_name in test_types %}
+                                <option value="{{ type_code }}" {% if request.GET.test_type == type_code %}selected{% endif %}>
+                                    {{ type_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>الحالة</label>
+                            <select name="status" class="form-control">
+                                <option value="">الكل</option>
+                                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+                                <option value="processing" {% if request.GET.status == 'processing' %}selected{% endif %}>قيد التنفيذ</option>
+                                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>مكتمل</option>
+                                <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>ملغي</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>القسم</label>
+                            <select name="department" class="form-control select2">
+                                <option value="">الكل</option>
+                                {% for dept in departments %}
+                                <option value="{{ dept.id }}" {% if request.GET.department == dept.id|stringformat:"i" %}selected{% endif %}>
+                                    {{ dept.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>من تاريخ</label>
+                            <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+                        </div>
+                        <div class="form-group">
+                            <label>إلى تاريخ</label>
+                            <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+                        </div>
+                        <div class="form-group">
+                            <label>الأولوية</label>
+                            <select name="priority" class="form-control">
+                                <option value="">الكل</option>
+                                <option value="urgent" {% if request.GET.priority == 'urgent' %}selected{% endif %}>عاجل</option>
+                                <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>مرتفع</option>
+                                <option value="normal" {% if request.GET.priority == 'normal' %}selected{% endif %}>عادي</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">تطبيق</button>
+                        <a href="{% url 'laboratory:test_list' %}" class="btn btn-secondary">إعادة تعيين</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tests Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>رقم الفحص</th>
+                            <th>المريض</th>
+                            <th>نوع الفحص</th>
+                            <th>القسم</th>
+                            <th>الأولوية</th>
+                            <th>الحالة</th>
+                            <th>تاريخ الطلب</th>
+                            <th>تاريخ الإنجاز</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for test in tests %}
+                        <tr>
+                            <td>{{ test.test_number }}</td>
+                            <td>
+                                <a href="{% url 'patients:patient_detail' test.patient.pk %}">
+                                    {{ test.patient.name }}
+                                </a>
+                            </td>
+                            <td>{{ test.get_test_type_display }}</td>
+                            <td>{{ test.department.name }}</td>
+                            <td>
+                                <span class="badge {% if test.priority == 'urgent' %}badge-danger
+                                           {% elif test.priority == 'high' %}badge-warning
+                                           {% else %}badge-info{% endif %}">
+                                    {{ test.get_priority_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge {% if test.status == 'completed' %}badge-success
+                                           {% elif test.status == 'processing' %}badge-info
+                                           {% elif test.status == 'cancelled' %}badge-danger
+                                           {% else %}badge-warning{% endif %}">
+                                    {{ test.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ test.created_at|date:"Y-m-d H:i" }}</td>
+                            <td>{{ test.completed_at|date:"Y-m-d H:i"|default:"-" }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'laboratory:test_detail' test.pk %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if test.status != 'completed' and test.status != 'cancelled' %}
+                                    <a href="{% url 'laboratory:test_edit' test.pk %}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% endif %}
+                                    <button type="button" class="btn btn-sm btn-outline-info"
+                                            onclick="printTestReport('{{ test.pk }}')">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                    {% if test.status == 'completed' %}
+                                    <button type="button" class="btn btn-sm btn-outline-success"
+                                            onclick="sendResults('{{ test.pk }}')">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center">لا يوجد فحوصات مطابقة للمعايير المحددة</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if tests.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if tests.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ tests.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            السابق
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for i in tests.paginator.page_range %}
+                    <li class="page-item {% if tests.number == i %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            {{ i }}
+                        </a>
+                    </li>
+                    {% endfor %}
+
+                    {% if tests.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ tests.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                            التالي
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    function printTestReport(testId) {
+        window.open(`{% url 'laboratory:test_report' 0 %}`.replace('0', testId), '_blank');
+    }
+
+    function sendResults(testId) {
+        $.post(`{% url 'laboratory:send_results' %}`, {
+            test_id: testId,
+            csrfmiddlewaretoken: '{{ csrf_token }}'
+        }).done(function(response) {
+            if (response.success) {
+                toastr.success('تم إرسال النتائج بنجاح');
+            } else {
+                toastr.error('حدث خطأ أثناء إرسال النتائج');
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        // Initialize select2
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl'
+        });
+    });
+</script>
+{% endblock %}

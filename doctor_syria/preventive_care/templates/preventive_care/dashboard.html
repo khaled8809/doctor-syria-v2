@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-primary">نظام الرعاية الوقائية</h2>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">الفحوصات القادمة</h5>
+                    <h2 class="display-4">{{ upcoming_checkups_count }}</h2>
+                    <p class="card-text">خلال الأسبوع القادم</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-title">التطعيمات المستحقة</h5>
+                    <h2 class="display-4">{{ due_vaccinations_count }}</h2>
+                    <p class="card-text">تحتاج إلى متابعة</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">النصائح الصحية</h5>
+                    <h2 class="display-4">{{ health_tips_count }}</h2>
+                    <p class="card-text">نصائح مخصصة لك</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">التذكيرات</h5>
+                    <h2 class="display-4">{{ reminders_count }}</h2>
+                    <p class="card-text">تحتاج إلى اهتمام</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">إجراءات سريعة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <a href="{% url 'preventive_care:checkup-create' %}" class="btn btn-primary btn-lg btn-block">
+                                <i class="fas fa-calendar-plus"></i> جدولة فحص جديد
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'preventive_care:vaccination-create' %}" class="btn btn-success btn-lg btn-block">
+                                <i class="fas fa-syringe"></i> إضافة تطعيم
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'preventive_care:health-tip-list' %}" class="btn btn-info btn-lg btn-block">
+                                <i class="fas fa-lightbulb"></i> تصفح النصائح
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-warning btn-lg btn-block">
+                                <i class="fas fa-bell"></i> إدارة التذكيرات
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">الفحوصات القادمة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>نوع الفحص</th>
+                                    <th>التاريخ</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for checkup in upcoming_checkups %}
+                                <tr>
+                                    <td>{{ checkup.checkup_type }}</td>
+                                    <td>{{ checkup.due_date }}</td>
+                                    <td>
+                                        {% if checkup.completed %}
+                                        <span class="badge bg-success">تم</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">قيد الانتظار</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">تفاصيل</button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">لا توجد فحوصات قادمة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">التطعيمات المستحقة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>التطعيم</th>
+                                    <th>تاريخ الاستحقاق</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vaccination in due_vaccinations %}
+                                <tr>
+                                    <td>{{ vaccination.vaccine_name }}</td>
+                                    <td>{{ vaccination.due_date }}</td>
+                                    <td>
+                                        {% if vaccination.administered_date %}
+                                        <span class="badge bg-success">تم</span>
+                                        {% else %}
+                                        <span class="badge bg-warning">مستحق</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">تفاصيل</button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">لا توجد تطعيمات مستحقة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Initialize tooltips
+        $('[data-toggle="tooltip"]').tooltip();
+
+        // Add any additional JavaScript functionality here
+    });
+</script>
+{% endblock %}

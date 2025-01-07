@@ -1,0 +1,256 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+
+{% block hms_content %}
+<div class="ward-detail">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title">{{ ward.name }}</h1>
+            <p class="text-muted">{{ ward.department.name }}</p>
+        </div>
+        <div class="actions">
+            <a href="{% url 'hms:ward_edit' ward.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تعديل الجناح
+            </a>
+            <a href="{% url 'hms:room_add' %}?ward={{ ward.pk }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> إضافة غرفة
+            </a>
+        </div>
+    </div>
+
+    <!-- Ward Info Card -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات الجناح</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>النوع</th>
+                            <td>{{ ward.get_ward_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>رئيس التمريض</th>
+                            <td>{{ ward.head_nurse.user.get_full_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>الطابق</th>
+                            <td>{{ ward.floor }}</td>
+                        </tr>
+                        <tr>
+                            <th>السعة</th>
+                            <td>{{ ward.capacity }}</td>
+                        </tr>
+                        <tr>
+                            <th>الإشغال الحالي</th>
+                            <td>{{ ward.current_occupancy }}</td>
+                        </tr>
+                        <tr>
+                            <th>الحالة</th>
+                            <td>
+                                {% if ward.is_active %}
+                                <span class="badge badge-success">نشط</span>
+                                {% else %}
+                                <span class="badge badge-danger">غير نشط</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">إحصائيات الإشغال</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="occupancyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rooms List -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">الغرف</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>رقم الغرفة</th>
+                            <th>النوع</th>
+                            <th>السعة</th>
+                            <th>الإشغال الحالي</th>
+                            <th>المعدات</th>
+                            <th>السعر اليومي</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for room in ward.room_set.all %}
+                        <tr>
+                            <td>{{ room.room_number }}</td>
+                            <td>{{ room.get_room_type_display }}</td>
+                            <td>{{ room.capacity }}</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar {% if room.occupancy_percentage > 90 %}bg-danger
+                                         {% elif room.occupancy_percentage > 70 %}bg-warning
+                                         {% else %}bg-success{% endif %}"
+                                         role="progressbar"
+                                         style="width: {{ room.occupancy_percentage }}%"
+                                         aria-valuenow="{{ room.occupancy_percentage }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                        {{ room.current_occupancy }}/{{ room.capacity }}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-info" data-toggle="modal" 
+                                        data-target="#equipmentModal{{ room.pk }}">
+                                    عرض المعدات ({{ room.equipment|length }})
+                                </button>
+                            </td>
+                            <td>{{ room.daily_rate }} ل.س</td>
+                            <td>
+                                {% if room.is_active %}
+                                <span class="badge badge-success">نشط</span>
+                                {% else %}
+                                <span class="badge badge-danger">غير نشط</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'hms:room_detail' room.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'hms:room_edit' room.pk %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'hms:bed_add' %}?room={{ room.pk }}" 
+                                       class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-bed"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Equipment Modal -->
+                        <div class="modal fade" id="equipmentModal{{ room.pk }}" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">معدات الغرفة {{ room.room_number }}</h5>
+                                        <button type="button" class="close" data-dismiss="modal">
+                                            <span>&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <ul class="list-group">
+                                            {% for item in room.equipment %}
+                                            <li class="list-group-item">{{ item }}</li>
+                                            {% empty %}
+                                            <li class="list-group-item">لا يوجد معدات مسجلة</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">لا يوجد غرف مضافة في هذا الجناح</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Patients -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="card-title">المرضى الحاليين</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>المريض</th>
+                            <th>رقم الغرفة</th>
+                            <th>رقم السرير</th>
+                            <th>تاريخ الإدخال</th>
+                            <th>الطبيب المعالج</th>
+                            <th>التشخيص</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admission in current_admissions %}
+                        <tr>
+                            <td>{{ admission.patient.user.get_full_name }}</td>
+                            <td>{{ admission.bed.room.room_number }}</td>
+                            <td>{{ admission.bed.bed_number }}</td>
+                            <td>{{ admission.admission_date|date:"Y-m-d H:i" }}</td>
+                            <td>{{ admission.admitting_doctor.user.get_full_name }}</td>
+                            <td>{{ admission.diagnosis|truncatechars:50 }}</td>
+                            <td>
+                                <a href="{% url 'hms:admission_detail' admission.pk %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">لا يوجد مرضى حالياً في هذا الجناح</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Occupancy Chart
+    const ctx = document.getElementById('occupancyChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ occupancy_dates|safe }},
+            datasets: [{
+                label: 'معدل الإشغال',
+                data: {{ occupancy_rates }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

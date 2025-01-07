@@ -1,0 +1,278 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+
+{% block hms_content %}
+<div class="department-detail">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">{{ department.name }}</h1>
+        <div class="actions">
+            <a href="{% url 'hms:department_edit' department.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تعديل القسم
+            </a>
+            <a href="{% url 'hms:ward_add' %}?department={{ department.pk }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> إضافة جناح
+            </a>
+        </div>
+    </div>
+
+    <!-- Department Info -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات القسم</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>النوع</th>
+                            <td>{{ department.get_department_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>رئيس القسم</th>
+                            <td>{{ department.head_doctor.user.get_full_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>السعة</th>
+                            <td>{{ department.capacity }}</td>
+                        </tr>
+                        <tr>
+                            <th>الطابق</th>
+                            <td>{{ department.floor }}</td>
+                        </tr>
+                        <tr>
+                            <th>رقم التحويلة</th>
+                            <td>{{ department.extension_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>الحالة</th>
+                            <td>
+                                {% if department.is_active %}
+                                <span class="badge badge-success">نشط</span>
+                                {% else %}
+                                <span class="badge badge-danger">غير نشط</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">إحصائيات القسم</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="departmentStatsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wards -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title">الأجنحة</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>النوع</th>
+                            <th>السعة</th>
+                            <th>الإشغال الحالي</th>
+                            <th>رئيس التمريض</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ward in wards %}
+                        <tr>
+                            <td>{{ ward.name }}</td>
+                            <td>{{ ward.get_ward_type_display }}</td>
+                            <td>{{ ward.capacity }}</td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {{ ward.occupancy_percentage }}%"
+                                         aria-valuenow="{{ ward.occupancy_percentage }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ ward.current_occupancy }}/{{ ward.capacity }}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ ward.head_nurse.user.get_full_name }}</td>
+                            <td>
+                                {% if ward.is_active %}
+                                <span class="badge badge-success">نشط</span>
+                                {% else %}
+                                <span class="badge badge-danger">غير نشط</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'hms:ward_detail' ward.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'hms:ward_edit' ward.pk %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">لا يوجد أجنحة في هذا القسم</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title">المعدات</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>الاسم</th>
+                            <th>النوع</th>
+                            <th>الموديل</th>
+                            <th>الحالة</th>
+                            <th>آخر صيانة</th>
+                            <th>الصيانة القادمة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in equipment %}
+                        <tr>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.get_equipment_type_display }}</td>
+                            <td>{{ item.model_number }}</td>
+                            <td>{{ item.status }}</td>
+                            <td>{{ item.last_maintenance|date:"Y-m-d" }}</td>
+                            <td>
+                                {% if item.maintenance_due %}
+                                <span class="badge badge-danger">مستحقة</span>
+                                {% endif %}
+                                {{ item.next_maintenance|date:"Y-m-d" }}
+                            </td>
+                            <td>
+                                <a href="{% url 'hms:equipment_detail' item.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'hms:equipment_edit' item.pk %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">لا يوجد معدات في هذا القسم</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title">المخزون</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>العنصر</th>
+                            <th>الكمية</th>
+                            <th>الحد الأدنى</th>
+                            <th>آخر طلب</th>
+                            <th>الموقع</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in inventory %}
+                        <tr {% if item.quantity <= item.minimum_quantity %}class="table-warning"{% endif %}>
+                            <td>{{ item.name }}</td>
+                            <td>{{ item.quantity }} {{ item.unit }}</td>
+                            <td>{{ item.minimum_quantity }} {{ item.unit }}</td>
+                            <td>{{ item.last_ordered|date:"Y-m-d" }}</td>
+                            <td>{{ item.location }}</td>
+                            <td>
+                                <a href="{% url 'hms:inventory_detail' item.pk %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'hms:inventory_edit' item.pk %}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">لا يوجد عناصر في المخزون</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Department Statistics Chart
+    const ctx = document.getElementById('departmentStatsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['المرضى الحاليين', 'إدخالات اليوم', 'خروج اليوم'],
+            datasets: [{
+                label: 'إحصائيات القسم',
+                data: [
+                    {{ current_patients_count }},
+                    {{ admissions_today }},
+                    {{ discharges_today }}
+                ],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(75, 192, 192, 0.5)',
+                    'rgba(255, 99, 132, 0.5)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 99, 132, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

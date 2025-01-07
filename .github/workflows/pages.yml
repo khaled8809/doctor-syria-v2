@@ -1,0 +1,78 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install django whitenoise gunicorn
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Build Static Files
+        run: |
+          mkdir -p staticfiles
+          python manage.py collectstatic --noinput --clear
+        env:
+          DJANGO_SETTINGS_MODULE: doctor_syria.settings.github_pages
+          SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DEBUG: "False"
+
+      - name: Build Index
+        run: |
+          python manage.py shell -c "
+          from django.template.loader import render_to_string
+          from django.conf import settings
+          import os
+          
+          # Render the landing page
+          content = render_to_string('landing.html', {
+              'STATIC_URL': settings.STATIC_URL,
+              'debug': False,
+          })
+          
+          # Write to index.html
+          with open(os.path.join('staticfiles', 'index.html'), 'w', encoding='utf-8') as f:
+              f.write(content)
+          "
+        env:
+          DJANGO_SETTINGS_MODULE: doctor_syria.settings.github_pages
+          SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DEBUG: "False"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'staticfiles'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

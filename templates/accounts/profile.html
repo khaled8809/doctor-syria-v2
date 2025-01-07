@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>الملف الشخصي</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>الاسم:</strong> {{ user.get_full_name }}</p>
+                            <p><strong>البريد الإلكتروني:</strong> {{ user.email }}</p>
+                            <p><strong>الدور:</strong> {{ user.get_role }}</p>
+                            <p><strong>رقم الهاتف:</strong> {{ user.phone|default:"غير محدد" }}</p>
+                            <p><strong>العنوان:</strong> {{ user.address|default:"غير محدد" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if user.barcode %}
+                            <div class="text-center mb-3">
+                                <img src="{{ user.get_barcode_url }}" alt="باركود المستخدم" class="img-fluid">
+                                <p class="mt-2">باركود التعريف</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3>البطاقة التعريفية</h3>
+                </div>
+                <div class="card-body">
+                    {% if user.id_card %}
+                    <div class="text-center">
+                        <img src="{{ user.get_id_card_url }}" alt="البطاقة التعريفية" class="img-fluid mb-3">
+                        <a href="{{ user.get_id_card_url }}" class="btn btn-primary" download>
+                            <i class="fas fa-download"></i> تحميل البطاقة
+                        </a>
+                    </div>
+                    {% else %}
+                    <p class="text-center">لم يتم توليد بطاقة تعريفية بعد</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3>أدوات</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="startScanner()">
+                            <i class="fas fa-qrcode"></i> مسح الباركود
+                        </button>
+                        <button class="btn btn-info" onclick="regenerateIdCard()">
+                            <i class="fas fa-sync"></i> إعادة توليد البطاقة
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة مسح الباركود -->
+<div class="modal fade" id="scannerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">مسح الباركود</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="reader"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/html5-qrcode.min.js' %}"></script>
+<script>
+let html5QrcodeScanner = null;
+
+function startScanner() {
+    const modal = new bootstrap.Modal(document.getElementById('scannerModal'));
+    modal.show();
+    
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: 250 }
+        );
+        
+        html5QrcodeScanner.render((decodedText, decodedResult) => {
+            // إيقاف المسح بعد العثور على باركود
+            html5QrcodeScanner.clear();
+            
+            // إرسال البيانات للخادم
+            fetch('/api/barcode/scan/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ barcode: decodedText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('تم مسح الباركود بنجاح');
+                    modal.hide();
+                    // تحديث الصفحة لعرض البيانات الجديدة
+                    window.location.reload();
+                } else {
+                    alert('خطأ: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('حدث خطأ أثناء معالجة الباركود');
+                console.error('Error:', error);
+            });
+        });
+    }
+}
+
+function regenerateIdCard() {
+    fetch('/api/users/regenerate-id-card/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('تم إعادة توليد البطاقة بنجاح');
+            window.location.reload();
+        } else {
+            alert('خطأ: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('حدث خطأ أثناء إعادة توليد البطاقة');
+        console.error('Error:', error);
+    });
+}
+
+// دالة للحصول على قيمة CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// تنظيف المسح عند إغلاق النافذة
+document.getElementById('scannerModal').addEventListener('hidden.bs.modal', function () {
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear();
+        html5QrcodeScanner = null;
+    }
+});
+</script>
+{% endblock %}

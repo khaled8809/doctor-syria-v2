@@ -1,0 +1,214 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block hms_content %}
+<div class="equipment-form">
+    <h1 class="page-title">
+        {% if form.instance.pk %}
+        تعديل معدات
+        {% else %}
+        إضافة معدات جديدة
+        {% endif %}
+    </h1>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">المعلومات الأساسية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.name|as_crispy_field }}
+                                {{ form.equipment_type|as_crispy_field }}
+                                {{ form.serial_number|as_crispy_field }}
+                                {{ form.model_number|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.manufacturer|as_crispy_field }}
+                                {{ form.department|as_crispy_field }}
+                                {{ form.current_location|as_crispy_field }}
+                                {{ form.status|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Purchase Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">معلومات الشراء</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                {{ form.purchase_date|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.purchase_cost|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.warranty_expiry|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Supplier Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">معلومات المورّد</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.supplier_name|as_crispy_field }}
+                                {{ form.supplier_phone|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.supplier_email|as_crispy_field }}
+                                {{ form.supplier_address|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maintenance Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">معلومات الصيانة</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                {{ form.maintenance_interval|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.last_maintenance|as_crispy_field }}
+                            </div>
+                            <div class="col-md-4">
+                                {{ form.next_maintenance|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Specifications -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">المواصفات الفنية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                {{ form.specifications|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documentation -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">الوثائق</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.manual|as_crispy_field }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.certificates|as_crispy_field }}
+                            </div>
+                        </div>
+                        {% if form.instance.manual %}
+                        <div class="current-file">
+                            <p>دليل المستخدم الحالي: <a href="{{ form.instance.manual.url }}" target="_blank">تحميل</a></p>
+                        </div>
+                        {% endif %}
+                        {% if form.instance.certificates %}
+                        <div class="current-file">
+                            <p>الشهادات الحالية: <a href="{{ form.instance.certificates.url }}" target="_blank">تحميل</a></p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="card-title">معلومات إضافية</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12">
+                                {{ form.notes|as_crispy_field }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% if form.instance.pk %}
+                        حفظ التغييرات
+                        {% else %}
+                        إضافة المعدات
+                        {% endif %}
+                    </button>
+                    <a href="{% url 'hms:equipment_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    $(document).ready(function() {
+        // Initialize Select2
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl'
+        });
+
+        // File input preview
+        $('.custom-file-input').on('change', function() {
+            var fileName = $(this).val().split('\\').pop();
+            $(this).next('.custom-file-label').html(fileName);
+        });
+
+        // Maintenance date calculations
+        $('#id_maintenance_interval').change(function() {
+            var lastMaintenance = $('#id_last_maintenance').val();
+            if (lastMaintenance) {
+                var interval = parseInt($(this).val());
+                var nextDate = new Date(lastMaintenance);
+                nextDate.setDate(nextDate.getDate() + interval);
+                $('#id_next_maintenance').val(nextDate.toISOString().split('T')[0]);
+            }
+        });
+
+        $('#id_last_maintenance').change(function() {
+            var interval = $('#id_maintenance_interval').val();
+            if (interval) {
+                var lastDate = new Date($(this).val());
+                var nextDate = new Date(lastDate);
+                nextDate.setDate(nextDate.getDate() + parseInt(interval));
+                $('#id_next_maintenance').val(nextDate.toISOString().split('T')[0]);
+            }
+        });
+    });
+</script>
+{% endblock %}

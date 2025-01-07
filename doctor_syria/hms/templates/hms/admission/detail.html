@@ -1,0 +1,318 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+
+{% block hms_content %}
+<div class="admission-detail">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title">تفاصيل الإدخال #{{ admission.admission_number }}</h1>
+            <p class="text-muted">{{ admission.patient.user.get_full_name }}</p>
+        </div>
+        <div class="actions">
+            {% if admission.status == 'active' %}
+            <a href="{% url 'hms:admission_edit' admission.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تعديل
+            </a>
+            <a href="{% url 'hms:discharge_add' %}?admission={{ admission.pk }}" class="btn btn-warning">
+                <i class="fas fa-door-open"></i> خروج
+            </a>
+            <a href="{% url 'hms:transfer_add' %}?admission={{ admission.pk }}" class="btn btn-info">
+                <i class="fas fa-exchange-alt"></i> تحويل
+            </a>
+            {% endif %}
+            <a href="{% url 'hms:admission_print' admission.pk %}" class="btn btn-secondary" target="_blank">
+                <i class="fas fa-print"></i> طباعة
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Admission Info -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات الإدخال</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>رقم الإدخال</th>
+                            <td>{{ admission.admission_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>تاريخ الإدخال</th>
+                            <td>{{ admission.admission_date|date:"Y-m-d H:i" }}</td>
+                        </tr>
+                        <tr>
+                            <th>القسم</th>
+                            <td>{{ admission.bed.room.ward.department.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>الجناح</th>
+                            <td>{{ admission.bed.room.ward.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>الغرفة</th>
+                            <td>{{ admission.bed.room.room_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>السرير</th>
+                            <td>{{ admission.bed.bed_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>الطبيب المعالج</th>
+                            <td>{{ admission.admitting_doctor.user.get_full_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>الحالة</th>
+                            <td>
+                                {% if admission.status == 'active' %}
+                                <span class="badge badge-success">نشط</span>
+                                {% elif admission.status == 'discharged' %}
+                                <span class="badge badge-secondary">خرج</span>
+                                {% elif admission.status == 'transferred' %}
+                                <span class="badge badge-info">محول</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Patient Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات المريض</h5>
+                </div>
+                <div class="card-body">
+                    <div class="patient-info">
+                        <img src="{{ admission.patient.get_photo_url }}" alt="صورة المريض" 
+                             class="patient-photo mb-3">
+                        <table class="table">
+                            <tr>
+                                <th>الاسم</th>
+                                <td>{{ admission.patient.user.get_full_name }}</td>
+                            </tr>
+                            <tr>
+                                <th>رقم الهوية</th>
+                                <td>{{ admission.patient.id_number }}</td>
+                            </tr>
+                            <tr>
+                                <th>العمر</th>
+                                <td>{{ admission.patient.age }} سنة</td>
+                            </tr>
+                            <tr>
+                                <th>الجنس</th>
+                                <td>{{ admission.patient.get_gender_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>فصيلة الدم</th>
+                                <td>{{ admission.patient.blood_type }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Medical Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">المعلومات الطبية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="medical-info">
+                        <h6>التشخيص</h6>
+                        <p>{{ admission.diagnosis }}</p>
+
+                        <h6>الأعراض</h6>
+                        <p>{{ admission.symptoms }}</p>
+
+                        <h6>الفحوصات المطلوبة</h6>
+                        <ul class="list-unstyled">
+                            {% for test in admission.required_tests.all %}
+                            <li><i class="fas fa-check-circle"></i> {{ test.name }}</li>
+                            {% empty %}
+                            <li>لا يوجد فحوصات مطلوبة</li>
+                            {% endfor %}
+                        </ul>
+
+                        <h6>الأدوية</h6>
+                        <ul class="list-unstyled">
+                            {% for med in admission.medications.all %}
+                            <li>
+                                <i class="fas fa-pills"></i> {{ med.name }}
+                                <small class="text-muted">({{ med.dosage }} - {{ med.frequency }})</small>
+                            </li>
+                            {% empty %}
+                            <li>لا يوجد أدوية مسجلة</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Notes -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title">ملاحظات التقدم</h5>
+                    {% if admission.status == 'active' %}
+                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" 
+                            data-target="#addNoteModal">
+                        <i class="fas fa-plus"></i> إضافة ملاحظة
+                    </button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for note in admission.progress_notes.all %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">
+                                    {{ note.created_by.user.get_full_name }}
+                                    <small class="text-muted">{{ note.created_at|date:"Y-m-d H:i" }}</small>
+                                </h6>
+                                <p>{{ note.note }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-center">لا يوجد ملاحظات مسجلة</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vital Signs -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">العلامات الحيوية</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="vitalsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Note Modal -->
+{% if admission.status == 'active' %}
+<div class="modal fade" id="addNoteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إضافة ملاحظة جديدة</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{% url 'hms:add_progress_note' admission.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="note">الملاحظة</label>
+                        <textarea name="note" id="note" rows="4" class="form-control" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .patient-photo {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 40px;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: #007bff;
+        border: 3px solid #fff;
+        box-shadow: 0 0 0 1px #007bff;
+    }
+
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+    }
+
+    .timeline-title {
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Vitals Chart
+    const ctx = document.getElementById('vitalsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ vitals_dates|safe }},
+            datasets: [
+                {
+                    label: 'درجة الحرارة',
+                    data: {{ temperature_data }},
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                },
+                {
+                    label: 'النبض',
+                    data: {{ pulse_data }},
+                    borderColor: 'rgb(54, 162, 235)',
+                    tension: 0.1
+                },
+                {
+                    label: 'ضغط الدم',
+                    data: {{ blood_pressure_data }},
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
