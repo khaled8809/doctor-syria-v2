@@ -1,7 +1,7 @@
 # Core
 Django==4.2.17
 djangorestframework==3.15.2
-django-cors-headers==4.4.0
+django-cors-headers==4.6.0
 django-filter==24.3
 django-allauth==65.3.1
 channels==4.2.0
@@ -11,22 +11,22 @@ psycopg2-binary==2.9.10
 redis==5.2.1
 
 # Authentication
-dj-rest-auth==5.0.2
+dj-rest-auth==7.0.1
 django-phonenumber-field==8.0.0
 phonenumbers==8.13.52
 python-dotenv==1.0.1
 djangorestframework-simplejwt==5.4.0
 
 # Media
-Pillow==10.4.0
+Pillow==11.1.0
 
 # Task Queue
 celery==5.4.0
 channels-redis==4.2.1
 
 # Medical
-pydicom==2.4.4
-nibabel==5.2.1
+pydicom==3.0.1
+nibabel==5.3.2
 
 # Payments
 stripe==11.4.1
