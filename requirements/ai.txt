@@ -1,0 +1,11 @@
+# AI/ML Dependencies
+numpy==1.26.4
+scikit-learn>=1.4.0
+tensorflow==2.15.0
+
+# Deep Learning Framework Dependencies
+keras==2.15.0
+
+# Additional ML Libraries
+h5py==3.12.1
+opt-einsum>=2.3.2

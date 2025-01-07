@@ -32,6 +32,7 @@ staticfiles/
 venv/
 env/
 ENV/
+venv-3.11/
 
 # Environment Variables
 .env
