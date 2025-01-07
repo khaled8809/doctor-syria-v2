@@ -1,189 +1,180 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 {% load static %}
 
-{% block title %}الملف الشخصي{% endblock %}
-
 {% block content %}
-<div class="container py-4">
+<div class="container mt-4">
     <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-8">
             <div class="card">
-                <div class="card-body text-center">
-                    {% if user.profile_picture %}
-                    <img src="{{ user.profile_picture.url }}" alt="صورة الملف الشخصي" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
-                    {% else %}
-                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px; font-size: 4rem;">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    {% endif %}
-                    <h4 class="card-title">{{ user.get_full_name }}</h4>
-                    <p class="text-muted">{{ user.get_role_display }}</p>
-                    {% if user.specialization %}
-                    <p class="mb-0"><strong>التخصص:</strong> {{ user.specialization }}</p>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <div class="card mt-3">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">معلومات الاتصال</h5>
+                    <h3>الملف الشخصي</h3>
                 </div>
                 <div class="card-body">
-                    <p class="mb-2">
-                        <i class="fas fa-envelope me-2 text-primary"></i>
-                        {{ user.email }}
-                    </p>
-                    {% if user.phone_number %}
-                    <p class="mb-2">
-                        <i class="fas fa-phone me-2 text-primary"></i>
-                        {{ user.phone_number }}
-                    </p>
-                    {% endif %}
-                    {% if user.address %}
-                    <p class="mb-0">
-                        <i class="fas fa-map-marker-alt me-2 text-primary"></i>
-                        {{ user.address }}
-                    </p>
-                    {% endif %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>الاسم:</strong> {{ user.get_full_name }}</p>
+                            <p><strong>البريد الإلكتروني:</strong> {{ user.email }}</p>
+                            <p><strong>الدور:</strong> {{ user.get_role }}</p>
+                            <p><strong>رقم الهاتف:</strong> {{ user.phone|default:"غير محدد" }}</p>
+                            <p><strong>العنوان:</strong> {{ user.address|default:"غير محدد" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            {% if user.barcode %}
+                            <div class="text-center mb-3">
+                                <img src="{{ user.get_barcode_url }}" alt="باركود المستخدم" class="img-fluid">
+                                <p class="mt-2">باركود التعريف</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="col-md-8">
+        <div class="col-md-4">
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">المعلومات الشخصية</h5>
-                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">
-                        <i class="fas fa-edit me-1"></i>
-                        تعديل
-                    </button>
+                <div class="card-header">
+                    <h3>البطاقة التعريفية</h3>
                 </div>
                 <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">الاسم الكامل</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            {{ user.get_full_name }}
-                        </div>
+                    {% if user.id_card %}
+                    <div class="text-center">
+                        <img src="{{ user.get_id_card_url }}" alt="البطاقة التعريفية" class="img-fluid mb-3">
+                        <a href="{{ user.get_id_card_url }}" class="btn btn-primary" download>
+                            <i class="fas fa-download"></i> تحميل البطاقة
+                        </a>
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">البريد الإلكتروني</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            {{ user.email }}
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">رقم الهاتف</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            {{ user.phone_number|default:"غير محدد" }}
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">تاريخ الميلاد</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            {{ user.birth_date|date:"j F Y"|default:"غير محدد" }}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">العنوان</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            {{ user.address|default:"غير محدد" }}
-                        </div>
-                    </div>
+                    {% else %}
+                    <p class="text-center">لم يتم توليد بطاقة تعريفية بعد</p>
+                    {% endif %}
                 </div>
             </div>
             
-            {% if user.role == 'doctor' %}
             <div class="card mt-3">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">معلومات مهنية</h5>
+                    <h3>أدوات</h3>
                 </div>
                 <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">التخصص</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            {{ user.specialization|default:"غير محدد" }}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">رقم الترخيص</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            {{ user.license_number|default:"غير محدد" }}
-                        </div>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success" onclick="startScanner()">
+                            <i class="fas fa-qrcode"></i> مسح الباركود
+                        </button>
+                        <button class="btn btn-info" onclick="regenerateIdCard()">
+                            <i class="fas fa-sync"></i> إعادة توليد البطاقة
+                        </button>
                     </div>
                 </div>
             </div>
-            {% endif %}
-            
-            {% if user.role == 'patient' %}
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">معلومات طبية</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">فصيلة الدم</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            {{ user.blood_type|default:"غير محدد" }}
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">الحساسية</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            {{ user.allergies|default:"لا يوجد" }}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-3">
-                            <h6 class="mb-0">الأمراض المزمنة</h6>
-                        </div>
-                        <div class="col-sm-9 text-secondary">
-                            {{ user.chronic_diseases|default:"لا يوجد" }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
 
-<!-- Modal تعديل الملف الشخصي -->
-<div class="modal fade" id="editProfileModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<!-- نافذة مسح الباركود -->
+<div class="modal fade" id="scannerModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">تعديل الملف الشخصي</h5>
+                <h5 class="modal-title">مسح الباركود</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form method="post" enctype="multipart/form-data" action="{% url 'accounts:profile_update' %}">
-                <div class="modal-body">
-                    {% csrf_token %}
-                    <!-- سيتم إضافة حقول النموذج لاحقاً -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
-                </div>
-            </form>
+            <div class="modal-body">
+                <div id="reader"></div>
+            </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/html5-qrcode.min.js' %}"></script>
+<script>
+let html5QrcodeScanner = null;
+
+function startScanner() {
+    const modal = new bootstrap.Modal(document.getElementById('scannerModal'));
+    modal.show();
+    
+    if (!html5QrcodeScanner) {
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader", { fps: 10, qrbox: 250 }
+        );
+        
+        html5QrcodeScanner.render((decodedText, decodedResult) => {
+            // إيقاف المسح بعد العثور على باركود
+            html5QrcodeScanner.clear();
+            
+            // إرسال البيانات للخادم
+            fetch('/api/barcode/scan/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ barcode: decodedText })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('تم مسح الباركود بنجاح');
+                    modal.hide();
+                    // تحديث الصفحة لعرض البيانات الجديدة
+                    window.location.reload();
+                } else {
+                    alert('خطأ: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('حدث خطأ أثناء معالجة الباركود');
+                console.error('Error:', error);
+            });
+        });
+    }
+}
+
+function regenerateIdCard() {
+    fetch('/api/users/regenerate-id-card/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('تم إعادة توليد البطاقة بنجاح');
+            window.location.reload();
+        } else {
+            alert('خطأ: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('حدث خطأ أثناء إعادة توليد البطاقة');
+        console.error('Error:', error);
+    });
+}
+
+// دالة للحصول على قيمة CSRF token
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// تنظيف المسح عند إغلاق النافذة
+document.getElementById('scannerModal').addEventListener('hidden.bs.modal', function () {
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear();
+        html5QrcodeScanner = null;
+    }
+});
+</script>
 {% endblock %}

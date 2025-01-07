@@ -35,8 +35,9 @@ INSTALLED_APPS = [
     
     # Local apps
     'accounts',
-    'medical_records',
     'appointments',
+    'system_notifications',
+    'medical_records',
     'analytics',
     'notifications',
 ]
@@ -111,9 +112,17 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 
-# Media files
+# إعدادات الوسائط
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# إضافة مجلدات الباركود والبطاقات التعريفية
+BARCODE_DIR = os.path.join(MEDIA_ROOT, 'barcodes')
+ID_CARDS_DIR = os.path.join(MEDIA_ROOT, 'id_cards')
+
+# إنشاء المجلدات إذا لم تكن موجودة
+os.makedirs(BARCODE_DIR, exist_ok=True)
+os.makedirs(ID_CARDS_DIR, exist_ok=True)
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -178,4 +187,66 @@ CHANNEL_LAYERS = {
             )],
         },
     },
+}
+
+# Appointments settings
+APPOINTMENT_SETTINGS = {
+    'DEFAULT_DURATION': 30,  # Default appointment duration in minutes
+    'REMINDER_BEFORE': 24,  # Send reminder 24 hours before appointment
+    'MAX_APPOINTMENTS_PER_DAY': 20,  # Maximum appointments per day for a doctor
+    'WORKING_HOURS': {
+        'start': '09:00',
+        'end': '17:00',
+    },
+    'BREAK_TIME': {
+        'start': '13:00',
+        'end': '14:00',
+    },
+}
+
+# Notification settings
+NOTIFICATION_SETTINGS = {
+    'EMAIL_NOTIFICATIONS': True,
+    'SMS_NOTIFICATIONS': True,
+    'PUSH_NOTIFICATIONS': False,
+    'NOTIFICATION_TYPES': [
+        'appointment',
+        'medical',
+        'system',
+    ],
+}
+
+# Medical Records settings
+MEDICAL_RECORDS_SETTINGS = {
+    'ENABLE_DIGITAL_SIGNATURES': True,
+    'REQUIRE_DOCTOR_APPROVAL': True,
+    'ENABLE_PATIENT_PORTAL': True,
+    'ENABLE_LAB_INTEGRATION': True,
+    'ENABLE_PHARMACY_INTEGRATION': True,
+    'MEDICAL_RECORD_TYPES': [
+        'general',
+        'pediatric',
+        'dental',
+        'ophthalmology',
+        'orthopedic',
+    ],
+    'LAB_TEST_CATEGORIES': [
+        'blood',
+        'urine',
+        'imaging',
+        'pathology',
+        'genetic',
+    ],
+    'RADIOLOGY_TYPES': [
+        'xray',
+        'ct',
+        'mri',
+        'ultrasound',
+        'other',
+    ],
+    'FILE_UPLOAD_SETTINGS': {
+        'MAX_UPLOAD_SIZE': 10 * 1024 * 1024,  # 10MB
+        'ALLOWED_EXTENSIONS': ['pdf', 'jpg', 'jpeg', 'png', 'dcm'],
+        'STORAGE_BACKEND': 'django.core.files.storage.FileSystemStorage',
+    }
 }
