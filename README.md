@@ -1,3 +1,5 @@
+[![GitHub Pages](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/pages.yml/badge.svg)](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/pages.yml)
+
 # Doctor Syria Platform
 
 نظام إدارة المستشفيات والعيادات الطبية
