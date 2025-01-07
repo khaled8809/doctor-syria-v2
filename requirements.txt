@@ -21,6 +21,13 @@ pyotp>=2.8.0  # للمصادقة الثنائية
 django-user-sessions>=2.0.0  # لتتبع الجلسات
 django-axes>=6.0.0  # لحماية تسجيل الدخول
 
+# Additional Security Requirements
+django-otp>=1.1.3
+django-two-factor-auth>=1.14.0
+cryptography>=39.0.0
+hiredis>=2.2.1
+django-ratelimit>=3.0.1
+
 # File handling and media
 Pillow>=11.1.0
 python-magic>=0.4.27

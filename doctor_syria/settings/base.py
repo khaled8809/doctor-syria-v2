@@ -32,6 +32,9 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_yasg',
     'channels',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'django_ratelimit',
     
     # Local apps
     'accounts',
@@ -40,6 +43,7 @@ INSTALLED_APPS = [
     'medical_records',
     'analytics',
     'notifications',
+    'security',
 ]
 
 MIDDLEWARE = [

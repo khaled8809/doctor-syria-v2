@@ -5,6 +5,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from decimal import Decimal
+from core.cache_decorators import cache_method, invalidate_cache_on_save
+from core.cache_manager import CacheManager
 
 class MedicalRecord(models.Model):
     """نموذج السجل الطبي"""
@@ -1527,3 +1529,36 @@ class InsuranceClaim(models.Model):
     def is_paid(self):
         """التحقق من دفع المطالبة"""
         return self.status == 'paid'
+
+
+class Patient(models.Model):
+    """نموذج المريض"""
+    
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='patient',
+        verbose_name=_('User')
+    )
+    
+    medical_record = models.OneToOneField(
+        MedicalRecord,
+        on_delete=models.CASCADE,
+        related_name='patient',
+        verbose_name=_('Medical Record')
+    )
+    
+    @cache_method(timeout=3600)  # تخزين مؤقت لمدة ساعة
+    def get_medical_history(self):
+        """الحصول على التاريخ الطبي للمريض"""
+        return self.medical_record.medical_visits.all().order_by('-visit_date')
+
+    @cache_method(timeout=1800)  # تخزين مؤقت لمدة 30 دقيقة
+    def get_upcoming_appointments(self):
+        """الحصول على المواعيد القادمة"""
+        return self.medical_record.appointments.filter(date__gte=timezone.now()).order_by('date')
+
+    @invalidate_cache_on_save(sender='Patient', key_prefix='patient')
+    def save(self, *args, **kwargs):
+        """حفظ مع إبطال التخزين المؤقت"""
+        super().save(*args, **kwargs)

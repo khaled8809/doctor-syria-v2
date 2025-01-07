@@ -1,60 +1,43 @@
-# Doctor Syria Platform v2
+# نظام إدارة العيادات الطبية
 
-## نظام إدارة المستشفيات والرعاية الصحية المتكامل
+نظام متكامل لإدارة العيادات الطبية في سوريا، مبني باستخدام Django و React.
 
-نظام شامل لإدارة المستشفيات والرعاية الصحية في سوريا، يربط بين المرضى والأطباء والصيدليات والمختبرات وشركات الأدوية.
+## المميزات الرئيسية
 
-### المميزات الرئيسية
+### إدارة المرضى
+- تسجيل المرضى وإدارة ملفاتهم الطبية
+- حجز المواعيد وإدارة الجدول
+- متابعة التاريخ الطبي والتشخيصات
 
-- 👥 **إدارة المستخدمين**
-  - المرضى
-  - الأطباء
-  - الصيدليات
-  - المختبرات
-  - شركات الأدوية
-  - الممرضين
-  - الموظفين
+### إدارة الأطباء
+- جدولة المواعيد والمناوبات
+- إدارة الملف الشخصي والتخصصات
+- متابعة الحالات والتقارير الطبية
 
-- 🏥 **إدارة المستشفيات**
-  - إدارة الأقسام
-  - إدارة الغرف والأسرّة
-  - جدولة المواعيد
-  - إدارة الطوارئ
+### نظام الفواتير والمدفوعات
+- إصدار الفواتير وإدارتها
+- دعم متعدد لطرق الدفع:
+  - نقداً
+  - بطاقات ائتمان (Stripe)
+  - بطاقات محلية (Fatura)
+  - تحويل بنكي
+  - تأمين صحي
+- لوحة تحكم للمدفوعات مع تحليلات متقدمة
 
-- 🤖 **الذكاء الاصطناعي**
-  - التشخيص الطبي
-  - تحليل الصور الطبية
-  - التحقق من تفاعلات الأدوية
+### التقارير والتحليلات
+- تقارير مالية تفصيلية
+- إحصائيات المرضى والزيارات
+- تحليلات الأداء
 
-- 📋 **السجلات والمتابعة**
-  - السجلات الطبية الإلكترونية
-  - إدارة الوصفات الطبية
-  - التحاليل المخبرية
-  - الأشعة
-
-- 💊 **الصيدلية والمختبر**
-  - إدارة المخزون
-  - طلب الأدوية
-  - إدارة التحاليل المخبرية
-
-### التقنيات المستخدمة
-
-- 🐍 **Backend**: Django + Django REST Framework
-- 💾 **Database**: PostgreSQL
-- 🔄 **Cache**: Redis
-- 📋 **Task Queue**: Celery
-- 🔌 **Real-time**: Django Channels
-- 🔒 **Authentication**: JWT
-- 💳 **Payment**: Stripe
-
-### المتطلبات
+## المتطلبات التقنية
 
 - Python 3.8+
+- Django 4.0+
 - PostgreSQL
-- Redis
-- Node.js (للتطوير الأمامي)
+- Node.js 16+
+- React 18+
 
-### التثبيت
+## التثبيت
 
 1. استنساخ المستودع:
 ```bash
@@ -62,10 +45,11 @@ git clone https://github.com/yourusername/doctor-syria-v2.git
 cd doctor-syria-v2
 ```
 
-2. إنشاء وتفعيل البيئة الافتراضية:
+2. إنشاء بيئة Python افتراضية:
 ```bash
 python -m venv venv
-source venv/bin/activate  # على Windows: venv\Scripts\activate
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
 ```
 
 3. تثبيت المتطلبات:
@@ -73,11 +57,13 @@ source venv/bin/activate  # على Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. إعداد ملف البيئة:
-- قم بنسخ ملف `.env.example` إلى `.env`
-- قم بتعديل المتغيرات حسب إعداداتك
+4. تثبيت اعتماديات Node.js:
+```bash
+cd frontend
+npm install
+```
 
-5. تهيئة قاعدة البيانات:
+5. إعداد قاعدة البيانات:
 ```bash
 python manage.py migrate
 ```
@@ -87,10 +73,35 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-### المساهمة
+## الإعداد
 
-نرحب بمساهماتكم! يرجى قراءة [دليل المساهمة](CONTRIBUTING.md) للمزيد من المعلومات.
+1. قم بإنشاء ملف `.env` في المجلد الرئيسي وأضف المتغيرات التالية:
+```env
+DEBUG=True
+SECRET_KEY=your-secret-key
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 
-### الترخيص
+# Stripe settings
+STRIPE_PUBLIC_KEY=your-stripe-public-key
+STRIPE_SECRET_KEY=your-stripe-secret-key
+STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
 
-هذا المشروع مرخص تحت [MIT License](LICENSE).
+# Fatura settings
+FATURA_API_URL=https://api.fatura.sy
+FATURA_MERCHANT_ID=your-merchant-id
+FATURA_API_KEY=your-api-key
+```
+
+## المساهمة
+
+نرحب بمساهماتكم! يرجى اتباع الخطوات التالية:
+
+1. Fork المستودع
+2. إنشاء فرع لميزتك (`git checkout -b feature/amazing-feature`)
+3. Commit التغييرات (`git commit -m 'Add amazing feature'`)
+4. Push إلى الفرع (`git push origin feature/amazing-feature`)
+5. فتح Pull Request
+
+## الترخيص
+
+هذا المشروع مرخص تحت رخصة MIT - انظر ملف [LICENSE](LICENSE) للتفاصيل.
