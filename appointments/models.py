@@ -3,6 +3,8 @@ from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.db.models import ExpressionWrapper, F, FloatField
+from django.db.models.functions import Now
 
 class Appointment(models.Model):
     """نموذج المواعيد"""
@@ -86,29 +88,69 @@ class Appointment(models.Model):
 
     def clean(self):
         """التحقق من صحة البيانات"""
+        super().clean()
+        
+        # التحقق من تاريخ الموعد
         if self.appointment_date < timezone.now():
             raise ValidationError(_('Appointment date cannot be in the past'))
 
-        # التحقق من عدم وجود تعارض في المواعيد
+        # التحقق من توفر الطبيب في هذا اليوم
+        schedule = Schedule.objects.filter(
+            doctor=self.doctor,
+            day_of_week=self.appointment_date.weekday(),
+            is_available=True
+        ).first()
+        
+        if not schedule:
+            raise ValidationError(_('Doctor is not available on this day'))
+            
+        # التحقق من وقت الموعد ضمن ساعات العمل
+        appointment_time = self.appointment_date.time()
+        if appointment_time < schedule.start_time or appointment_time > schedule.end_time:
+            raise ValidationError(_('Appointment time is outside working hours'))
+            
+        # التحقق من وقت الراحة
+        if schedule.break_start and schedule.break_end:
+            if schedule.break_start <= appointment_time <= schedule.break_end:
+                raise ValidationError(_('Appointment time is during break hours'))
+
+        # التحقق من تعارض المواعيد
+        appointment_end = self.appointment_date + timezone.timedelta(minutes=schedule.appointment_duration)
         conflicting_appointments = Appointment.objects.filter(
             doctor=self.doctor,
-            appointment_date__year=self.appointment_date.year,
-            appointment_date__month=self.appointment_date.month,
-            appointment_date__day=self.appointment_date.day,
-            appointment_date__hour=self.appointment_date.hour,
-            status__in=['pending', 'confirmed']
+            status__in=['pending', 'confirmed'],
+            appointment_date__lt=appointment_end,
+            appointment_date__gt=self.appointment_date - timezone.timedelta(minutes=schedule.appointment_duration)
         ).exclude(pk=self.pk)
 
         if conflicting_appointments.exists():
-            raise ValidationError(_('Doctor already has an appointment at this time'))
-
+            raise ValidationError(_('This time slot is already booked'))
+            
     def save(self, *args, **kwargs):
-        self.clean()
+        self.full_clean()
         super().save(*args, **kwargs)
+        
+        # إرسال إشعار للمريض
+        if self.status == 'confirmed' and not self.reminder_sent:
+            from notifications.models import Notification
+            Notification.objects.create(
+                recipient=self.patient,
+                title=_('Appointment Confirmed'),
+                message=_(f'Your appointment with Dr. {self.doctor.get_full_name()} on {self.appointment_date} has been confirmed.'),
+                notification_type='appointment_confirmation'
+            )
+            self.reminder_sent = True
+            super().save(update_fields=['reminder_sent'])
 
 
 class WaitingList(models.Model):
     """نموذج قائمة الانتظار"""
+    
+    PRIORITY_WEIGHTS = {
+        'normal': 1,
+        'urgent': 2,
+        'emergency': 3
+    }
     
     patient = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -162,6 +204,51 @@ class WaitingList(models.Model):
 
     def __str__(self):
         return f"{self.patient} - {self.doctor} - {self.preferred_date}"
+
+    def clean(self):
+        """التحقق من صحة البيانات"""
+        super().clean()
+        
+        if self.preferred_date and self.preferred_date < timezone.now().date():
+            raise ValidationError({
+                'preferred_date': _('Preferred date cannot be in the past')
+            })
+            
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+        
+        # إذا كانت الأولوية طارئة، إرسال إشعار للطبيب
+        if self.priority in ['urgent', 'emergency']:
+            from notifications.models import Notification
+            Notification.objects.create(
+                recipient=self.doctor,
+                title=_('Urgent Waiting List Entry'),
+                message=_(f'New {self.priority} patient waiting: {self.patient.get_full_name()}'),
+                notification_type='waiting_list_urgent'
+            )
+            
+    @property
+    def priority_score(self):
+        """حساب درجة الأولوية"""
+        base_score = self.PRIORITY_WEIGHTS.get(self.priority, 1)
+        waiting_days = (timezone.now().date() - self.created_at.date()).days
+        return base_score * (1 + (waiting_days / 7))  # زيادة الأولوية مع مرور الوقت
+        
+    @classmethod
+    def get_next_patient(cls, doctor):
+        """الحصول على المريض التالي في قائمة الانتظار"""
+        waiting_entries = cls.objects.filter(
+            doctor=doctor,
+            is_processed=False
+        ).annotate(
+            score=ExpressionWrapper(
+                F('priority_score'),
+                output_field=FloatField()
+            )
+        ).order_by('-score')
+        
+        return waiting_entries.first() if waiting_entries.exists() else None
 
 
 class Schedule(models.Model):
@@ -236,46 +323,69 @@ class Schedule(models.Model):
     
     def clean(self):
         """التحقق من صحة البيانات"""
-        if self.start_time >= self.end_time:
-            raise ValidationError(_('End time must be after start time'))
+        super().clean()
         
+        # التحقق من أوقات العمل
+        if self.start_time >= self.end_time:
+            raise ValidationError({
+                'end_time': _('End time must be after start time')
+            })
+            
+        # التحقق من أوقات الراحة
         if self.break_start and self.break_end:
             if self.break_start >= self.break_end:
-                raise ValidationError(_('Break end time must be after break start time'))
-            
+                raise ValidationError({
+                    'break_end': _('Break end time must be after break start time')
+                })
+                
             if self.break_start < self.start_time or self.break_end > self.end_time:
                 raise ValidationError(_('Break time must be within working hours'))
-    
+                
+        # التحقق من تداخل الجداول
+        overlapping_schedules = Schedule.objects.filter(
+            doctor=self.doctor,
+            day_of_week=self.day_of_week
+        ).exclude(pk=self.pk)
+        
+        for schedule in overlapping_schedules:
+            if (self.start_time < schedule.end_time and 
+                self.end_time > schedule.start_time):
+                raise ValidationError(_('Schedule overlaps with another schedule'))
+                
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+        
     def get_available_slots(self, date):
         """الحصول على المواعيد المتاحة في تاريخ معين"""
-        from datetime import datetime, timedelta
-        
-        if date.weekday() != self.day_of_week:
+        if not self.is_available or date.weekday() != self.day_of_week:
             return []
-        
+            
         slots = []
-        current_time = datetime.combine(date, self.start_time)
-        end_time = datetime.combine(date, self.end_time)
+        current_time = timezone.make_aware(timezone.datetime.combine(date, self.start_time))
+        end_time = timezone.make_aware(timezone.datetime.combine(date, self.end_time))
         
-        while current_time + timedelta(minutes=self.appointment_duration) <= end_time:
-            # تخطي وقت الاستراحة
+        while current_time + timezone.timedelta(minutes=self.appointment_duration) <= end_time:
+            # تخطي وقت الراحة
             if self.break_start and self.break_end:
-                break_start = datetime.combine(date, self.break_start)
-                break_end = datetime.combine(date, self.break_end)
+                break_start = timezone.make_aware(timezone.datetime.combine(date, self.break_start))
+                break_end = timezone.make_aware(timezone.datetime.combine(date, self.break_end))
                 if break_start <= current_time <= break_end:
                     current_time = break_end
                     continue
-            
-            # التحقق من عدم وجود موعد محجوز
-            appointment_exists = Appointment.objects.filter(
+                    
+            # التحقق من الحجوزات الموجودة
+            slot_end = current_time + timezone.timedelta(minutes=self.appointment_duration)
+            is_available = not Appointment.objects.filter(
                 doctor=self.doctor,
-                appointment_date=current_time,
-                status__in=['pending', 'confirmed']
+                status__in=['pending', 'confirmed'],
+                appointment_date__lt=slot_end,
+                appointment_date__gte=current_time
             ).exists()
             
-            if not appointment_exists:
-                slots.append(current_time.time())
+            if is_available:
+                slots.append(current_time)
+                
+            current_time += timezone.timedelta(minutes=self.appointment_duration)
             
-            current_time += timedelta(minutes=self.appointment_duration)
-        
         return slots

@@ -1,107 +1,89 @@
-# نظام إدارة العيادات الطبية
+# Doctor Syria Platform
 
-نظام متكامل لإدارة العيادات الطبية في سوريا، مبني باستخدام Django و React.
+نظام إدارة المستشفيات والعيادات الطبية
 
-## المميزات الرئيسية
+## هيكل المشروع
 
-### إدارة المرضى
-- تسجيل المرضى وإدارة ملفاتهم الطبية
-- حجز المواعيد وإدارة الجدول
-- متابعة التاريخ الطبي والتشخيصات
+```
+doctor-syria-v2/
+├── accounts/            # إدارة المستخدمين والصلاحيات
+├── analytics/          # تحليلات البيانات
+├── api/               # واجهة برمجة التطبيقات
+├── appointments/      # إدارة المواعيد
+├── billing/          # نظام الفواتير
+├── core/             # وظائف أساسية مشتركة
+├── doctor_syria/     # إعدادات المشروع الرئيسية
+├── hospitals/        # إدارة المستشفيات
+├── medical_records/  # السجلات الطبية
+├── monitoring/       # مراقبة النظام
+├── security/         # أمان النظام
+└── templates/        # قوالب النظام
+```
 
-### إدارة الأطباء
-- جدولة المواعيد والمناوبات
-- إدارة الملف الشخصي والتخصصات
-- متابعة الحالات والتقارير الطبية
+## المتطلبات
 
-### نظام الفواتير والمدفوعات
-- إصدار الفواتير وإدارتها
-- دعم متعدد لطرق الدفع:
-  - نقداً
-  - بطاقات ائتمان (Stripe)
-  - بطاقات محلية (Fatura)
-  - تحويل بنكي
-  - تأمين صحي
-- لوحة تحكم للمدفوعات مع تحليلات متقدمة
-
-### التقارير والتحليلات
-- تقارير مالية تفصيلية
-- إحصائيات المرضى والزيارات
-- تحليلات الأداء
-
-## المتطلبات التقنية
-
-- Python 3.8+
-- Django 4.0+
-- PostgreSQL
-- Node.js 16+
-- React 18+
+- Python 3.9+
+- PostgreSQL 13+
+- Redis 6+
 
 ## التثبيت
 
-1. استنساخ المستودع:
-```bash
-git clone https://github.com/yourusername/doctor-syria-v2.git
-cd doctor-syria-v2
-```
-
-2. إنشاء بيئة Python افتراضية:
+1. إنشاء بيئة Python افتراضية:
 ```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 venv\Scripts\activate     # Windows
 ```
 
-3. تثبيت المتطلبات:
+2. تثبيت المتطلبات:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. تثبيت اعتماديات Node.js:
+3. نسخ ملف `.env.example` إلى `.env` وتعديل الإعدادات:
 ```bash
-cd frontend
-npm install
+cp .env.example .env
 ```
 
-5. إعداد قاعدة البيانات:
+4. تهيئة قاعدة البيانات:
 ```bash
 python manage.py migrate
 ```
 
-6. تشغيل الخادم:
+5. إنشاء مستخدم مدير:
+```bash
+python manage.py createsuperuser
+```
+
+## التشغيل
+
+1. تشغيل الخادم المحلي:
 ```bash
 python manage.py runserver
 ```
 
-## الإعداد
-
-1. قم بإنشاء ملف `.env` في المجلد الرئيسي وأضف المتغيرات التالية:
-```env
-DEBUG=True
-SECRET_KEY=your-secret-key
-DATABASE_URL=postgres://user:password@localhost:5432/dbname
-
-# Stripe settings
-STRIPE_PUBLIC_KEY=your-stripe-public-key
-STRIPE_SECRET_KEY=your-stripe-secret-key
-STRIPE_WEBHOOK_SECRET=your-stripe-webhook-secret
-
-# Fatura settings
-FATURA_API_URL=https://api.fatura.sy
-FATURA_MERCHANT_ID=your-merchant-id
-FATURA_API_KEY=your-api-key
+2. تشغيل خادم Redis:
+```bash
+redis-server
 ```
+
+3. تشغيل Celery (إذا كان مطلوباً):
+```bash
+celery -A doctor_syria worker -l info
+```
+
+## الأمان
+
+- تم تفعيل HTTPS
+- المصادقة الثنائية مفعلة
+- تم تفعيل CSRF protection
+- تم تفعيل rate limiting
+- تم تفعيل HSTS
 
 ## المساهمة
 
-نرحب بمساهماتكم! يرجى اتباع الخطوات التالية:
-
-1. Fork المستودع
-2. إنشاء فرع لميزتك (`git checkout -b feature/amazing-feature`)
-3. Commit التغييرات (`git commit -m 'Add amazing feature'`)
-4. Push إلى الفرع (`git push origin feature/amazing-feature`)
-5. فتح Pull Request
+يرجى قراءة [CONTRIBUTING.md](CONTRIBUTING.md) للحصول على تفاصيل حول عملية المساهمة في المشروع.
 
 ## الترخيص
 
-هذا المشروع مرخص تحت رخصة MIT - انظر ملف [LICENSE](LICENSE) للتفاصيل.
+هذا المشروع مرخص تحت [رخصة MIT](LICENSE).

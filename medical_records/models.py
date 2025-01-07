@@ -7,6 +7,7 @@ from django.utils import timezone
 from decimal import Decimal
 from core.cache_decorators import cache_method, invalidate_cache_on_save
 from core.cache_manager import CacheManager
+import re
 
 class MedicalRecord(models.Model):
     """نموذج السجل الطبي"""
@@ -102,6 +103,33 @@ class MedicalRecord(models.Model):
             height_in_meters = float(self.height) / 100
             return round(float(self.weight) / (height_in_meters ** 2), 2)
         return None
+    
+    def clean(self):
+        """التحقق من صحة البيانات"""
+        super().clean()
+        
+        # التحقق من الطول والوزن
+        if self.height and (self.height < 30 or self.height > 250):
+            raise ValidationError({
+                'height': _('Height must be between 30 and 250 cm')
+            })
+        
+        if self.weight and (self.weight < 1 or self.weight > 400):
+            raise ValidationError({
+                'weight': _('Weight must be between 1 and 400 kg')
+            })
+            
+        # التحقق من رقم الهاتف للطوارئ
+        if self.emergency_phone:
+            phone_regex = re.compile(r'^\+?1?\d{9,15}$')
+            if not phone_regex.match(self.emergency_phone):
+                raise ValidationError({
+                    'emergency_phone': _('Invalid phone number format')
+                })
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class MedicalVisit(models.Model):
@@ -215,6 +243,12 @@ class Prescription(models.Model):
         verbose_name=_('Is Active')
     )
     
+    expiry_date = models.DateField(
+        verbose_name=_('Expiry Date'),
+        null=True,
+        blank=True
+    )
+    
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name=_('Created At')
@@ -226,6 +260,20 @@ class Prescription(models.Model):
     
     def __str__(self):
         return f"{self.medication_name} - {self.visit.patient}"
+    
+    def clean(self):
+        """التحقق من صحة البيانات"""
+        super().clean()
+        
+        # التحقق من تاريخ انتهاء الصلاحية
+        if self.expiry_date and self.expiry_date < timezone.now().date():
+            raise ValidationError({
+                'expiry_date': _('Expiry date cannot be in the past')
+            })
+            
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class LabTest(models.Model):
@@ -298,6 +346,31 @@ class LabTest(models.Model):
     
     def __str__(self):
         return f"{self.test_name} - {self.visit.patient}"
+    
+    def clean(self):
+        """التحقق من صحة البيانات"""
+        super().clean()
+        
+        # التحقق من تواريخ الفحص والنتائج
+        if self.results_date and self.test_date and self.results_date < self.test_date:
+            raise ValidationError({
+                'results_date': _('Results date cannot be before test date')
+            })
+            
+        if self.test_date and self.test_date > timezone.now():
+            if self.status != 'pending':
+                raise ValidationError({
+                    'status': _('Future tests must have pending status')
+                })
+                
+        if self.status == 'completed' and not self.results:
+            raise ValidationError({
+                'results': _('Completed tests must have results')
+            })
+            
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class Radiology(models.Model):
@@ -360,6 +433,38 @@ class Radiology(models.Model):
     
     def __str__(self):
         return f"{self.get_radiology_type_display()} - {self.visit.patient}"
+    
+    def clean(self):
+        """التحقق من صحة البيانات"""
+        super().clean()
+        
+        # التحقق من تاريخ الإجراء
+        if self.performed_at and self.performed_at > timezone.now():
+            raise ValidationError({
+                'performed_at': _('Performance date cannot be in the future')
+            })
+            
+        # التحقق من وجود التقرير مع الصورة
+        if self.image and not self.report:
+            raise ValidationError({
+                'report': _('Report is required when image is uploaded')
+            })
+            
+    def save(self, *args, **kwargs):
+        if self.image:
+            # معالجة حجم الصورة
+            from PIL import Image
+            img = Image.open(self.image)
+            
+            # تحديد الحد الأقصى للأبعاد
+            max_size = (1920, 1080)
+            img.thumbnail(max_size, Image.LANCZOS)
+            
+            # حفظ الصورة المعالجة
+            img.save(self.image.path, quality=85, optimize=True)
+            
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class Vaccination(models.Model):
@@ -539,15 +644,57 @@ class Inventory(models.Model):
     def __str__(self):
         return f"{self.medication.name} - {self.batch_number}"
     
+    def clean(self):
+        """التحقق من صحة البيانات"""
+        super().clean()
+        
+        # التحقق من تاريخ انتهاء الصلاحية
+        if self.expiry_date and self.expiry_date < timezone.now().date():
+            raise ValidationError({
+                'expiry_date': _('Expiry date cannot be in the past')
+            })
+            
+        # التحقق من مستوى إعادة الطلب
+        if self.reorder_level >= self.quantity:
+            raise ValidationError({
+                'reorder_level': _('Reorder level must be less than quantity')
+            })
+            
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        old_quantity = None if is_new else Inventory.objects.get(pk=self.pk).quantity
+        
+        self.full_clean()
+        super().save(*args, **kwargs)
+        
+        # إرسال إشعارات عند انخفاض المخزون
+        if not is_new and old_quantity != self.quantity:
+            if self.is_low_stock():
+                from notifications.models import Notification
+                Notification.objects.create(
+                    title=_('Low Stock Alert'),
+                    message=_(f'Inventory item {self.medication.name} is running low. Current quantity: {self.quantity}'),
+                    notification_type='inventory_alert',
+                    related_object=self
+                )
+                
     def is_low_stock(self):
         """التحقق من المخزون المنخفض"""
         return self.quantity <= self.reorder_level
-    
+        
     def is_expired(self):
         """التحقق من انتهاء الصلاحية"""
-        from django.utils import timezone
-        return self.expiry_date <= timezone.now().date()
-
+        return self.expiry_date and self.expiry_date <= timezone.now().date()
+        
+    @property
+    def status(self):
+        """حالة المخزون"""
+        if self.is_expired():
+            return 'expired'
+        elif self.is_low_stock():
+            return 'low_stock'
+        return 'normal'
+    
 
 class InventoryTransaction(models.Model):
     """نموذج حركة المخزون"""

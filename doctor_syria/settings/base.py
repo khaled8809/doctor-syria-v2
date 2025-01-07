@@ -44,6 +44,11 @@ INSTALLED_APPS = [
     'analytics',
     'notifications',
     'security',
+    'billing',
+    'hospitals',
+    'monitoring',
+    'core',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -144,12 +149,46 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-# Session Settings
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
-SESSION_COOKIE_AGE = 1209600  # 2 weeks
-SESSION_COOKIE_NAME = 'sessionid'
-SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_HTTPONLY = True
+# Security Settings
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Session and Cookie Settings
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+CSRF_USE_SESSIONS = True
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
+
+# Password validation
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 12,
+        }
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+# Rate Limiting
+RATELIMIT_ENABLE = True
+RATELIMIT_USE_CACHE = 'default'
+RATELIMIT_VIEW = 'django.http.HttpResponseForbidden'
 
 # REST Framework
 REST_FRAMEWORK = {
@@ -172,13 +211,6 @@ SIMPLE_JWT = {
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if not DEBUG else []
-
-# Security Settings
-CSRF_COOKIE_SECURE = False  # Set to True in production
-CSRF_COOKIE_HTTPONLY = False
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_NAME = 'csrftoken'
-CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 
 # Channel Layers
 CHANNEL_LAYERS = {
