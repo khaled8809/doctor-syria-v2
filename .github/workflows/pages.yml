@@ -2,7 +2,7 @@ name: GitHub Pages
 
 on:
   push:
-    branches: ["develop"]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -32,7 +32,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install django whitenoise
+          pip install -r requirements.txt
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -40,16 +40,17 @@ jobs:
       - name: Build
         run: |
           mkdir -p staticfiles
-          DJANGO_SETTINGS_MODULE=doctor_syria.settings.production \
-          SECRET_KEY="${{ secrets.SECRET_KEY }}" \
-          DEBUG=False \
-          ALLOWED_HOSTS="*" \
           python manage.py collectstatic --noinput --clear
+        env:
+          DJANGO_SETTINGS_MODULE: doctor_syria.settings.production
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          DEBUG: "False"
+          ALLOWED_HOSTS: "*"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: staticfiles
+          path: 'staticfiles'
 
       - name: Deploy to GitHub Pages
         id: deployment
