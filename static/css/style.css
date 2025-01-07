@@ -30,23 +30,44 @@ main {
 
 /* Hero section */
 .hero {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    background: linear-gradient(135deg, rgba(44, 62, 80, 0.95), rgba(52, 152, 219, 0.95)), url('../img/hero-bg.svg');
+    background-size: cover;
+    background-position: center;
     color: white;
-    padding: 100px 0;
+    padding: 120px 0;
     margin-top: -1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 60%);
 }
 
 .hero h1 {
     font-weight: 700;
     margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.hero .lead {
+    font-size: 1.25rem;
+    opacity: 0.9;
 }
 
 /* Cards */
 .card {
     border: none;
-    border-radius: 10px;
+    border-radius: 15px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
 }
 
 .card:hover {
@@ -58,14 +79,39 @@ main {
     font-size: 2.5rem;
     color: var(--primary-color);
     margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .feature-icon {
+    transform: scale(1.1);
 }
 
 /* Buttons */
 .btn {
-    border-radius: 5px;
-    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    padding: 0.75rem 2rem;
     font-weight: 500;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btn:hover::after {
+    width: 200%;
+    height: 200%;
 }
 
 .btn-primary {
@@ -83,12 +129,18 @@ main {
     font-size: 3rem;
     color: var(--primary-color);
     margin-bottom: 1rem;
+    transition: transform 0.3s ease;
+}
+
+.statistics .col-md-3:hover .icon {
+    transform: scale(1.1);
 }
 
 /* Footer */
 footer {
     background-color: var(--primary-color);
     color: white;
+    padding: 3rem 0;
 }
 
 footer a {
@@ -99,42 +151,17 @@ footer a {
 
 footer a:hover {
     color: var(--secondary-color);
+    text-decoration: none;
 }
 
-/* Dashboard Cards */
-.dashboard-card {
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+footer .list-unstyled li {
+    margin-bottom: 0.5rem;
 }
 
-.dashboard-card .stat-icon {
-    opacity: 0.2;
-    transition: opacity 0.3s ease;
-}
-
-.dashboard-card:hover .stat-icon {
-    opacity: 0.8;
-}
-
-/* Form Styles */
-.form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-}
-
-/* Custom Animations */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.fade-in {
-    animation: fadeIn 0.5s ease-in;
-}
-
-/* Responsive Adjustments */
+/* Responsive */
 @media (max-width: 768px) {
     .hero {
-        padding: 60px 0;
+        padding: 80px 0;
     }
     
     .hero h1 {
@@ -145,12 +172,8 @@ footer a:hover {
         font-size: 2rem;
     }
     
-    .navbar-brand {
-        font-size: 1rem;
-    }
-    
-    .stat-icon {
-        font-size: 2rem !important;
+    .btn {
+        padding: 0.5rem 1.5rem;
     }
 }
 
@@ -168,4 +191,45 @@ footer a:hover {
 [dir="rtl"] .dropdown-menu-end {
     left: 0;
     right: auto;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero h1,
+.hero p,
+.hero .btn {
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.hero p {
+    animation-delay: 0.2s;
+}
+
+.hero .btn {
+    animation-delay: 0.4s;
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+    border-radius: 15px;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+
+.dashboard-card .icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
 }
