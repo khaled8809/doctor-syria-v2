@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إنشاء حساب - Doctor Syria</title>
+    
+    <!-- Bootstrap RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="static/css/style.css">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f8f9fa;
+        }
+        
+        .register-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Doctor Syria</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">الرئيسية</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">تسجيل الدخول</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="register.html">إنشاء حساب</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Registration Form -->
+    <div class="container">
+        <div class="register-container">
+            <h2 class="text-center mb-4">إنشاء حساب جديد</h2>
+            <form id="registerForm">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="firstName" class="form-label">الاسم الأول</label>
+                        <input type="text" class="form-control" id="firstName" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="lastName" class="form-label">الاسم الأخير</label>
+                        <input type="text" class="form-control" id="lastName" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">البريد الإلكتروني</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="phone" class="form-label">رقم الهاتف</label>
+                    <input type="tel" class="form-control" id="phone" required>
+                </div>
+                <div class="mb-3">
+                    <label for="userType" class="form-label">نوع المستخدم</label>
+                    <select class="form-select" id="userType" required>
+                        <option value="">اختر نوع المستخدم</option>
+                        <option value="doctor">طبيب</option>
+                        <option value="patient">مريض</option>
+                        <option value="hospital">مستشفى</option>
+                        <option value="pharmacy">صيدلية</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">كلمة المرور</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">تأكيد كلمة المرور</label>
+                    <input type="password" class="form-control" id="confirmPassword" required>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="terms" required>
+                    <label class="form-check-label" for="terms">أوافق على الشروط والأحكام</label>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">إنشاء حساب</button>
+                </div>
+                <hr>
+                <div class="text-center">
+                    لديك حساب بالفعل؟ <a href="login.html" class="text-decoration-none">تسجيل الدخول</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
