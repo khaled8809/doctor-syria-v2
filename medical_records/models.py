@@ -9,6 +9,114 @@ from core.cache_decorators import cache_method, invalidate_cache_on_save
 from core.cache_manager import CacheManager
 import re
 
+class Patient(models.Model):
+    """نموذج المريض"""
+    GENDER_CHOICES = [
+        ('M', _('Male')),
+        ('F', _('Female')),
+    ]
+
+    MARITAL_STATUS_CHOICES = [
+        ('single', _('Single')),
+        ('married', _('Married')),
+        ('divorced', _('Divorced')),
+        ('widowed', _('Widowed')),
+    ]
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='patient_profile',
+        verbose_name=_('User')
+    )
+    
+    date_of_birth = models.DateField(
+        verbose_name=_('Date of Birth')
+    )
+    
+    gender = models.CharField(
+        max_length=1,
+        choices=GENDER_CHOICES,
+        verbose_name=_('Gender')
+    )
+    
+    marital_status = models.CharField(
+        max_length=10,
+        choices=MARITAL_STATUS_CHOICES,
+        verbose_name=_('Marital Status')
+    )
+    
+    phone_number = models.CharField(
+        max_length=20,
+        verbose_name=_('Phone Number')
+    )
+    
+    emergency_contact_name = models.CharField(
+        max_length=255,
+        verbose_name=_('Emergency Contact Name')
+    )
+    
+    emergency_contact_phone = models.CharField(
+        max_length=20,
+        verbose_name=_('Emergency Contact Phone')
+    )
+    
+    address = models.TextField(
+        verbose_name=_('Address')
+    )
+    
+    occupation = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name=_('Occupation')
+    )
+    
+    notes = models.TextField(
+        blank=True,
+        verbose_name=_('Notes')
+    )
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name=_('Created At')
+    )
+    
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name=_('Updated At')
+    )
+
+    class Meta:
+        verbose_name = _('Patient')
+        verbose_name_plural = _('Patients')
+        ordering = ['user__last_name', 'user__first_name']
+
+    def __str__(self):
+        return f"{self.user.get_full_name()}"
+
+    def get_age(self):
+        """حساب عمر المريض"""
+        today = timezone.now().date()
+        age = today.year - self.date_of_birth.year
+        if today.month < self.date_of_birth.month or (
+            today.month == self.date_of_birth.month and
+            today.day < self.date_of_birth.day
+        ):
+            age -= 1
+        return age
+
+    def clean(self):
+        """التحقق من صحة البيانات"""
+        if self.date_of_birth:
+            if self.date_of_birth > timezone.now().date():
+                raise ValidationError({
+                    'date_of_birth': _('Date of birth cannot be in the future')
+                })
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
 class MedicalRecord(models.Model):
     """نموذج السجل الطبي"""
     
@@ -24,7 +132,7 @@ class MedicalRecord(models.Model):
     ]
     
     patient = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
+        Patient,
         on_delete=models.CASCADE,
         related_name='medical_record',
         verbose_name=_('Patient')
@@ -55,29 +163,9 @@ class MedicalRecord(models.Model):
         verbose_name=_('Allergies')
     )
     
-    chronic_diseases = models.TextField(
+    chronic_conditions = models.TextField(
         blank=True,
-        verbose_name=_('Chronic Diseases')
-    )
-    
-    medications = models.TextField(
-        blank=True,
-        verbose_name=_('Current Medications')
-    )
-    
-    family_history = models.TextField(
-        blank=True,
-        verbose_name=_('Family Medical History')
-    )
-    
-    emergency_contact = models.CharField(
-        max_length=255,
-        verbose_name=_('Emergency Contact')
-    )
-    
-    emergency_phone = models.CharField(
-        max_length=20,
-        verbose_name=_('Emergency Phone')
+        verbose_name=_('Chronic Conditions')
     )
     
     created_at = models.DateTimeField(
@@ -93,43 +181,45 @@ class MedicalRecord(models.Model):
     class Meta:
         verbose_name = _('Medical Record')
         verbose_name_plural = _('Medical Records')
+        ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.patient}'s Medical Record"
-    
-    def calculate_bmi(self):
-        """حساب مؤشر كتلة الجسم"""
-        if self.height and self.weight:
-            height_in_meters = float(self.height) / 100
-            return round(float(self.weight) / (height_in_meters ** 2), 2)
-        return None
+        return f"{self.patient.user.get_full_name()}'s Medical Record"
     
     def clean(self):
         """التحقق من صحة البيانات"""
-        super().clean()
-        
-        # التحقق من الطول والوزن
-        if self.height and (self.height < 30 or self.height > 250):
-            raise ValidationError({
-                'height': _('Height must be between 30 and 250 cm')
-            })
-        
-        if self.weight and (self.weight < 1 or self.weight > 400):
-            raise ValidationError({
-                'weight': _('Weight must be between 1 and 400 kg')
-            })
-            
-        # التحقق من رقم الهاتف للطوارئ
-        if self.emergency_phone:
-            phone_regex = re.compile(r'^\+?1?\d{9,15}$')
-            if not phone_regex.match(self.emergency_phone):
-                raise ValidationError({
-                    'emergency_phone': _('Invalid phone number format')
-                })
-
+        if self.height <= 0:
+            raise ValidationError(_('Height must be greater than 0'))
+        if self.weight <= 0:
+            raise ValidationError(_('Weight must be greater than 0'))
+    
     def save(self, *args, **kwargs):
-        self.full_clean()
+        """حفظ السجل الطبي"""
+        self.clean()
         super().save(*args, **kwargs)
+    
+    @property
+    def bmi(self):
+        """حساب مؤشر كتلة الجسم"""
+        if self.height and self.weight:
+            height_m = self.height / 100  # تحويل الطول من سم إلى متر
+            return round(float(self.weight) / (float(height_m) ** 2), 2)
+        return None
+    
+    @property
+    def bmi_status(self):
+        """تحديد حالة مؤشر كتلة الجسم"""
+        bmi = self.bmi
+        if bmi is None:
+            return None
+        if bmi < 18.5:
+            return _('Underweight')
+        elif 18.5 <= bmi < 25:
+            return _('Normal')
+        elif 25 <= bmi < 30:
+            return _('Overweight')
+        else:
+            return _('Obese')
 
 
 class MedicalVisit(models.Model):
@@ -143,7 +233,7 @@ class MedicalVisit(models.Model):
     ]
     
     patient = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Patient,
         on_delete=models.CASCADE,
         related_name='medical_visits',
         verbose_name=_('Patient')
@@ -200,7 +290,7 @@ class MedicalVisit(models.Model):
         ordering = ['-visit_date']
     
     def __str__(self):
-        return f"{self.patient} - {self.visit_date}"
+        return f"{self.patient.user.get_full_name()} - {self.visit_date}"
 
 
 class Prescription(models.Model):
@@ -259,7 +349,7 @@ class Prescription(models.Model):
         verbose_name_plural = _('Prescriptions')
     
     def __str__(self):
-        return f"{self.medication_name} - {self.visit.patient}"
+        return f"{self.medication_name} - {self.visit.patient.user.get_full_name()}"
     
     def clean(self):
         """التحقق من صحة البيانات"""
@@ -345,7 +435,7 @@ class LabTest(models.Model):
         ordering = ['-test_date']
     
     def __str__(self):
-        return f"{self.test_name} - {self.visit.patient}"
+        return f"{self.test_name} - {self.visit.patient.user.get_full_name()}"
     
     def clean(self):
         """التحقق من صحة البيانات"""
@@ -432,7 +522,7 @@ class Radiology(models.Model):
         ordering = ['-performed_at']
     
     def __str__(self):
-        return f"{self.get_radiology_type_display()} - {self.visit.patient}"
+        return f"{self.get_radiology_type_display()} - {self.visit.patient.user.get_full_name()}"
     
     def clean(self):
         """التحقق من صحة البيانات"""
@@ -471,7 +561,7 @@ class Vaccination(models.Model):
     """نموذج التطعيم"""
     
     patient = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Patient,
         on_delete=models.CASCADE,
         related_name='vaccinations',
         verbose_name=_('Patient')
@@ -529,7 +619,7 @@ class Vaccination(models.Model):
         ordering = ['-date_given']
     
     def __str__(self):
-        return f"{self.vaccine_name} - {self.patient}"
+        return f"{self.vaccine_name} - {self.patient.user.get_full_name()}"
 
 
 class Medication(models.Model):
@@ -783,7 +873,7 @@ class MedicalReport(models.Model):
     ]
     
     patient = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Patient,
         on_delete=models.CASCADE,
         related_name='medical_reports',
         verbose_name=_('Patient')
@@ -847,7 +937,7 @@ class MedicalReport(models.Model):
         ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.get_report_type_display()} - {self.patient}"
+        return f"{self.get_report_type_display()} - {self.patient.user.get_full_name()}"
 
 
 class FollowUp(models.Model):
@@ -869,7 +959,7 @@ class FollowUp(models.Model):
     ]
     
     patient = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Patient,
         on_delete=models.CASCADE,
         related_name='follow_ups',
         verbose_name=_('Patient')
@@ -941,7 +1031,7 @@ class FollowUp(models.Model):
         ordering = ['-scheduled_date']
     
     def __str__(self):
-        return f"{self.title} - {self.patient}"
+        return f"{self.title} - {self.patient.user.get_full_name()}"
     
     def is_overdue(self):
         """التحقق من تجاوز الموعد"""
@@ -1042,7 +1132,7 @@ class Treatment(models.Model):
         ordering = ['-start_date']
     
     def __str__(self):
-        return f"{self.name} - {self.follow_up.patient}"
+        return f"{self.name} - {self.follow_up.patient.user.get_full_name()}"
     
     def is_active(self):
         """التحقق من نشاط العلاج"""
@@ -1127,9 +1217,9 @@ class Invoice(models.Model):
     ]
     
     patient = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Patient,
         on_delete=models.PROTECT,
-        related_name='invoices',
+        related_name='medical_invoices',
         verbose_name=_('Patient')
     )
     
@@ -1211,7 +1301,7 @@ class Invoice(models.Model):
         ordering = ['-issue_date']
     
     def __str__(self):
-        return f"Invoice #{self.invoice_number} - {self.patient}"
+        return f"Invoice #{self.invoice_number} - {self.patient.user.get_full_name()}"
     
     def clean(self):
         """التحقق من صحة البيانات"""
@@ -1408,7 +1498,7 @@ class Insurance(models.Model):
     ]
     
     patient = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        Patient,
         on_delete=models.PROTECT,
         related_name='insurances',
         verbose_name=_('Patient')
@@ -1490,7 +1580,7 @@ class Insurance(models.Model):
         ordering = ['-start_date']
     
     def __str__(self):
-        return f"{self.patient} - {self.provider} ({self.policy_number})"
+        return f"{self.patient.user.get_full_name()} - {self.provider} ({self.policy_number})"
     
     def clean(self):
         """التحقق من صحة البيانات"""
@@ -1676,36 +1766,3 @@ class InsuranceClaim(models.Model):
     def is_paid(self):
         """التحقق من دفع المطالبة"""
         return self.status == 'paid'
-
-
-class Patient(models.Model):
-    """نموذج المريض"""
-    
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='patient',
-        verbose_name=_('User')
-    )
-    
-    medical_record = models.OneToOneField(
-        MedicalRecord,
-        on_delete=models.CASCADE,
-        related_name='patient',
-        verbose_name=_('Medical Record')
-    )
-    
-    @cache_method(timeout=3600)  # تخزين مؤقت لمدة ساعة
-    def get_medical_history(self):
-        """الحصول على التاريخ الطبي للمريض"""
-        return self.medical_record.medical_visits.all().order_by('-visit_date')
-
-    @cache_method(timeout=1800)  # تخزين مؤقت لمدة 30 دقيقة
-    def get_upcoming_appointments(self):
-        """الحصول على المواعيد القادمة"""
-        return self.medical_record.appointments.filter(date__gte=timezone.now()).order_by('date')
-
-    @invalidate_cache_on_save(sender='Patient', key_prefix='patient')
-    def save(self, *args, **kwargs):
-        """حفظ مع إبطال التخزين المؤقت"""
-        super().save(*args, **kwargs)

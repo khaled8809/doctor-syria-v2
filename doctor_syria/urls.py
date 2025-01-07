@@ -18,8 +18,6 @@ urlpatterns = [
     path('medical_records/', include('medical_records.urls')),
     path('pharmacy/', include('pharmacy.urls')),
     path('laboratory/', include('laboratory.urls')),
-    path('emergency/', include('emergency.urls')),
-    path('telemedicine/', include('telemedicine.urls')),
 ]
 
 # إضافة مسارات الوسائط في وضع التطوير

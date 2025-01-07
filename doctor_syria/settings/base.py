@@ -39,16 +39,20 @@ INSTALLED_APPS = [
     # Local apps
     'accounts',
     'appointments',
-    'system_notifications',
-    'medical_records',
-    'analytics',
-    'notifications',
-    'security',
     'billing',
     'hospitals',
+    'hr',
+    'laboratory',
+    'medical_records',
     'monitoring',
-    'core',
+    'notifications',
+    'pharmacy',
+    'radiology',
+    'security',
+    'system_notifications',
+    'analytics',
     'api',
+    'core',
 ]
 
 MIDDLEWARE = [
