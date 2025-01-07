@@ -11,11 +11,11 @@ psycopg2-binary==2.9.10
 redis==5.2.1
 
 # Authentication
-django-rest-auth==0.9.5
+dj-rest-auth==5.0.2
 django-phonenumber-field==8.0.0
 phonenumbers==8.13.52
 python-dotenv==1.0.1
-djangorestframework-simplejwt==5.3.2
+djangorestframework-simplejwt==5.4.0
 
 # Media
 Pillow==10.4.0
