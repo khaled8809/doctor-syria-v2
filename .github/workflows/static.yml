@@ -34,7 +34,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements/base.txt
-          pip install -r requirements/ai.txt
           pip install whitenoise
 
       - name: Create static directory
@@ -46,7 +45,13 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
           DEBUG: 'False'
           ALLOWED_HOSTS: '*'
-        run: python manage.py collectstatic --noinput
+          DB_NAME: doctor_syria
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+        run: |
+          python manage.py collectstatic --noinput --clear
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
