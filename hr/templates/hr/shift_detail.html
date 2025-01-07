@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "تفاصيل المناوبة" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "تفاصيل المناوبة" %}</h5>
+                    <div>
+                        {% if user.is_staff %}
+                        <a href="{% url 'hr:shift-update' shift.pk %}" 
+                           class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> {% trans "تعديل" %}
+                        </a>
+                        <a href="{% url 'hr:shift-delete' shift.pk %}" 
+                           class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i> {% trans "حذف" %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>{% trans "معلومات المناوبة" %}</h6>
+                            <hr>
+                            <p><strong>{% trans "القسم:" %}</strong> {{ shift.department }}</p>
+                            <p><strong>{% trans "نوع المناوبة:" %}</strong> {{ shift.get_shift_type_display }}</p>
+                            <p><strong>{% trans "الحالة:" %}</strong> 
+                                <span class="badge {% if shift.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if shift.is_active %}{% trans "نشط" %}{% else %}{% trans "غير نشط" %}{% endif %}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>{% trans "الأوقات" %}</h6>
+                            <hr>
+                            <p><strong>{% trans "وقت البداية:" %}</strong> {{ shift.start_time|time }}</p>
+                            <p><strong>{% trans "وقت النهاية:" %}</strong> {{ shift.end_time|time }}</p>
+                            <p><strong>{% trans "المدة:" %}</strong> {{ shift.duration }} {% trans "ساعة" %}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>{% trans "الموظفون المناوبون" %}</h6>
+                            <hr>
+                            <div class="progress mb-3">
+                                <div class="progress-bar {% if shift.employees.count >= shift.required_employees %}bg-success
+                                                      {% elif shift.employees.count >= shift.required_employees|divisibleby:2 %}bg-warning
+                                                      {% else %}bg-danger{% endif %}"
+                                     role="progressbar"
+                                     style="width: {{ shift.employees.count|divisibleby:shift.required_employees|multiply:100 }}%"
+                                     aria-valuenow="{{ shift.employees.count }}"
+                                     aria-valuemin="0"
+                                     aria-valuemax="{{ shift.required_employees }}">
+                                    {{ shift.employees.count }} / {{ shift.required_employees }}
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>{% trans "الاسم" %}</th>
+                                            <th>{% trans "المنصب" %}</th>
+                                            <th>{% trans "رقم الهاتف" %}</th>
+                                            {% if user.is_staff %}
+                                            <th>{% trans "الإجراءات" %}</th>
+                                            {% endif %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for employee in shift.employees.all %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'hr:employee-detail' employee.pk %}">
+                                                    {{ employee.user.get_full_name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ employee.position }}</td>
+                                            <td>{{ employee.phone }}</td>
+                                            {% if user.is_staff %}
+                                            <td>
+                                                <form method="post" action="{% url 'hr:shift-remove-employee' shift.pk %}" 
+                                                      style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="employee_id" value="{{ employee.pk }}">
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-user-minus"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                            {% endif %}
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="{% if user.is_staff %}4{% else %}3{% endif %}" class="text-center">
+                                                {% trans "لا يوجد موظفون في هذه المناوبة" %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if user.is_staff and shift.employees.count < shift.required_employees %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>{% trans "إضافة موظف للمناوبة" %}</h6>
+                            <hr>
+                            <form method="post" action="{% url 'hr:shift-add-employee' shift.pk %}" class="row g-3">
+                                {% csrf_token %}
+                                <div class="col-md-8">
+                                    <select name="employee_id" class="form-control" required>
+                                        <option value="">{% trans "اختر موظفاً..." %}</option>
+                                        {% for employee in available_employees %}
+                                        <option value="{{ employee.pk }}">
+                                            {{ employee.user.get_full_name }} - {{ employee.position }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-user-plus"></i> {% trans "إضافة" %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if shift.notes %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>{% trans "ملاحظات" %}</h6>
+                            <hr>
+                            <p>{{ shift.notes|linebreaks }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-end">
+                    <a href="{% url 'hr:shift-list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-right"></i> {% trans "العودة للقائمة" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

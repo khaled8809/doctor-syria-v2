@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "قسيمة الراتب" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+        .print-only {
+            display: block !important;
+        }
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+    }
+    .print-only {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- أزرار التحكم -->
+    <div class="row mb-4 no-print">
+        <div class="col-12 text-end">
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print"></i> {% trans "طباعة" %}
+            </button>
+            <a href="{% url 'hr:payroll-detail' record.pk %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-right"></i> {% trans "العودة" %}
+            </a>
+        </div>
+    </div>
+
+    <!-- قسيمة الراتب -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <!-- ترويسة القسيمة -->
+                    <div class="text-center mb-4">
+                        <img src="{% static 'images/logo.png' %}" alt="Logo" height="80" class="mb-3">
+                        <h3>{% trans "قسيمة راتب" %}</h3>
+                        <p class="text-muted">{{ record.period_start|date }} - {{ record.period_end|date }}</p>
+                    </div>
+
+                    <div class="row mb-4">
+                        <!-- معلومات الموظف -->
+                        <div class="col-md-6">
+                            <h6>{% trans "معلومات الموظف" %}</h6>
+                            <hr>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>{% trans "الاسم" %}</th>
+                                    <td>{{ record.employee.user.get_full_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "الرقم الوظيفي" %}</th>
+                                    <td>{{ record.employee.employee_id }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "القسم" %}</th>
+                                    <td>{{ record.employee.department }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "المنصب" %}</th>
+                                    <td>{{ record.employee.position }}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <!-- معلومات الدوام -->
+                        <div class="col-md-6">
+                            <h6>{% trans "معلومات الدوام" %}</h6>
+                            <hr>
+                            <table class="table table-sm">
+                                <tr>
+                                    <th>{% trans "أيام العمل" %}</th>
+                                    <td>{{ record.working_days }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "أيام الإجازات" %}</th>
+                                    <td>{{ record.leave_days }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "أيام الغياب" %}</th>
+                                    <td>{{ record.absent_days }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "ساعات العمل الإضافي" %}</th>
+                                    <td>{{ record.overtime_hours }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- تفاصيل الراتب -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>{% trans "تفاصيل الراتب" %}</h6>
+                            <hr>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tr>
+                                        <th colspan="2">{% trans "الراتب الأساسي" %}</th>
+                                        <td class="text-end">{{ record.basic_salary|floatformat:2 }}</td>
+                                    </tr>
+                                    
+                                    <!-- البدلات -->
+                                    <tr>
+                                        <th colspan="3" class="table-success">{% trans "البدلات" %}</th>
+                                    </tr>
+                                    {% for allowance in record.allowance_breakdown %}
+                                    <tr>
+                                        <td colspan="2">{{ allowance.type }}</td>
+                                        <td class="text-end text-success">
+                                            +{{ allowance.amount|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr class="table-success">
+                                        <th colspan="2">{% trans "إجمالي البدلات" %}</th>
+                                        <td class="text-end text-success">
+                                            +{{ record.allowances|floatformat:2 }}
+                                        </td>
+                                    </tr>
+
+                                    <!-- الخصومات -->
+                                    <tr>
+                                        <th colspan="3" class="table-danger">{% trans "الخصومات" %}</th>
+                                    </tr>
+                                    {% for deduction in record.deduction_breakdown %}
+                                    <tr>
+                                        <td colspan="2">{{ deduction.type }}</td>
+                                        <td class="text-end text-danger">
+                                            -{{ deduction.amount|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr class="table-danger">
+                                        <th colspan="2">{% trans "إجمالي الخصومات" %}</th>
+                                        <td class="text-end text-danger">
+                                            -{{ record.deductions|floatformat:2 }}
+                                        </td>
+                                    </tr>
+
+                                    <!-- الصافي -->
+                                    <tr class="table-primary">
+                                        <th colspan="2">{% trans "صافي الراتب" %}</th>
+                                        <td class="text-end">
+                                            <strong>{{ record.net_salary|floatformat:2 }}</strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- التوقيعات -->
+                    <div class="row mt-5 print-only">
+                        <div class="col-md-4 text-center">
+                            <p>____________________</p>
+                            <p>{% trans "توقيع الموظف" %}</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <p>____________________</p>
+                            <p>{% trans "مدير الموارد البشرية" %}</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <p>____________________</p>
+                            <p>{% trans "المدير المالي" %}</p>
+                        </div>
+                    </div>
+
+                    <!-- معلومات الطباعة -->
+                    <div class="row mt-4 print-only">
+                        <div class="col-12">
+                            <hr>
+                            <small class="text-muted">
+                                {% trans "تم الطباعة في" %}: {{ now|date:"Y-m-d H:i" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if form.instance.pk %}تعديل دواء{% else %}إضافة دواء جديد{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">
+                        {% if form.instance.pk %}
+                            تعديل دواء
+                        {% else %}
+                            إضافة دواء جديد
+                        {% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.name.id_for_label }}" class="form-label">
+                                    {{ form.name.label }}
+                                </label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.scientific_name.id_for_label }}" class="form-label">
+                                    {{ form.scientific_name.label }}
+                                </label>
+                                {{ form.scientific_name }}
+                                {% if form.scientific_name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.scientific_name.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.category.id_for_label }}" class="form-label">
+                                    {{ form.category.label }}
+                                </label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.category.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.dosage.id_for_label }}" class="form-label">
+                                    {{ form.dosage.label }}
+                                </label>
+                                {{ form.dosage }}
+                                {% if form.dosage.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.dosage.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ form.unit.id_for_label }}" class="form-label">
+                                    {{ form.unit.label }}
+                                </label>
+                                {{ form.unit }}
+                                {% if form.unit.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.unit.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.manufacturer.id_for_label }}" class="form-label">
+                                    {{ form.manufacturer.label }}
+                                </label>
+                                {{ form.manufacturer }}
+                                {% if form.manufacturer.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.manufacturer.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.price.id_for_label }}" class="form-label">
+                                    {{ form.price.label }}
+                                </label>
+                                {{ form.price }}
+                                {% if form.price.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.price.errors %}
+                                    {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                {{ form.description.label }}
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.description.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.side_effects.id_for_label }}" class="form-label">
+                                {{ form.side_effects.label }}
+                            </label>
+                            {{ form.side_effects }}
+                            {% if form.side_effects.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.side_effects.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.storage_instructions.id_for_label }}" class="form-label">
+                                {{ form.storage_instructions.label }}
+                            </label>
+                            {{ form.storage_instructions }}
+                            {% if form.storage_instructions.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.storage_instructions.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.requires_prescription }}
+                                <label class="form-check-label" for="{{ form.requires_prescription.id_for_label }}">
+                                    {{ form.requires_prescription.label }}
+                                </label>
+                            </div>
+                            {% if form.requires_prescription.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.requires_prescription.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                {% if form.instance.pk %}
+                                    <i class="fas fa-save me-2"></i>حفظ التغييرات
+                                {% else %}
+                                    <i class="fas fa-plus me-2"></i>إضافة الدواء
+                                {% endif %}
+                            </button>
+                            <a href="{% url 'pharmacy:medicine-list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* تنسيقات خاصة بالنموذج */
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // تنسيق حقول النص
+        const inputs = document.querySelectorAll('input[type="text"], input[type="number"]');
+        inputs.forEach(input => {
+            input.classList.add('form-control');
+        });
+
+        // تنسيق مربعات النص
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach(textarea => {
+            textarea.classList.add('form-control');
+        });
+
+        // تنسيق القوائم المنسدلة
+        const selects = document.querySelectorAll('select');
+        selects.forEach(select => {
+            select.classList.add('form-select');
+        });
+    });
+</script>
+{% endblock %}

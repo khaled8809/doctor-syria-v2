@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "تفاصيل الإجازة" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "تفاصيل الإجازة" %}</h5>
+                    <div>
+                        {% if user.is_staff or leave.employee.user == user %}
+                        <a href="{% url 'hr:leave-update' leave.pk %}" 
+                           class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> {% trans "تعديل" %}
+                        </a>
+                        {% endif %}
+                        {% if user.is_staff %}
+                        <a href="{% url 'hr:leave-delete' leave.pk %}" 
+                           class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i> {% trans "حذف" %}
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>{% trans "معلومات الموظف" %}</h6>
+                            <hr>
+                            <p><strong>{% trans "الاسم:" %}</strong> 
+                                <a href="{% url 'hr:employee-detail' leave.employee.pk %}">
+                                    {{ leave.employee.user.get_full_name }}
+                                </a>
+                            </p>
+                            <p><strong>{% trans "القسم:" %}</strong> 
+                                {{ leave.employee.department }}
+                            </p>
+                            <p><strong>{% trans "المنصب:" %}</strong> 
+                                {{ leave.employee.position }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>{% trans "معلومات الإجازة" %}</h6>
+                            <hr>
+                            <p><strong>{% trans "نوع الإجازة:" %}</strong> 
+                                {{ leave.get_leave_type_display }}
+                            </p>
+                            <p><strong>{% trans "المدة:" %}</strong> 
+                                {{ leave.duration }} {% trans "يوم" %}
+                            </p>
+                            <p><strong>{% trans "الحالة:" %}</strong> 
+                                <span class="badge {% if leave.status == 'approved' %}bg-success
+                                                  {% elif leave.status == 'rejected' %}bg-danger
+                                                  {% else %}bg-warning{% endif %}">
+                                    {{ leave.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>{% trans "الفترة الزمنية" %}</h6>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>{% trans "تاريخ البداية:" %}</strong> 
+                                        {{ leave.start_date }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>{% trans "تاريخ النهاية:" %}</strong> 
+                                        {{ leave.end_date }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>{% trans "السبب والملاحظات" %}</h6>
+                            <hr>
+                            <p>{{ leave.reason|linebreaks }}</p>
+                        </div>
+                    </div>
+
+                    {% if leave.attachments.exists %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>{% trans "المرفقات" %}</h6>
+                            <hr>
+                            <ul class="list-group">
+                                {% for attachment in leave.attachments.all %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>{{ attachment.filename }}</span>
+                                    <a href="{{ attachment.file.url }}" 
+                                       class="btn btn-sm btn-primary" 
+                                       target="_blank">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if user.is_staff and leave.status == 'pending' %}
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>{% trans "الإجراءات" %}</h6>
+                            <hr>
+                            <form method="post" action="{% url 'hr:leave-action' leave.pk %}">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="comment" class="form-label">{% trans "ملاحظات" %}</label>
+                                    <textarea name="comment" id="comment" class="form-control" rows="3"></textarea>
+                                </div>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="submit" name="action" value="reject" 
+                                            class="btn btn-danger">
+                                        <i class="fas fa-times"></i> {% trans "رفض" %}
+                                    </button>
+                                    <button type="submit" name="action" value="approve" 
+                                            class="btn btn-success">
+                                        <i class="fas fa-check"></i> {% trans "موافقة" %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if leave.comments.exists %}
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h6>{% trans "التعليقات" %}</h6>
+                            <hr>
+                            {% for comment in leave.comments.all %}
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h6 class="card-subtitle mb-2 text-muted">
+                                            {{ comment.user.get_full_name }}
+                                        </h6>
+                                        <small class="text-muted">
+                                            {{ comment.created_at }}
+                                        </small>
+                                    </div>
+                                    <p class="card-text">{{ comment.text }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-end">
+                    <a href="{% url 'hr:leave-list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-right"></i> {% trans "العودة للقائمة" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

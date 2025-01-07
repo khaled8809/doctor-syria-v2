@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}حذف سجل طبي{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h2 class="mb-0">تأكيد الحذف</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">
+                        هل أنت متأكد من حذف السجل الطبي للمريض "{{ record.patient.get_full_name }}"؟
+                    </p>
+                    <p class="text-muted">
+                        هذا الإجراء لا يمكن التراجع عنه.
+                    </p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>نعم، احذف السجل
+                            </button>
+                            <a href="{% url 'medical_records:detail' record.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>لا، إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

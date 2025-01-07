@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "تفاصيل الراتب" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{% trans "تفاصيل الراتب" %}</h5>
+                    <div>
+                        {% if user.is_staff %}
+                        <a href="{% url 'hr:payroll-update' record.pk %}" 
+                           class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> {% trans "تعديل" %}
+                        </a>
+                        <a href="{% url 'hr:payroll-delete' record.pk %}" 
+                           class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i> {% trans "حذف" %}
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'hr:payroll-slip' record.pk %}" 
+                           class="btn btn-light btn-sm">
+                            <i class="fas fa-print"></i> {% trans "طباعة" %}
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6>{% trans "معلومات الموظف" %}</h6>
+                            <hr>
+                            <p><strong>{% trans "الاسم:" %}</strong>
+                                <a href="{% url 'hr:employee-detail' record.employee.pk %}">
+                                    {{ record.employee.user.get_full_name }}
+                                </a>
+                            </p>
+                            <p><strong>{% trans "القسم:" %}</strong> {{ record.employee.department }}</p>
+                            <p><strong>{% trans "المنصب:" %}</strong> {{ record.employee.position }}</p>
+                            <p><strong>{% trans "الرقم الوظيفي:" %}</strong> {{ record.employee.employee_id }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>{% trans "معلومات الفترة" %}</h6>
+                            <hr>
+                            <p><strong>{% trans "من:" %}</strong> {{ record.period_start|date }}</p>
+                            <p><strong>{% trans "إلى:" %}</strong> {{ record.period_end|date }}</p>
+                            <p><strong>{% trans "أيام العمل:" %}</strong> {{ record.working_days }}</p>
+                            <p><strong>{% trans "الحالة:" %}</strong>
+                                <span class="badge {% if record.payment_status == 'paid' %}bg-success
+                                                  {% elif record.payment_status == 'pending' %}bg-warning
+                                                  {% else %}bg-danger{% endif %}">
+                                    {{ record.get_payment_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>{% trans "تفاصيل الراتب" %}</h6>
+                            <hr>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <th>{% trans "الراتب الأساسي" %}</th>
+                                        <td class="text-end">{{ record.basic_salary|floatformat:2 }}</td>
+                                    </tr>
+                                    
+                                    <!-- البدلات -->
+                                    <tr class="table-success">
+                                        <th colspan="2">{% trans "البدلات" %}</th>
+                                    </tr>
+                                    {% for allowance in record.allowance_breakdown %}
+                                    <tr>
+                                        <td>{{ allowance.type }}</td>
+                                        <td class="text-end text-success">
+                                            +{{ allowance.amount|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr class="table-success">
+                                        <th>{% trans "إجمالي البدلات" %}</th>
+                                        <td class="text-end text-success">
+                                            +{{ record.allowances|floatformat:2 }}
+                                        </td>
+                                    </tr>
+
+                                    <!-- الخصومات -->
+                                    <tr class="table-danger">
+                                        <th colspan="2">{% trans "الخصومات" %}</th>
+                                    </tr>
+                                    {% for deduction in record.deduction_breakdown %}
+                                    <tr>
+                                        <td>{{ deduction.type }}</td>
+                                        <td class="text-end text-danger">
+                                            -{{ deduction.amount|floatformat:2 }}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    <tr class="table-danger">
+                                        <th>{% trans "إجمالي الخصومات" %}</th>
+                                        <td class="text-end text-danger">
+                                            -{{ record.deductions|floatformat:2 }}
+                                        </td>
+                                    </tr>
+
+                                    <!-- الصافي -->
+                                    <tr class="table-primary">
+                                        <th>{% trans "صافي الراتب" %}</th>
+                                        <td class="text-end">
+                                            <strong>{{ record.net_salary|floatformat:2 }}</strong>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if record.payment_details %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>{% trans "معلومات الدفع" %}</h6>
+                            <hr>
+                            <p><strong>{% trans "طريقة الدفع:" %}</strong> 
+                                {{ record.get_payment_method_display }}</p>
+                            <p><strong>{% trans "تاريخ الدفع:" %}</strong> 
+                                {{ record.payment_date|date }}</p>
+                            <p><strong>{% trans "رقم المعاملة:" %}</strong> 
+                                {{ record.transaction_id }}</p>
+                            {% if record.bank_account %}
+                            <p><strong>{% trans "الحساب البنكي:" %}</strong> 
+                                {{ record.bank_account }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if record.notes %}
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6>{% trans "ملاحظات" %}</h6>
+                            <hr>
+                            <p>{{ record.notes|linebreaks }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if user.is_staff and record.payment_status == 'pending' %}
+                    <div class="row">
+                        <div class="col-12">
+                            <h6>{% trans "تأكيد الدفع" %}</h6>
+                            <hr>
+                            <form method="post" action="{% url 'hr:payroll-confirm-payment' record.pk %}" 
+                                  class="row g-3">
+                                {% csrf_token %}
+                                <div class="col-md-6">
+                                    <label for="payment_method" class="form-label">
+                                        {% trans "طريقة الدفع" %}
+                                    </label>
+                                    <select name="payment_method" id="payment_method" class="form-control" required>
+                                        <option value="">{% trans "اختر..." %}</option>
+                                        {% for value, label in payment_methods %}
+                                        <option value="{{ value }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="payment_date" class="form-label">
+                                        {% trans "تاريخ الدفع" %}
+                                    </label>
+                                    <input type="date" name="payment_date" id="payment_date" 
+                                           class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="transaction_id" class="form-label">
+                                        {% trans "رقم المعاملة" %}
+                                    </label>
+                                    <input type="text" name="transaction_id" id="transaction_id" 
+                                           class="form-control" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="notes" class="form-label">
+                                        {% trans "ملاحظات" %}
+                                    </label>
+                                    <textarea name="notes" id="notes" class="form-control" rows="1"></textarea>
+                                </div>
+                                <div class="col-12 text-end">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-check"></i> {% trans "تأكيد الدفع" %}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-end">
+                    <a href="{% url 'hr:payroll-list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-right"></i> {% trans "العودة للقائمة" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "الرواتب" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{% trans "كشف الرواتب" %}</h2>
+        {% if user.is_staff %}
+        <div>
+            <a href="{% url 'hr:payroll-create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> {% trans "إضافة راتب" %}
+            </a>
+            <a href="{% url 'hr:payroll-generate' %}" class="btn btn-success">
+                <i class="fas fa-file-invoice-dollar"></i> {% trans "إنشاء كشف الرواتب" %}
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- نموذج البحث -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    {{ search_form.employee }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.department }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.payment_status }}
+                </div>
+                <div class="col-md-4">
+                    {{ search_form.period }}
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ملخص الرواتب -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">{% trans "إجمالي الرواتب" %}</h6>
+                    <h3 class="card-text">{{ total_salaries|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">{% trans "المدفوع" %}</h6>
+                    <h3 class="card-text">{{ total_paid|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">{% trans "قيد الانتظار" %}</h6>
+                    <h3 class="card-text">{{ total_pending|floatformat:2 }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">{% trans "عدد الموظفين" %}</h6>
+                    <h3 class="card-text">{{ employee_count }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول الرواتب -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>{% trans "الموظف" %}</th>
+                    <th>{% trans "القسم" %}</th>
+                    <th>{% trans "الفترة" %}</th>
+                    <th>{% trans "الراتب الأساسي" %}</th>
+                    <th>{% trans "البدلات" %}</th>
+                    <th>{% trans "الخصومات" %}</th>
+                    <th>{% trans "الصافي" %}</th>
+                    <th>{% trans "الحالة" %}</th>
+                    <th>{% trans "الإجراءات" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in payroll_records %}
+                <tr>
+                    <td>
+                        <a href="{% url 'hr:employee-detail' record.employee.pk %}">
+                            {{ record.employee.user.get_full_name }}
+                        </a>
+                    </td>
+                    <td>{{ record.employee.department }}</td>
+                    <td>{{ record.period_start|date }} - {{ record.period_end|date }}</td>
+                    <td>{{ record.basic_salary|floatformat:2 }}</td>
+                    <td>
+                        <span class="text-success">+{{ record.allowances|floatformat:2 }}</span>
+                        <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" 
+                           title="{% for allowance in record.allowance_breakdown %}
+                                  {{ allowance.type }}: {{ allowance.amount|floatformat:2 }}
+                                  {% endfor %}">
+                            <i class="fas fa-info-circle"></i>
+                        </a>
+                    </td>
+                    <td>
+                        <span class="text-danger">-{{ record.deductions|floatformat:2 }}</span>
+                        <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" 
+                           title="{% for deduction in record.deduction_breakdown %}
+                                  {{ deduction.type }}: {{ deduction.amount|floatformat:2 }}
+                                  {% endfor %}">
+                            <i class="fas fa-info-circle"></i>
+                        </a>
+                    </td>
+                    <td>
+                        <strong>{{ record.net_salary|floatformat:2 }}</strong>
+                    </td>
+                    <td>
+                        <span class="badge {% if record.payment_status == 'paid' %}bg-success
+                                          {% elif record.payment_status == 'pending' %}bg-warning
+                                          {% else %}bg-danger{% endif %}">
+                            {{ record.get_payment_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'hr:payroll-detail' record.pk %}" 
+                               class="btn btn-sm btn-info" 
+                               title="{% trans 'عرض التفاصيل' %}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if user.is_staff %}
+                            <a href="{% url 'hr:payroll-update' record.pk %}" 
+                               class="btn btn-sm btn-warning" 
+                               title="{% trans 'تعديل' %}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'hr:payroll-delete' record.pk %}" 
+                               class="btn btn-sm btn-danger" 
+                               title="{% trans 'حذف' %}">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                            {% endif %}
+                            <a href="{% url 'hr:payroll-slip' record.pk %}" 
+                               class="btn btn-sm btn-primary" 
+                               title="{% trans 'طباعة قسيمة الراتب' %}">
+                                <i class="fas fa-print"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center">{% trans "لا توجد سجلات رواتب" %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- الترقيم -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // تنسيق حقول النموذج
+        $('#id_employee').addClass('form-control');
+        $('#id_department').addClass('form-control');
+        $('#id_payment_status').addClass('form-control');
+        $('#id_period').addClass('form-control');
+        
+        // تفعيل tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // تحديث الجدول عند تغيير حقول البحث
+        $('form select').change(function() {
+            $(this).closest('form').submit();
+        });
+    });
+</script>
+{% endblock %}

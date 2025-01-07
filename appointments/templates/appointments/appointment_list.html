@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}المواعيد{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>المواعيد</h1>
+        <div>
+            <a href="{% url 'appointments:calendar' %}" class="btn btn-info me-2">
+                <i class="fas fa-calendar-alt me-2"></i>عرض التقويم
+            </a>
+            <a href="{% url 'appointments:create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>حجز موعد جديد
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if appointments %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>المريض</th>
+                    <th>الطبيب</th>
+                    <th>التاريخ</th>
+                    <th>السبب</th>
+                    <th>الحالة</th>
+                    <th>الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in appointments %}
+                <tr>
+                    <td>{{ appointment.patient.get_full_name }}</td>
+                    <td>{{ appointment.doctor.get_full_name }}</td>
+                    <td>{{ appointment.appointment_date|date:"Y-m-d H:i" }}</td>
+                    <td>{{ appointment.reason|truncatechars:30 }}</td>
+                    <td>
+                        <span class="badge bg-{{ appointment.get_status_color }}">
+                            {{ appointment.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{% url 'appointments:detail' appointment.pk %}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% if appointment.status == 'pending' %}
+                        <a href="{% url 'appointments:update' appointment.pk %}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'appointments:delete' appointment.pk %}" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">السابق</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">التالي</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="alert alert-info">
+        لا توجد مواعيد حالياً.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

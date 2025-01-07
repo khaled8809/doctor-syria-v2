@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "الموظفين" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>{% trans "قائمة الموظفين" %}</h2>
+        {% if user.is_staff %}
+        <a href="{% url 'hr:employee-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> {% trans "إضافة موظف" %}
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- نموذج البحث -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    {{ search_form.search }}
+                </div>
+                <div class="col-md-3">
+                    {{ search_form.department }}
+                </div>
+                <div class="col-md-3">
+                    {{ search_form.employment_type }}
+                </div>
+                <div class="col-md-2">
+                    {{ search_form.is_active }}
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- قائمة الموظفين -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>{% trans "الرقم الوظيفي" %}</th>
+                    <th>{% trans "الاسم" %}</th>
+                    <th>{% trans "القسم" %}</th>
+                    <th>{% trans "المنصب" %}</th>
+                    <th>{% trans "نوع التوظيف" %}</th>
+                    <th>{% trans "تاريخ الالتحاق" %}</th>
+                    <th>{% trans "الحالة" %}</th>
+                    <th>{% trans "الإجراءات" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee in employees %}
+                <tr>
+                    <td>{{ employee.employee_id }}</td>
+                    <td>{{ employee.user.get_full_name }}</td>
+                    <td>{{ employee.department }}</td>
+                    <td>{{ employee.position }}</td>
+                    <td>{{ employee.get_employment_type_display }}</td>
+                    <td>{{ employee.join_date }}</td>
+                    <td>
+                        {% if employee.is_active %}
+                        <span class="badge bg-success">{% trans "نشط" %}</span>
+                        {% else %}
+                        <span class="badge bg-danger">{% trans "غير نشط" %}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'hr:employee-detail' employee.pk %}" 
+                               class="btn btn-sm btn-info" 
+                               title="{% trans 'عرض التفاصيل' %}">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if user.is_staff %}
+                            <a href="{% url 'hr:employee-update' employee.pk %}" 
+                               class="btn btn-sm btn-warning" 
+                               title="{% trans 'تعديل' %}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'hr:employee-delete' employee.pk %}" 
+                               class="btn btn-sm btn-danger" 
+                               title="{% trans 'حذف' %}">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">{% trans "لا يوجد موظفين" %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- الترقيم -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // تنسيق حقول النموذج
+    $(document).ready(function() {
+        // إضافة الفئات للحقول
+        $('#id_search').addClass('form-control').attr('placeholder', '{% trans "ابحث عن موظف..." %}');
+        $('#id_department').addClass('form-control');
+        $('#id_employment_type').addClass('form-control');
+        $('#id_is_active').addClass('form-check-input');
+        
+        // تحديث الجدول عند تغيير حقول البحث
+        $('form input, form select').change(function() {
+            $(this).closest('form').submit();
+        });
+    });
+</script>
+{% endblock %}
