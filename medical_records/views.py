@@ -5,13 +5,15 @@ Views for the medical records app
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from core.cache_decorators import cache_response
 from core.cache_manager import CacheManager
 from django.views.generic import ListView, CreateView, DetailView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import MedicalRecord
-from .forms import MedicalRecordForm
+from .models import MedicalRecord, MedicalVisit
+from .forms import MedicalRecordForm, MedicalVisitForm
+from django.utils import timezone
 
 # سيتم إضافة المزيد من الـ views لاحقاً
 
@@ -34,7 +36,7 @@ class RecordCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('medical_records:list')
 
     def form_valid(self, form):
-        form.instance.created_by = self.request.user
+        form.instance.patient = self.request.user
         return super().form_valid(form)
 
 class RecordDetailView(LoginRequiredMixin, DetailView):
@@ -55,27 +57,32 @@ class RecordDeleteView(LoginRequiredMixin, DeleteView):
 
 # الـ ViewSets الحالية تبقى كما هي
 class PatientViewSet(viewsets.ModelViewSet):
-    # ... الإعدادات الحالية ...
-
-    @cache_response(timeout=1800, key_prefix='patient_profile')
+    """ViewSet للمرضى"""
+    
+    @cache_response(timeout=300)
     def retrieve(self, request, *args, **kwargs):
         """عرض معلومات المريض مع التخزين المؤقت"""
-        return super().retrieve(request, *args, **kwargs)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
-    @cache_response(timeout=3600, key_prefix='patient_medical_history')
     @action(detail=True, methods=['get'])
+    @cache_response(timeout=300)
     def medical_history(self, request, pk=None):
         """عرض التاريخ الطبي للمريض مع التخزين المؤقت"""
         patient = self.get_object()
-        history = patient.get_medical_history()
-        serializer = MedicalHistorySerializer(history, many=True)
+        visits = MedicalVisit.objects.filter(patient=patient).order_by('-visit_date')
+        serializer = MedicalVisitSerializer(visits, many=True)
         return Response(serializer.data)
 
-    @cache_response(timeout=900, key_prefix='patient_appointments')  # 15 دقيقة
     @action(detail=True, methods=['get'])
+    @cache_response(timeout=300)
     def upcoming_appointments(self, request, pk=None):
         """عرض المواعيد القادمة للمريض مع التخزين المؤقت"""
         patient = self.get_object()
-        appointments = patient.get_upcoming_appointments()
-        serializer = AppointmentSerializer(appointments, many=True)
+        upcoming = MedicalVisit.objects.filter(
+            patient=patient,
+            visit_date__gt=timezone.now()
+        ).order_by('visit_date')
+        serializer = MedicalVisitSerializer(upcoming, many=True)
         return Response(serializer.data)

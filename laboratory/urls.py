@@ -4,31 +4,17 @@ from . import views
 app_name = 'laboratory'
 
 urlpatterns = [
-    # إدارة التحاليل
-    path('tests/', views.TestListView.as_view(), name='test-list'),
-    path('tests/create/', views.TestCreateView.as_view(), name='test-create'),
-    path('tests/<int:pk>/', views.TestDetailView.as_view(), name='test-detail'),
-    path('tests/<int:pk>/update/', views.TestUpdateView.as_view(), name='test-update'),
-    path('tests/<int:pk>/delete/', views.TestDeleteView.as_view(), name='test-delete'),
+    # Lab Test URLs
+    path('tests/', views.LabTestListView.as_view(), name='test-list'),
+    path('tests/create/', views.LabTestCreateView.as_view(), name='test-create'),
+    path('tests/<int:pk>/', views.LabTestDetailView.as_view(), name='test-detail'),
+    path('tests/<int:pk>/update/', views.LabTestUpdateView.as_view(), name='test-update'),
+    path('tests/<int:pk>/delete/', views.LabTestDeleteView.as_view(), name='test-delete'),
     
-    # طلبات التحاليل
-    path('requests/', views.TestRequestListView.as_view(), name='request-list'),
-    path('requests/create/', views.TestRequestCreateView.as_view(), name='request-create'),
-    path('requests/<int:pk>/', views.TestRequestDetailView.as_view(), name='request-detail'),
-    path('requests/<int:pk>/update/', views.TestRequestUpdateView.as_view(), name='request-update'),
-    path('requests/<int:pk>/delete/', views.TestRequestDeleteView.as_view(), name='request-delete'),
-    path('requests/<int:pk>/process/', views.TestRequestProcessView.as_view(), name='request-process'),
-    
-    # النتائج
-    path('results/', views.TestResultListView.as_view(), name='result-list'),
-    path('results/<int:pk>/', views.TestResultDetailView.as_view(), name='result-detail'),
-    path('results/<int:pk>/pdf/', views.TestResultPDFView.as_view(), name='result-pdf'),
-    
-    # التقارير والإحصائيات
-    path('reports/', views.LaboratoryReportView.as_view(), name='reports'),
-    path('reports/daily/', views.DailyReportView.as_view(), name='daily-report'),
-    path('reports/monthly/', views.MonthlyReportView.as_view(), name='monthly-report'),
-    
-    # البحث
-    path('search/', views.LaboratorySearchView.as_view(), name='search'),
+    # Lab Result URLs
+    path('results/', views.LabResultListView.as_view(), name='result-list'),
+    path('results/create/', views.LabResultCreateView.as_view(), name='result-create'),
+    path('results/<int:pk>/', views.LabResultDetailView.as_view(), name='result-detail'),
+    path('results/<int:pk>/update/', views.LabResultUpdateView.as_view(), name='result-update'),
+    path('results/<int:pk>/delete/', views.LabResultDeleteView.as_view(), name='result-delete'),
 ]

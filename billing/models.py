@@ -30,12 +30,12 @@ class Invoice(models.Model):
     patient = models.ForeignKey(
         'medical_records.Patient',
         on_delete=models.PROTECT,
-        related_name='invoices'
+        related_name='billing_invoices'
     )
     doctor = models.ForeignKey(
-        'accounts.Doctor',
+        settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        related_name='invoices'
+        related_name='doctor_invoices'
     )
     appointment = models.OneToOneField(
         'appointments.Appointment',

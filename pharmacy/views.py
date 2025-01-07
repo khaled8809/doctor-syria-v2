@@ -257,6 +257,43 @@ class PrescriptionDispenseView(PharmacistRequiredMixin, UpdateView):
         messages.success(request, 'تم صرف الوصفة الطبية بنجاح.')
         return redirect('pharmacy:prescription-list')
 
+class PrescriptionUpdateView(LoginRequiredMixin, PharmacistRequiredMixin, UpdateView):
+    model = Prescription
+    form_class = PrescriptionForm
+    template_name = 'pharmacy/prescription_form.html'
+    success_url = reverse_lazy('pharmacy:prescription-list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['items_formset'] = PrescriptionItemFormSet(
+                self.request.POST,
+                instance=self.object
+            )
+        else:
+            context['items_formset'] = PrescriptionItemFormSet(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        items_formset = context['items_formset']
+        if form.is_valid() and items_formset.is_valid():
+            self.object = form.save()
+            items_formset.instance = self.object
+            items_formset.save()
+            messages.success(self.request, 'تم تحديث الوصفة الطبية بنجاح.')
+            return super().form_valid(form)
+        return self.render_to_response(self.get_context_data(form=form))
+
+class PrescriptionDeleteView(LoginRequiredMixin, PharmacistRequiredMixin, DeleteView):
+    model = Prescription
+    template_name = 'pharmacy/prescription_confirm_delete.html'
+    success_url = reverse_lazy('pharmacy:prescription-list')
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(request, 'تم حذف الوصفة الطبية بنجاح.')
+        return super().delete(request, *args, **kwargs)
+
 # Report Views
 class InventoryReportView(PharmacistRequiredMixin, TemplateView):
     template_name = 'pharmacy/inventory_report.html'

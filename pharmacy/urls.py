@@ -24,8 +24,4 @@ urlpatterns = [
     path('inventory/add/', views.InventoryAddView.as_view(), name='inventory-add'),
     path('inventory/report/', views.InventoryReportView.as_view(), name='inventory-report'),
     path('inventory/low-stock/', views.LowStockView.as_view(), name='low-stock'),
-    
-    # البحث والتقارير
-    path('search/', views.PharmacySearchView.as_view(), name='search'),
-    path('reports/', views.PharmacyReportView.as_view(), name='reports'),
 ]
