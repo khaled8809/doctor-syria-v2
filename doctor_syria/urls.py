@@ -4,18 +4,22 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
-from django.views.generic import RedirectView
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # الصفحة الرئيسية تحول إلى لوحة التحكم
-    path('', RedirectView.as_view(url='/accounts/dashboard/', permanent=False), name='home'),
+    # الصفحة الرئيسية
+    path('', TemplateView.as_view(template_name='landing.html'), name='home'),
     
     # تطبيقات النظام
     path('accounts/', include('accounts.urls')),
-    # path('appointments/', include('appointments.urls')),
-    # path('medical_records/', include('medical_records.urls')),
+    path('appointments/', include('appointments.urls')),
+    path('medical_records/', include('medical_records.urls')),
+    path('pharmacy/', include('pharmacy.urls')),
+    path('laboratory/', include('laboratory.urls')),
+    path('emergency/', include('emergency.urls')),
+    path('telemedicine/', include('telemedicine.urls')),
 ]
 
 # إضافة مسارات الوسائط في وضع التطوير

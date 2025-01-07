@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Doctor Syria - المنصة الطبية المتكاملة{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 mb-4">منصة Doctor Syria</h1>
+                <p class="lead mb-4">نظام إدارة متكامل للمستشفيات والعيادات الطبية في سوريا</p>
+                {% if not user.is_authenticated %}
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'accounts:login' %}" class="btn btn-light btn-lg">تسجيل الدخول</a>
+                        <a href="{% url 'accounts:register' %}" class="btn btn-outline-light btn-lg">إنشاء حساب</a>
+                    </div>
+                {% else %}
+                    <a href="{% url 'accounts:dashboard' %}" class="btn btn-light btn-lg">لوحة التحكم</a>
+                {% endif %}
+            </div>
+            <div class="col-lg-6">
+                <img src="{% static 'img/hero-image.svg' %}" alt="Doctor Syria Platform" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">خدماتنا الرئيسية</h2>
+        <div class="row g-4">
+            <!-- Medical Records -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-notes-medical fa-2x text-primary mb-3"></i>
+                        <h3 class="card-title h5">السجلات الطبية</h3>
+                        <p class="card-text">إدارة متكاملة للسجلات الطبية مع دعم للتاريخ المرضي والتقارير</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Appointments -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-calendar-check fa-2x text-primary mb-3"></i>
+                        <h3 class="card-title h5">إدارة المواعيد</h3>
+                        <p class="card-text">حجز وإدارة المواعيد بسهولة مع نظام تذكير متقدم</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pharmacy -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-pills fa-2x text-primary mb-3"></i>
+                        <h3 class="card-title h5">نظام الصيدلية</h3>
+                        <p class="card-text">إدارة المخزون الدوائي والوصفات الطبية</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Laboratory -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-flask fa-2x text-primary mb-3"></i>
+                        <h3 class="card-title h5">المختبر</h3>
+                        <p class="card-text">إدارة التحاليل المخبرية والنتائج</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Emergency -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-ambulance fa-2x text-primary mb-3"></i>
+                        <h3 class="card-title h5">الطوارئ</h3>
+                        <p class="card-text">نظام متكامل لإدارة حالات الطوارئ والإسعاف</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Telemedicine -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <i class="fas fa-video fa-2x text-primary mb-3"></i>
+                        <h3 class="card-title h5">الطب عن بعد</h3>
+                        <p class="card-text">استشارات طبية عن بعد مع دعم المحادثات المرئية</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="cta bg-light py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">ابدأ استخدام المنصة اليوم</h2>
+        <p class="lead mb-4">انضم إلى مئات المستشفيات والعيادات التي تستخدم منصتنا</p>
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">سجل الآن</a>
+    </div>
+</section>
+{% endblock %}
