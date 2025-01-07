@@ -33,6 +33,29 @@
                 </div>
             </div>
 
+            <!-- HR Management -->
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users feature-icon"></i>
+                        <h3 class="card-title">الموارد البشرية</h3>
+                        <p class="card-text">إدارة شؤون الموظفين والرواتب والإجازات والدوام</p>
+                        <div class="btn-group">
+                            <a href="{% url 'hr:employee-list' %}" class="btn btn-primary">الموظفين</a>
+                            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="visually-hidden">Toggle Dropdown</span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'hr:leave-list' %}">الإجازات</a></li>
+                                <li><a class="dropdown-item" href="{% url 'hr:attendance-list' %}">الدوام</a></li>
+                                <li><a class="dropdown-item" href="{% url 'hr:shift-list' %}">المناوبات</a></li>
+                                <li><a class="dropdown-item" href="{% url 'hr:payroll-list' %}">الرواتب</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Appointments -->
             <div class="col-md-4">
                 <div class="card h-100">
@@ -69,26 +92,14 @@
                 </div>
             </div>
 
-            <!-- Billing -->
+            <!-- Radiology -->
             <div class="col-md-4">
                 <div class="card h-100">
                     <div class="card-body text-center">
-                        <i class="fas fa-file-invoice-dollar feature-icon"></i>
-                        <h3 class="card-title">الفواتير</h3>
-                        <p class="card-text">إدارة الفواتير والمدفوعات وتقارير المالية</p>
-                        <a href="{% url 'billing:dashboard' %}" class="btn btn-primary">نظام الفواتير</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Resource Management -->
-            <div class="col-md-4">
-                <div class="card h-100">
-                    <div class="card-body text-center">
-                        <i class="fas fa-hospital feature-icon"></i>
-                        <h3 class="card-title">إدارة الموارد</h3>
-                        <p class="card-text">إدارة الغرف والأسرة والمعدات الطبية</p>
-                        <a href="{% url 'resource_management:dashboard' %}" class="btn btn-primary">إدارة الموارد</a>
+                        <i class="fas fa-x-ray feature-icon"></i>
+                        <h3 class="card-title">الأشعة</h3>
+                        <p class="card-text">إدارة الصور الشعاعية وتقارير الأشعة</p>
+                        <a href="{% url 'radiology:dashboard' %}" class="btn btn-primary">نظام الأشعة</a>
                     </div>
                 </div>
             </div>
@@ -220,17 +231,26 @@
 
 {% block extra_js %}
 <script>
-    // Animate statistics when in view
-    const animateStats = () => {
+    function animateStats() {
         const counters = document.querySelectorAll('.count');
+        const speed = 200;
+
         counters.forEach(counter => {
             const target = +counter.innerText.replace('+', '').replace('%', '');
-            const count = +counter.innerText.replace('+', '').replace('%', '');
-            const inc = target / 100;
-            if(count < target) {
-                counter.innerText = Math.ceil(count + inc) + (counter.innerText.includes('%') ? '%' : '+');
-                setTimeout(animateStats, 20);
+            const inc = target / speed;
+            let count = 0;
+
+            const updateCount = () => {
+                if (count < target) {
+                    count += inc;
+                    counter.innerText = Math.ceil(count) + (counter.innerText.includes('%') ? '%' : '+');
+                    setTimeout(updateCount, 1);
+                } else {
+                    counter.innerText = target + (counter.innerText.includes('%') ? '%' : '+');
+                }
             }
+
+            updateCount();
         });
     }
 
@@ -238,7 +258,7 @@
     const statsSection = document.querySelector('.statistics');
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if(entry.isIntersecting) {
+            if (entry.isIntersecting) {
                 animateStats();
                 observer.unobserve(entry.target);
             }
