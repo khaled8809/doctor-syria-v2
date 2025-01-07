@@ -2,55 +2,44 @@
 Django==4.2.17
 djangorestframework==3.15.2
 django-cors-headers==4.4.0
-django-filter==24.3.0
+django-filter==24.3
 django-allauth==65.3.1
-drf-yasg>=1.21.0
+drf-yasg==1.21.1
 channels==4.2.0
 
 # Database and caching
 psycopg2-binary==2.9.10
-django-redis>=5.3.0
+django-redis==5.3.0
 redis==5.2.1
 
 # Authentication and security
 django-rest-auth==0.9.5
-djangorestframework-simplejwt>=5.2.2
+djangorestframework-simplejwt==5.3.1
 django-phonenumber-field==8.0.0
-phonenumbers>=8.13.11
+phonenumbers==8.13.52
 python-dotenv==1.0.1
-pyotp>=2.8.0
-django-user-sessions>=2.0.0
-django-axes>=6.0.0
-
-# Additional Security Requirements
-django-otp>=1.1.3
-django-two-factor-auth>=1.14.0
-cryptography>=39.0.0
-hiredis>=2.2.1
-django-ratelimit>=3.0.1
+pyotp==2.9.0
+django-user-sessions==2.0.0
+django-axes==6.1.1
 
 # File handling and media
 Pillow==10.4.0
-python-magic>=0.4.27
+python-magic==0.4.27
 
-# Barcode and QR
-qrcode==7.4.2
-python-barcode==0.15.1
+# Task Queue and Async
+celery==5.4.0
+flower==2.0.1
+channels-redis==4.2.1
 
 # AI and Machine Learning
-tensorflow==2.13.1
+tensorflow-cpu==2.13.1  # Using CPU version to avoid GPU dependencies
 scikit-learn==1.3.2
 opencv-python==4.10.0.84
 numpy==1.24.3
 
 # Medical Imaging
-pydicom>=2.3.0
-nibabel>=3.2.2
-
-# Task Queue
-celery==5.4.0
-flower==2.0.1
-channels-redis==4.2.1
+pydicom==2.4.4
+nibabel==5.2.1
 
 # Development and Testing
 black==24.8.0
@@ -58,15 +47,15 @@ flake8==7.1.1
 pytest==8.3.4
 pytest-django==4.9.0
 factory-boy==3.3.1
-coverage>=7.2.7
+coverage==7.4.1
 mypy==1.10.1
 
 # Documentation
 sphinx==7.1.2
 sphinx-rtd-theme==3.0.2
 
-# Monitoring
-sentry-sdk>=1.28.1
+# Monitoring and Error Tracking
+sentry-sdk==1.40.4
 
 # Additional dependencies
 Faker==33.3.0
