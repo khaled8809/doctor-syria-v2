@@ -40,7 +40,10 @@ def login_view(request):
                 
                 # التحقق من قفل الحساب
                 if user.is_locked:
-                    messages.error(request, 'الحساب مقفل مؤقتاً. الرجاء المحاولة لاحقاً.')
+                    messages.error(
+                        request, 
+                        'الحساب مقفل مؤقتاً بسبب محاولات تسجيل دخول متكررة. الرجاء المحاولة بعد 30 دقيقة.'
+                    )
                     logger.warning(f'محاولة تسجيل دخول لحساب مقفل: {username}')
                     return render(request, 'registration/login.html', {'form': form})
                 
@@ -52,7 +55,10 @@ def login_view(request):
                         'device_type': 'web',
                         'ip_address': request.META.get('REMOTE_ADDR')
                     }
-                    user.add_device_info(device_info)
+                    try:
+                        user.add_device_info(device_info)
+                    except ValidationError as e:
+                        logger.error(f'خطأ في تحديث معلومات الجهاز: {str(e)}')
                     
                     if user.two_factor_enabled:
                         # إذا كانت المصادقة الثنائية مفعلة
@@ -67,11 +73,21 @@ def login_view(request):
                     return redirect('accounts:dashboard')
                 else:
                     user.increment_failed_login()
+                    remaining_attempts = user.get_remaining_login_attempts()
+                    if remaining_attempts > 0:
+                        messages.error(
+                            request, 
+                            f'كلمة المرور غير صحيحة. تبقى لديك {remaining_attempts} محاولات.'
+                        )
+                    else:
+                        messages.error(
+                            request, 
+                            'تم قفل الحساب مؤقتاً بسبب محاولات تسجيل دخول متكررة.'
+                        )
                     logger.warning(f'محاولة تسجيل دخول فاشلة: {username}')
-                    messages.error(request, 'اسم المستخدم أو كلمة المرور غير صحيحة')
             except User.DoesNotExist:
                 logger.warning(f'محاولة تسجيل دخول بمستخدم غير موجود: {username}')
-                messages.error(request, 'اسم المستخدم أو كلمة المرور غير صحيحة')
+                messages.error(request, 'اسم المستخدم غير موجود')
     else:
         form = LoginForm()
     
@@ -88,6 +104,12 @@ def enable_2fa(request):
                 # تفعيل المصادقة الثنائية
                 secret = pyotp.random_base32()
                 totp = pyotp.TOTP(secret)
+                
+                # التحقق من عدم وجود مصادقة ثنائية مفعلة مسبقاً
+                if request.user.two_factor_enabled:
+                    messages.error(request, 'المصادقة الثنائية مفعلة بالفعل')
+                    return redirect('accounts:security_settings')
+                
                 request.user.two_factor_secret = secret
                 request.user.two_factor_enabled = True
                 request.user.save()
@@ -99,18 +121,22 @@ def enable_2fa(request):
                 )
                 
                 logger.info(f'تم تفعيل المصادقة الثنائية للمستخدم: {request.user.username}')
-                return render(request, 'accounts/2fa_setup.html', {
-                    'form': form,
-                    'secret': secret,
-                    'qr_uri': provisioning_uri
+                
+                return render(request, 'registration/2fa_setup.html', {
+                    'qr_uri': provisioning_uri,
+                    'secret': secret
                 })
-            except Exception as e:
+                
+            except ValidationError as e:
+                messages.error(request, f'خطأ في حفظ الإعدادات: {str(e)}')
                 logger.error(f'خطأ في تفعيل المصادقة الثنائية: {str(e)}')
-                messages.error(request, 'حدث خطأ أثناء تفعيل المصادقة الثنائية')
+            except Exception as e:
+                messages.error(request, 'حدث خطأ غير متوقع. الرجاء المحاولة مرة أخرى.')
+                logger.error(f'خطأ غير متوقع في تفعيل المصادقة الثنائية: {str(e)}')
     else:
         form = TwoFactorSetupForm()
     
-    return render(request, 'accounts/2fa_setup.html', {'form': form})
+    return render(request, 'registration/2fa_setup.html', {'form': form})
 
 @require_http_methods(["GET", "POST"])
 def verify_2fa(request):

@@ -5,18 +5,29 @@ from django.conf import settings
 from django.core.management import call_command
 import subprocess
 import logging
+from botocore.exceptions import ClientError
+from django.core.management.base import CommandError
+from django.db import DatabaseError
 
 logger = logging.getLogger(__name__)
 
+class BackupError(Exception):
+    """استثناء مخصص لأخطاء النسخ الاحتياطي"""
+    pass
+
 class BackupService:
     def __init__(self):
-        self.s3 = boto3.client(
-            's3',
-            aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-            region_name=settings.AWS_S3_REGION_NAME
-        )
-        self.bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+        try:
+            self.s3 = boto3.client(
+                's3',
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+                region_name=settings.AWS_S3_REGION_NAME
+            )
+            self.bucket_name = settings.AWS_STORAGE_BUCKET_NAME
+        except (AttributeError, ClientError) as e:
+            logger.error(f'خطأ في تهيئة خدمة S3: {str(e)}')
+            raise BackupError('فشل في الاتصال بخدمة التخزين السحابي')
 
     def create_database_backup(self):
         """إنشاء نسخة احتياطية من قاعدة البيانات"""
@@ -38,9 +49,15 @@ class BackupService:
             logger.info(f'تم إنشاء نسخة احتياطية بنجاح: {filename}')
             return True
 
-        except Exception as e:
-            logger.error(f'خطأ في إنشاء النسخة الاحتياطية: {str(e)}')
-            return False
+        except OSError as e:
+            logger.error(f'خطأ في إنشاء مجلد النسخ الاحتياطي: {str(e)}')
+            raise BackupError('فشل في إنشاء مجلد النسخ الاحتياطي')
+        except CommandError as e:
+            logger.error(f'خطأ في إنشاء نسخة احتياطية من قاعدة البيانات: {str(e)}')
+            raise BackupError('فشل في إنشاء نسخة احتياطية من قاعدة البيانات')
+        except DatabaseError as e:
+            logger.error(f'خطأ في قاعدة البيانات: {str(e)}')
+            raise BackupError('فشل في الوصول إلى قاعدة البيانات')
 
     def create_media_backup(self):
         """إنشاء نسخة احتياطية من ملفات الوسائط"""
@@ -63,9 +80,12 @@ class BackupService:
             logger.info(f'تم إنشاء نسخة احتياطية للوسائط بنجاح: {filename}')
             return True
 
-        except Exception as e:
-            logger.error(f'خطأ في إنشاء النسخة الاحتياطية للوسائط: {str(e)}')
-            return False
+        except subprocess.CalledProcessError as e:
+            logger.error(f'خطأ في ضغط ملفات الوسائط: {str(e)}')
+            raise BackupError('فشل في ضغط ملفات الوسائط')
+        except OSError as e:
+            logger.error(f'خطأ في الوصول إلى ملفات الوسائط: {str(e)}')
+            raise BackupError('فشل في الوصول إلى ملفات الوسائط')
 
     def upload_to_s3(self, file_path, s3_path):
         """رفع الملف إلى S3"""
@@ -74,9 +94,12 @@ class BackupService:
             # حذف الملف المحلي بعد الرفع
             os.remove(file_path)
             return True
-        except Exception as e:
+        except ClientError as e:
             logger.error(f'خطأ في رفع الملف إلى S3: {str(e)}')
-            return False
+            raise BackupError('فشل في رفع الملف إلى خدمة التخزين السحابي')
+        except OSError as e:
+            logger.error(f'خطأ في حذف الملف المحلي: {str(e)}')
+            raise BackupError('فشل في حذف الملف المحلي')
 
     def restore_from_backup(self, backup_file):
         """استعادة من نسخة احتياطية"""
@@ -98,11 +121,21 @@ class BackupService:
                     '-C', 
                     settings.MEDIA_ROOT
                 ], check=True)
-
+            
+            # حذف الملف المحلي بعد الاستعادة
             os.remove(local_path)
             logger.info(f'تم استعادة النسخة الاحتياطية بنجاح: {backup_file}')
             return True
 
-        except Exception as e:
-            logger.error(f'خطأ في استعادة النسخة الاحتياطية: {str(e)}')
-            return False
+        except ClientError as e:
+            logger.error(f'خطأ في تنزيل النسخة الاحتياطية من S3: {str(e)}')
+            raise BackupError('فشل في تنزيل النسخة الاحتياطية')
+        except CommandError as e:
+            logger.error(f'خطأ في استعادة قاعدة البيانات: {str(e)}')
+            raise BackupError('فشل في استعادة قاعدة البيانات')
+        except subprocess.CalledProcessError as e:
+            logger.error(f'خطأ في فك ضغط ملفات الوسائط: {str(e)}')
+            raise BackupError('فشل في فك ضغط ملفات الوسائط')
+        except OSError as e:
+            logger.error(f'خطأ في الوصول إلى الملفات: {str(e)}')
+            raise BackupError('فشل في الوصول إلى الملفات')
