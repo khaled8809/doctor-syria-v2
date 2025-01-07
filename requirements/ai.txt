@@ -9,4 +9,4 @@ keras==2.15.0  # Keeping this version for compatibility with TensorFlow
 # Additional ML Libraries
 h5py==3.12.1
 opt-einsum>=2.3.2
-protobuf==4.25.5  # Required by TensorFlow
+protobuf>=4.25.5,<5.0.0  # Updated but keeping compatible version

@@ -1,5 +1,5 @@
-# Core
-Django==4.2.17
+# Django & REST Framework
+Django>=4.2.17,<5.0  # LTS version for stability
 djangorestframework==3.15.2
 django-cors-headers==4.6.0
 django-filter==24.3
@@ -17,14 +17,14 @@ phonenumbers==8.13.52
 python-dotenv==1.0.1
 djangorestframework-simplejwt==5.4.0
 
-# Media
-Pillow==11.1.0
+# Image Processing
+Pillow==11.1.0  # Security updates included
 
 # Task Queue
 celery==5.4.0
 channels-redis==4.2.1
 
-# Medical
+# Medical Imaging
 pydicom==3.0.1
 nibabel==5.3.2
 
