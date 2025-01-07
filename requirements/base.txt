@@ -15,7 +15,7 @@ django-rest-auth==0.9.5
 django-phonenumber-field==8.0.0
 phonenumbers==8.13.52
 python-dotenv==1.0.1
-djangorestframework-simplejwt==5.3.1  # تحديث لإصلاح ثغرة إدارة الصلاحيات
+djangorestframework-simplejwt==5.3.1
 
 # Media
 Pillow==10.4.0
@@ -24,14 +24,12 @@ Pillow==10.4.0
 celery==5.4.0
 channels-redis==4.2.1
 
-# AI/ML (CPU versions)
-tensorflow-cpu==2.13.1
-scikit-learn==1.4.0  # تحديث لإصلاح ثغرة تسرب البيانات
-numpy==1.24.3
-
 # Medical
 pydicom==2.4.4
 nibabel==5.2.1
 
 # Payments
 stripe==11.4.1
+
+# Note: AI/ML packages (tensorflow, scikit-learn, numpy) should be installed separately
+# after setting up the appropriate environment and dependencies
