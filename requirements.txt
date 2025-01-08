@@ -39,7 +39,7 @@ scikit-learn>=1.3.2
 pandas>=2.1.4
 
 # Medical Imaging and Integration
-pydicom>=2.4.3
+pydicom>=3.0.1
 hl7>=0.4.1
 pynetdicom>=2.0.2
 nibabel>=5.3.2
@@ -49,43 +49,14 @@ twilio>=8.11.0
 
 # Reporting
 reportlab>=4.0.8
-openpyxl>=3.1.2
-python-docx>=1.1.0
-pdfkit>=1.0.0
 
-# Resource Management
-schedule>=1.2.1
-APScheduler>=3.10.4
-
-# Development and Testing
-black>=23.12.1
-flake8>=7.0.0
-pytest>=7.4.4
-pytest-django>=4.7.0
-factory-boy>=3.3.0
-coverage>=7.4.0
-mypy>=1.8.0
-
-# Deployment
-gunicorn>=21.2.0
-whitenoise>=6.6.0
-
-# Documentation
-sphinx>=7.1.2
-sphinx-rtd-theme>=1.3.0
-
-# Monitoring and Error Tracking
-sentry-sdk>=1.39.1
-
-# Additional dependencies
-Faker>=22.0.0
-stripe>=8.0.0
-python-dateutil>=2.8.2
-requests>=2.31.0
-boto3>=1.34.11
-django-storages>=1.14.2
-
-# Security dependencies
-safety>=3.0.1
-bandit>=1.7.6
-pyOpenSSL>=23.3.0
+# Additional Dependencies
+fastapi>=0.110.0
+uvicorn>=0.34.0
+pydantic>=2.10.4
+aiohttp-retry>=2.9.1
+Flask>=3.1.0
+Flask-Cors>=5.0.0
+nltk>=3.9.1
+openai>=1.59.4
+qrcode>=8.0
