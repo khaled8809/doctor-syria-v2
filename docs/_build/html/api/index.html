@@ -1,0 +1,244 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ar" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>واجهة برمجة التطبيقات (API) &mdash; Doctor Syria  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=bd8ea2bd"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="../_static/translations.js?v=87cb2081"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="بحث" href="../search.html" />
+    <link rel="prev" title="الوحدات البرمجية" href="../modules/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Doctor Syria
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">المحتويات:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">مقدمة</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">التثبيت والإعداد</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/index.html">الوحدات البرمجية</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">واجهة برمجة التطبيقات (API)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">نظرة عامة</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">نقاط النهاية الرئيسية</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id3">المرضى</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id4">المواعيد</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">الأطباء</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">العيادات</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">المصادقة</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id8">أمثلة</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#python">Python</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#javascript">JavaScript</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Doctor Syria</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">واجهة برمجة التطبيقات (API)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="api">
+<h1>واجهة برمجة التطبيقات (API)<a class="headerlink" href="#api" title="Link to this heading"></a></h1>
+<section id="id1">
+<h2>نظرة عامة<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<p>يوفر نظام Doctor Syria واجهة برمجة تطبيقات (API) كاملة تتيح التكامل مع الأنظمة الأخرى. يستخدم النظام Django REST framework ويدعم:</p>
+<ul class="simple">
+<li><p>مصادقة JWT</p></li>
+<li><p>تحكم بالصلاحيات</p></li>
+<li><p>تصفية وترتيب النتائج</p></li>
+<li><p>صفحات النتائج</p></li>
+<li><p>توثيق تلقائي</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>نقاط النهاية الرئيسية<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="id3">
+<h3>المرضى<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /api/patients/
+POST /api/patients/
+GET /api/patients/{id}/
+PUT /api/patients/{id}/
+DELETE /api/patients/{id}/
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h3>المواعيد<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /api/appointments/
+POST /api/appointments/
+GET /api/appointments/{id}/
+PUT /api/appointments/{id}/
+DELETE /api/appointments/{id}/
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>الأطباء<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /api/doctors/
+POST /api/doctors/
+GET /api/doctors/{id}/
+PUT /api/doctors/{id}/
+DELETE /api/doctors/{id}/
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3>العيادات<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>GET /api/clinics/
+POST /api/clinics/
+GET /api/clinics/{id}/
+PUT /api/clinics/{id}/
+DELETE /api/clinics/{id}/
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id7">
+<h2>المصادقة<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<p>جميع نقاط النهاية تتطلب مصادقة باستخدام JWT. للحصول على الرمز:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>POST /api/token/
+{
+    &quot;username&quot;: &quot;your-username&quot;,
+    &quot;password&quot;: &quot;your-password&quot;
+}
+</pre></div>
+</div>
+<p>استخدام الرمز في الطلبات:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Authorization: Bearer &lt;your-token&gt;
+</pre></div>
+</div>
+</section>
+<section id="id8">
+<h2>أمثلة<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<section id="python">
+<h3>Python<a class="headerlink" href="#python" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
+
+<span class="c1"># الحصول على الرمز</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+    <span class="s1">&#39;https://your-domain.com/api/token/&#39;</span><span class="p">,</span>
+    <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;username&#39;</span><span class="p">:</span> <span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="s1">&#39;pass&#39;</span><span class="p">}</span>
+<span class="p">)</span>
+<span class="n">token</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s1">&#39;access&#39;</span><span class="p">]</span>
+
+<span class="c1"># استخدام API</span>
+<span class="n">headers</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Authorization&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;Bearer </span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">}</span>
+<span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+    <span class="s1">&#39;https://your-domain.com/api/patients/&#39;</span><span class="p">,</span>
+    <span class="n">headers</span><span class="o">=</span><span class="n">headers</span>
+<span class="p">)</span>
+<span class="n">patients</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="javascript">
+<h3>JavaScript<a class="headerlink" href="#javascript" title="Link to this heading"></a></h3>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="c1">// الحصول على الرمز</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">response</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="s1">&#39;https://your-domain.com/api/token/&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">method</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;POST&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="nx">headers</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s1">&#39;Content-Type&#39;</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;application/json&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nx">body</span><span class="o">:</span><span class="w"> </span><span class="nb">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span>
+<span class="w">        </span><span class="nx">username</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;user&#39;</span><span class="p">,</span>
+<span class="w">        </span><span class="nx">password</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;pass&#39;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">}),</span>
+<span class="p">});</span>
+<span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">access</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">();</span>
+
+<span class="c1">// استخدام API</span>
+<span class="kd">const</span><span class="w"> </span><span class="nx">patients</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">fetch</span><span class="p">(</span><span class="s1">&#39;https://your-domain.com/api/patients/&#39;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">headers</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s1">&#39;Authorization&#39;</span><span class="o">:</span><span class="w"> </span><span class="sb">`Bearer </span><span class="si">${</span><span class="nx">access</span><span class="si">}</span><span class="sb">`</span><span class="p">,</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="nx">res</span><span class="w"> </span><span class="p">=&gt;</span><span class="w"> </span><span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">());</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../modules/index.html" class="btn btn-neutral float-left" title="الوحدات البرمجية" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Doctor Syria Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

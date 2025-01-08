@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ar" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>التثبيت والإعداد &mdash; Doctor Syria  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=bd8ea2bd"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script src="_static/translations.js?v=87cb2081"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="بحث" href="search.html" />
+    <link rel="next" title="الوحدات البرمجية" href="modules/index.html" />
+    <link rel="prev" title="مقدمة" href="introduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Doctor Syria
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">المحتويات:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">مقدمة</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">التثبيت والإعداد</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">متطلبات النظام</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">التثبيت</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id4">1. استنساخ المشروع</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id5">2. إعداد البيئة الافتراضية</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id6">3. تثبيت المتطلبات</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id7">4. إعداد قاعدة البيانات</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id8">5. إنشاء المستخدم المدير</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id9">6. تشغيل الخادم</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#id10">الإعداد للإنتاج</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id11">1. إعداد المتغيرات البيئية</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#celery">2. إعداد Celery</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#nginx">3. إعداد Nginx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ssl">4. إعداد SSL</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules/index.html">الوحدات البرمجية</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">واجهة برمجة التطبيقات (API)</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Doctor Syria</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">التثبيت والإعداد</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>التثبيت والإعداد<a class="headerlink" href="#id1" title="Link to this heading"></a></h1>
+<section id="id2">
+<h2>متطلبات النظام<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Python 3.13 أو أحدث</p></li>
+<li><p>PostgreSQL 13 أو أحدث</p></li>
+<li><p>Redis 6 أو أحدث</p></li>
+<li><p>وحدة معالجة تدعم CUDA (اختياري، للذكاء الاصطناعي)</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>التثبيت<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<section id="id4">
+<h3>1. استنساخ المشروع<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/khaled8809/doctor-syria-v2.git
+<span class="nb">cd</span><span class="w"> </span>doctor-syria-v2
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>2. إعداد البيئة الافتراضية<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>venv/bin/activate<span class="w">  </span><span class="c1"># على Linux/Mac</span>
+<span class="c1"># أو</span>
+venv<span class="se">\S</span>cripts<span class="se">\a</span>ctivate<span class="w">  </span><span class="c1"># على Windows</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3>3. تثبيت المتطلبات<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h3>4. إعداد قاعدة البيانات<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>manage.py<span class="w"> </span>migrate
+</pre></div>
+</div>
+</section>
+<section id="id8">
+<h3>5. إنشاء المستخدم المدير<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>manage.py<span class="w"> </span>createsuperuser
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h3>6. تشغيل الخادم<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>manage.py<span class="w"> </span>runserver
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id10">
+<h2>الإعداد للإنتاج<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<section id="id11">
+<h3>1. إعداد المتغيرات البيئية<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<p>قم بإنشاء ملف <cite>.env</cite> في المجلد الرئيسي وأضف المتغيرات التالية:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">DEBUG</span><span class="o">=</span>False
+<span class="nv">SECRET_KEY</span><span class="o">=</span>your-secret-key-here
+<span class="nv">ALLOWED_HOSTS</span><span class="o">=</span>your-domain.com,www.your-domain.com
+<span class="nv">DATABASE_URL</span><span class="o">=</span>postgres://user:password@host:port/dbname
+<span class="nv">REDIS_URL</span><span class="o">=</span>redis://host:port/0
+</pre></div>
+</div>
+</section>
+<section id="celery">
+<h3>2. إعداد Celery<a class="headerlink" href="#celery" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>celery<span class="w"> </span>-A<span class="w"> </span>doctor_syria<span class="w"> </span>worker<span class="w"> </span>-l<span class="w"> </span>info
+celery<span class="w"> </span>-A<span class="w"> </span>doctor_syria<span class="w"> </span>beat<span class="w"> </span>-l<span class="w"> </span>info
+</pre></div>
+</div>
+</section>
+<section id="nginx">
+<h3>3. إعداد Nginx<a class="headerlink" href="#nginx" title="Link to this heading"></a></h3>
+<div class="highlight-nginx notranslate"><div class="highlight"><pre><span></span><span class="k">server</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kn">listen</span><span class="w"> </span><span class="mi">80</span><span class="p">;</span>
+<span class="w">    </span><span class="kn">server_name</span><span class="w"> </span><span class="s">your-domain.com</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">proxy_pass</span><span class="w"> </span><span class="s">http://127.0.0.1:8000</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">Host</span><span class="w"> </span><span class="nv">$host</span><span class="p">;</span>
+<span class="w">        </span><span class="kn">proxy_set_header</span><span class="w"> </span><span class="s">X-Real-IP</span><span class="w"> </span><span class="nv">$remote_addr</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/static/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">alias</span><span class="w"> </span><span class="s">/path/to/static/</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kn">location</span><span class="w"> </span><span class="s">/media/</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kn">alias</span><span class="w"> </span><span class="s">/path/to/media/</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="ssl">
+<h3>4. إعداد SSL<a class="headerlink" href="#ssl" title="Link to this heading"></a></h3>
+<p>نوصي باستخدام Let's Encrypt للحصول على شهادة SSL مجانية:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>certbot<span class="w"> </span>--nginx<span class="w"> </span>-d<span class="w"> </span>your-domain.com
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="introduction.html" class="btn btn-neutral float-left" title="مقدمة" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules/index.html" class="btn btn-neutral float-right" title="الوحدات البرمجية" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Doctor Syria Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
