@@ -1,106 +1,72 @@
-[![GitHub Pages](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/pages.yml/badge.svg)](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/pages.yml)
+# Doctor Syria - نظام إدارة المستشفيات والعيادات الطبية
 
-# Doctor Syria Platform
+<div dir="rtl">
 
-نظام إدارة المستشفيات والعيادات الطبية
+## نظرة عامة
 
-## هيكل المشروع
+Doctor Syria هو نظام متكامل لإدارة المستشفيات والعيادات الطبية في سوريا. يوفر النظام مجموعة شاملة من الأدوات لإدارة جميع جوانب المؤسسات الطبية.
 
-```
-doctor-syria-v2/
-├── accounts/            # إدارة المستخدمين والصلاحيات
-├── analytics/          # تحليلات البيانات
-├── api/               # واجهة برمجة التطبيقات
-├── appointments/      # إدارة المواعيد
-├── billing/          # نظام الفواتير
-├── core/             # وظائف أساسية مشتركة
-├── doctor_syria/     # إعدادات المشروع الرئيسية
-├── hospitals/        # إدارة المستشفيات
-├── medical_records/  # السجلات الطبية
-├── monitoring/       # مراقبة النظام
-├── security/         # أمان النظام
-└── templates/        # قوالب النظام
-```
+## الميزات الرئيسية
 
-## المتطلبات
+- ✨ إدارة المرضى والمواعيد
+- 🏥 إدارة المستشفيات والعيادات
+- 👨‍⚕️ إدارة الأطباء والموظفين
+- 💊 نظام الصيدلية والمخزون الطبي
+- 📊 التقارير والإحصائيات
+- 💳 نظام الفوترة والمحاسبة
+- 🔔 نظام التنبيهات والإشعارات
+- 📱 تطبيق موبايل للمرضى والأطباء
 
-- Python 3.9+
-- PostgreSQL 13+
-- Redis 6+
+## المتطلبات التقنية
 
-## التثبيت
+- Python 3.13 أو أحدث
+- PostgreSQL 13 أو أحدث
+- Redis 6 أو أحدث
+- Node.js 18 أو أحدث (للواجهة الأمامية)
 
-1. إنشاء بيئة Python افتراضية:
+## التثبيت السريع
+
 ```bash
+# استنساخ المشروع
+git clone https://github.com/khaled8809/doctor-syria-v2.git
+cd doctor-syria-v2
+
+# إنشاء البيئة الافتراضية
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
+source venv/bin/activate  # على Linux/Mac
+# أو
+venv\Scripts\activate  # على Windows
 
-2. تثبيت المتطلبات:
-```bash
+# تثبيت المتطلبات
 pip install -r requirements.txt
-```
 
-3. نسخ ملف `.env.example` إلى `.env` وتعديل الإعدادات:
-```bash
-cp .env.example .env
-```
-
-4. تهيئة قاعدة البيانات:
-```bash
+# إعداد قاعدة البيانات
 python manage.py migrate
-```
 
-5. إنشاء مستخدم مدير:
-```bash
-python manage.py createsuperuser
-```
-
-## التشغيل
-
-1. تشغيل الخادم المحلي:
-```bash
+# تشغيل الخادم
 python manage.py runserver
 ```
 
-2. تشغيل خادم Redis:
-```bash
-redis-server
-```
+## الوثائق
 
-3. تشغيل Celery (إذا كان مطلوباً):
-```bash
-celery -A doctor_syria worker -l info
-```
-
-## كيفية المساهمة
-
-للمساهمة في المشروع، يرجى اتباع الخطوات التالية:
-1. قم بإنشاء فرع جديد.
-2. قم بإجراء التعديلات المطلوبة.
-3. قم بإرسال طلب سحب (Pull Request).
-
-## إعدادات الأمان
-
-تأكد من تفعيل جميع إعدادات الأمان مثل المصادقة الثنائية وCSRF protection.
-
-## إدارة الإعدادات
-
-تأكد من إعداد جميع المتغيرات البيئية المطلوبة في ملف `.env` بناءً على ملف `.env.example`. 
-
-## الأمان
-
-- تم تفعيل HTTPS
-- المصادقة الثنائية مفعلة
-- تم تفعيل CSRF protection
-- تم تفعيل rate limiting
-- تم تفعيل HSTS
+- [دليل التثبيت](https://khaled8809.github.io/doctor-syria-v2/installation.html)
+- [دليل المستخدم](https://khaled8809.github.io/doctor-syria-v2/user-guide.html)
+- [دليل المطور](https://khaled8809.github.io/doctor-syria-v2/developer-guide.html)
+- [توثيق API](https://khaled8809.github.io/doctor-syria-v2/api/)
 
 ## المساهمة
 
-يرجى قراءة [CONTRIBUTING.md](CONTRIBUTING.md) للحصول على تفاصيل حول عملية المساهمة في المشروع.
+نرحب بمساهماتكم! يرجى قراءة [دليل المساهمة](CONTRIBUTING.md) للحصول على التفاصيل حول عملية التطوير وإرسال التحسينات.
 
 ## الترخيص
 
-هذا المشروع مرخص تحت [رخصة MIT](LICENSE).
+هذا المشروع مرخص تحت رخصة BSD. انظر ملف [LICENSE](LICENSE) للحصول على التفاصيل.
+
+## الدعم
+
+إذا واجهت أي مشاكل أو لديك أسئلة:
+- راجع [الأسئلة الشائعة](https://khaled8809.github.io/doctor-syria-v2/faq.html)
+- افتح [issue](https://github.com/khaled8809/doctor-syria-v2/issues)
+- تواصل معنا على البريد الإلكتروني: support@doctor-syria.com
+
+</div>
