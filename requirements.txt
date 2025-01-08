@@ -1,23 +1,23 @@
 # Core requirements
-Django>=4.2.0
-djangorestframework>=3.14.0
-django-cors-headers>=4.3.0
+Django>=4.2.3
+djangorestframework>=3.14.1
+django-cors-headers>=4.3.1
 django-filter==23.5
 django-allauth==0.59.0
-drf-yasg==1.21.7
+drf-yasg==1.21.8
 channels==4.0.0
 
 # Database and caching
-psycopg2-binary>=2.9.0
+psycopg2-binary>=2.9.1
 django-redis==5.4.0
-redis>=5.0.0
+redis>=5.0.1
 
 # Authentication and security
 django-rest-auth==0.9.5
-djangorestframework-simplejwt==5.3.0
+djangorestframework-simplejwt==5.3.1
 django-phonenumber-field==7.2.0
-phonenumbers==8.13.27
-python-dotenv==1.0.0
+phonenumbers==8.13.28
+python-dotenv==1.0.1
 pyotp==2.9.0
 django-user-sessions==2.0.0
 django-axes==6.1.1
@@ -27,37 +27,35 @@ Pillow==10.4.0
 python-magic==0.4.27
 
 # Task Queue and Async
-celery>=5.3.0
+celery>=5.3.1
 flower==2.0.1
-channels-redis==4.1.0
+channels-redis==4.0.0
 
 # AI and Machine Learning
-opencv-python>=4.8.1.78
-numpy>=2.1.0
-tensorflow>=2.13.0
-scikit-learn>=1.3.0
-pandas>=2.1.0
+opencv-python>=4.8.1.79
+numpy>=2.1.1
+scikit-learn>=1.3.1
+pandas>=2.1.1
 numpy>=1.24.0
 
 # Medical Imaging
-pydicom==2.4.3
-nibabel==5.1.0
+pydicom==2.4.4
+nibabel==5.3.2
 
 # Medical Device Integration
-pydicom>=2.4.0  # للتعامل مع صور الأشعة
-hl7>=0.4.0  # لبروتوكول HL7
-pynetdicom>=2.0.0
+pydicom>=2.4.1  # للتعامل مع صور الأشعة
+hl7>=0.4.1  # لبروتوكول HL7
+pynetdicom>=2.0.1
 
 # Communication
 channels>=4.0.0  # للدردشة المباشرة
-twilio>=8.10.0  # للمكالمات الصوتية والفيديو
-agora-python-sdk>=1.0.0  # لمكالمات الفيديو
+twilio>=8.10.1  # للمكالمات الصوتية والفيديو
 
 # Reporting
-reportlab>=4.0.0  # لإنشاء ملفات PDF
-openpyxl>=3.1.0  # للتعامل مع ملفات Excel
-python-docx>=0.8.11
-pdfkit>=1.0.0
+reportlab>=4.0.1  # لإنشاء ملفات PDF
+openpyxl>=3.1.1  # للتعامل مع ملفات Excel
+python-docx>=0.8.12
+pdfkit==1.0.0
 
 # Resource Management
 schedule>=1.2.0
