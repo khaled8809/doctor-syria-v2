@@ -207,6 +207,11 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
+# Two-Factor Authentication Settings
+TWO_FACTOR_ISSUER_NAME = 'Doctor Syria'
+TWO_FACTOR_BACKUP_TOKENS_COUNT = 8
+TWO_FACTOR_SETUP_TIMEOUT = 300  # 5 minutes
+
 # Storage
 if not DEBUG:
     # AWS S3
