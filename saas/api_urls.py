@@ -1,18 +1,15 @@
-from rest_framework.routers import DefaultRouter
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import api_views
 
 router = DefaultRouter()
-router.register(r'reports', api_views.ReportViewSet)
-router.register(r'medical-devices', api_views.MedicalDeviceViewSet)
-router.register(r'device-readings', api_views.DeviceReadingViewSet)
-router.register(r'ai-models', api_views.AIModelViewSet)
-router.register(r'ai-predictions', api_views.AIPredictionViewSet)
-router.register(r'resources', api_views.ResourceViewSet)
-router.register(r'resource-schedules', api_views.ResourceScheduleViewSet)
-router.register(r'chat-rooms', api_views.ChatRoomViewSet)
-router.register(r'messages', api_views.MessageViewSet)
-router.register(r'video-calls', api_views.VideoCallViewSet)
+router.register(r'tenants', api_views.TenantViewSet)
+router.register(r'tenant-users', api_views.TenantUserViewSet)
+router.register(r'subscription-features', api_views.SubscriptionFeatureViewSet)
+router.register(r'subscription-plans', api_views.SubscriptionPlanViewSet)
+router.register(r'subscriptions', api_views.SubscriptionViewSet)
+router.register(r'usage', api_views.UsageViewSet)
+router.register(r'invoices', api_views.InvoiceViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

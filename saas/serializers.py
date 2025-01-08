@@ -1,105 +1,65 @@
 from rest_framework import serializers
-from .models import (
-    Report, MedicalDevice, DeviceReading, AIModel, AIPrediction,
-    Resource, ResourceSchedule, ChatRoom, Message, VideoCall
+from django.contrib.auth.models import User
+from saas_core.models import (
+    Tenant,
+    TenantUser,
+    SubscriptionFeature,
+    SubscriptionPlan,
+    Subscription,
+    Usage,
+    Invoice
 )
 
-class ReportSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Report
-        fields = '__all__'
-        read_only_fields = ('tenant', 'created_by', 'created_at')
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name')
 
-class MedicalDeviceSerializer(serializers.ModelSerializer):
+class TenantSerializer(serializers.ModelSerializer):
     class Meta:
-        model = MedicalDevice
-        fields = '__all__'
-        read_only_fields = ('tenant',)
+        model = Tenant
+        fields = ('id', 'name', 'subdomain', 'created_at', 'is_active')
 
-class DeviceReadingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DeviceReading
-        fields = '__all__'
-
-class AIModelSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AIModel
-        fields = '__all__'
-        read_only_fields = ('tenant', 'accuracy', 'last_trained')
-
-class AIPredictionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AIPrediction
-        fields = '__all__'
-        read_only_fields = ('timestamp', 'verified_by')
-
-class ResourceSerializer(serializers.ModelSerializer):
-    availability_percentage = serializers.SerializerMethodField()
+class TenantUserSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    tenant = TenantSerializer(read_only=True)
 
     class Meta:
-        model = Resource
-        fields = '__all__'
-        read_only_fields = ('tenant', 'current_usage')
+        model = TenantUser
+        fields = ('id', 'user', 'tenant', 'role', 'is_active')
 
-    def get_availability_percentage(self, obj):
-        if obj.capacity == 0:
-            return 0
-        return ((obj.capacity - obj.current_usage) / obj.capacity) * 100
+class SubscriptionFeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubscriptionFeature
+        fields = ('id', 'name', 'code', 'description', 'is_active')
 
-class ResourceScheduleSerializer(serializers.ModelSerializer):
-    resource_name = serializers.CharField(source='resource.name', read_only=True)
-    assigned_to_name = serializers.CharField(source='assigned_to.get_full_name', read_only=True)
+class SubscriptionPlanSerializer(serializers.ModelSerializer):
+    features = SubscriptionFeatureSerializer(many=True, read_only=True)
 
     class Meta:
-        model = ResourceSchedule
-        fields = '__all__'
-        read_only_fields = ('status',)
+        model = SubscriptionPlan
+        fields = ('id', 'name', 'description', 'price', 'billing_cycle', 'features', 'is_active', 'created_at', 'updated_at')
 
-    def validate(self, data):
-        if data['start_time'] >= data['end_time']:
-            raise serializers.ValidationError("End time must be after start time")
-        return data
-
-class ChatRoomSerializer(serializers.ModelSerializer):
-    participant_count = serializers.SerializerMethodField()
-    last_message = serializers.SerializerMethodField()
+class SubscriptionSerializer(serializers.ModelSerializer):
+    tenant = TenantSerializer(read_only=True)
+    plan = SubscriptionPlanSerializer(read_only=True)
 
     class Meta:
-        model = ChatRoom
-        fields = '__all__'
-        read_only_fields = ('tenant', 'created_at', 'last_activity')
+        model = Subscription
+        fields = ('id', 'tenant', 'plan', 'start_date', 'end_date', 'status', 'created_at', 'updated_at')
 
-    def get_participant_count(self, obj):
-        return obj.participants.count()
-
-    def get_last_message(self, obj):
-        last_msg = obj.message_set.order_by('-created_at').first()
-        if last_msg:
-            return {
-                'content': last_msg.content[:50],
-                'sender': last_msg.sender.get_full_name(),
-                'timestamp': last_msg.created_at
-            }
-        return None
-
-class MessageSerializer(serializers.ModelSerializer):
-    sender_name = serializers.CharField(source='sender.get_full_name', read_only=True)
+class UsageSerializer(serializers.ModelSerializer):
+    tenant = TenantSerializer(read_only=True)
+    feature = SubscriptionFeatureSerializer(read_only=True)
 
     class Meta:
-        model = Message
-        fields = '__all__'
-        read_only_fields = ('sender', 'created_at', 'is_read')
+        model = Usage
+        fields = ('id', 'tenant', 'feature', 'date', 'count')
 
-class VideoCallSerializer(serializers.ModelSerializer):
-    initiator_name = serializers.CharField(source='initiator.get_full_name', read_only=True)
-    duration = serializers.SerializerMethodField()
+class InvoiceSerializer(serializers.ModelSerializer):
+    tenant = TenantSerializer(read_only=True)
+    subscription = SubscriptionSerializer(read_only=True)
 
     class Meta:
-        model = VideoCall
-        fields = '__all__'
-        read_only_fields = ('initiator', 'start_time', 'end_time')
-
-    def get_duration(self, obj):
-        if obj.end_time and obj.start_time:
-            return (obj.end_time - obj.start_time).total_seconds()
-        return None
+        model = Invoice
+        fields = ('id', 'tenant', 'subscription', 'amount', 'status', 'due_date', 'paid_date', 'created_at', 'updated_at')
