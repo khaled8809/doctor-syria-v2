@@ -2,8 +2,105 @@ from django.db import models
 from django.contrib.auth.models import User
 from saas_core.models import Tenant
 
+class SubscriptionPlan(models.Model):
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=50, unique=True)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    billing_cycle = models.CharField(
+        max_length=20,
+        choices=[
+            ('monthly', 'Monthly'),
+            ('yearly', 'Yearly'),
+        ]
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        app_label = 'saas'
+
+class SubscriptionFeature(models.Model):
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.CASCADE, related_name='features')
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=50)
+    value = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.plan.name} - {self.name}"
+
+    class Meta:
+        app_label = 'saas'
+
+class Subscription(models.Model):
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='subscriptions')
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.PROTECT)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('active', 'Active'),
+            ('expired', 'Expired'),
+            ('cancelled', 'Cancelled'),
+            ('suspended', 'Suspended'),
+        ],
+        default='active'
+    )
+    auto_renew = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.tenant} - {self.plan.name}"
+
+    class Meta:
+        app_label = 'saas'
+
+class Usage(models.Model):
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, related_name='usage')
+    feature = models.ForeignKey(SubscriptionFeature, on_delete=models.CASCADE)
+    value = models.JSONField()
+    recorded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.subscription} - {self.feature.name}"
+
+    class Meta:
+        app_label = 'saas'
+
+class Invoice(models.Model):
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, related_name='invoices')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('pending', 'Pending'),
+            ('paid', 'Paid'),
+            ('failed', 'Failed'),
+            ('cancelled', 'Cancelled'),
+        ],
+        default='pending'
+    )
+    due_date = models.DateTimeField()
+    paid_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.subscription} - {self.amount}"
+
+    class Meta:
+        app_label = 'saas'
+
 class MedicalCompany(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='medical_companies')
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='medical_companies')
     name = models.CharField(max_length=200)
     license_number = models.CharField(max_length=100, unique=True)
     contact_person = models.CharField(max_length=200)
@@ -29,7 +126,7 @@ class MedicalCompany(models.Model):
         app_label = 'saas'
 
 class Warehouse(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='warehouses')
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='warehouses')
     WAREHOUSE_TYPES = [
         ('MEDICAL_SUPPLIES', 'Medical Supplies'),
         ('MEDICATIONS', 'Medications'),
@@ -61,7 +158,7 @@ class Warehouse(models.Model):
         app_label = 'saas'
 
 class MedicalSupply(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='medical_supplies')
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='medical_supplies')
     SUPPLY_TYPES = [
         ('MEDICATION', 'Medication'),
         ('EQUIPMENT', 'Medical Equipment'),
@@ -103,7 +200,7 @@ class MedicalSupply(models.Model):
         app_label = 'saas'
 
 class InventoryItem(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='inventory_items')
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='inventory_items')
     supply = models.ForeignKey(MedicalSupply, on_delete=models.CASCADE, related_name='inventory_items')
     warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='inventory_items')
     batch_number = models.CharField(max_length=100)
@@ -138,7 +235,7 @@ class InventoryItem(models.Model):
         return days_to_expiry <= self.supply.expiry_alert_days
 
 class InventoryTransaction(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='inventory_transactions')
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='inventory_transactions')
     TRANSACTION_TYPES = [
         ('RECEIVE', 'Receive'),
         ('DISPENSE', 'Dispense'),
@@ -181,7 +278,7 @@ class InventoryTransaction(models.Model):
         app_label = 'saas'
 
 class PurchaseOrder(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='purchase_orders')
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='purchase_orders')
     ORDER_STATUS = [
         ('DRAFT', 'Draft'),
         ('PENDING', 'Pending Approval'),
@@ -246,7 +343,7 @@ class PurchaseOrderItem(models.Model):
         app_label = 'saas'
 
 class Hospital(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='hospitals')
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='hospitals')
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50, unique=True)
     city = models.CharField(max_length=100)
@@ -300,7 +397,7 @@ class Department(models.Model):
         app_label = 'saas'
 
 class Doctor(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='doctors')
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='doctors')
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     specialization = models.CharField(max_length=100)
     license_number = models.CharField(max_length=50)
@@ -322,7 +419,7 @@ class Doctor(models.Model):
         app_label = 'saas'
 
 class Patient(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='patients')
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='patients')
     name = models.CharField(max_length=100)
     age = models.IntegerField()
     gender = models.CharField(max_length=10)
@@ -362,7 +459,7 @@ class Prescription(models.Model):
         app_label = 'saas'
 
 class Clinic(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='clinics', null=True)
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='clinics')
     name = models.CharField(max_length=100)
     location = models.CharField(max_length=200)
     specialization = models.CharField(max_length=100)
@@ -377,7 +474,7 @@ class Clinic(models.Model):
         app_label = 'saas'
 
 class ClinicService(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='clinic_services', null=True)
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='clinic_services')
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -391,7 +488,7 @@ class ClinicService(models.Model):
         app_label = 'saas'
 
 class ClinicEquipment(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='clinic_equipment', null=True)
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='clinic_equipment')
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     status = models.CharField(max_length=20)
@@ -405,7 +502,7 @@ class ClinicEquipment(models.Model):
         app_label = 'saas'
 
 class Medicine(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='medicines', null=True)
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='medicines')
     name = models.CharField(max_length=100)
     manufacturer = models.CharField(max_length=100)
     category = models.CharField(max_length=50)
@@ -438,7 +535,7 @@ class PharmacyOrder(models.Model):
         app_label = 'saas'
 
 class Manufacturer(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='manufacturers', null=True)
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='manufacturers')
     name = models.CharField(max_length=100)
     country = models.CharField(max_length=50)
     contact = models.JSONField()
@@ -453,7 +550,7 @@ class Manufacturer(models.Model):
         app_label = 'saas'
 
 class Product(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='products', null=True)
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='products')
     name = models.CharField(max_length=100)
     manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)
     category = models.CharField(max_length=50)
@@ -474,7 +571,7 @@ class Product(models.Model):
         app_label = 'saas'
 
 class CommerceOrder(models.Model):
-    tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE, related_name='commerce_orders', null=True)
+    tenant = models.ForeignKey(Tenant, on_delete=models.SET_NULL, null=True, related_name='commerce_orders')
     customer_name = models.CharField(max_length=100)
     customer_type = models.CharField(max_length=20)
     items = models.JSONField()

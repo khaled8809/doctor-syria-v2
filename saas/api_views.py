@@ -8,7 +8,7 @@ from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from saas_core.models import (
+from .models import (
     Tenant,
     TenantUser,
     SubscriptionFeature,

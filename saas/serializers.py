@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from saas_core.models import (
+from .models import (
     Tenant,
     TenantUser,
     SubscriptionFeature,
@@ -23,7 +23,7 @@ class TenantSerializer(serializers.ModelSerializer):
 class TenantUserSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     tenant = TenantSerializer(read_only=True)
-
+    
     class Meta:
         model = TenantUser
         fields = ('id', 'user', 'tenant', 'role', 'is_active')
@@ -35,7 +35,7 @@ class SubscriptionFeatureSerializer(serializers.ModelSerializer):
 
 class SubscriptionPlanSerializer(serializers.ModelSerializer):
     features = SubscriptionFeatureSerializer(many=True, read_only=True)
-
+    
     class Meta:
         model = SubscriptionPlan
         fields = ('id', 'name', 'description', 'price', 'billing_cycle', 'features', 'is_active', 'created_at', 'updated_at')
@@ -43,7 +43,7 @@ class SubscriptionPlanSerializer(serializers.ModelSerializer):
 class SubscriptionSerializer(serializers.ModelSerializer):
     tenant = TenantSerializer(read_only=True)
     plan = SubscriptionPlanSerializer(read_only=True)
-
+    
     class Meta:
         model = Subscription
         fields = ('id', 'tenant', 'plan', 'start_date', 'end_date', 'status', 'created_at', 'updated_at')
@@ -51,7 +51,7 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 class UsageSerializer(serializers.ModelSerializer):
     tenant = TenantSerializer(read_only=True)
     feature = SubscriptionFeatureSerializer(read_only=True)
-
+    
     class Meta:
         model = Usage
         fields = ('id', 'tenant', 'feature', 'date', 'count')
@@ -59,7 +59,7 @@ class UsageSerializer(serializers.ModelSerializer):
 class InvoiceSerializer(serializers.ModelSerializer):
     tenant = TenantSerializer(read_only=True)
     subscription = SubscriptionSerializer(read_only=True)
-
+    
     class Meta:
         model = Invoice
         fields = ('id', 'tenant', 'subscription', 'amount', 'status', 'due_date', 'paid_date', 'created_at', 'updated_at')

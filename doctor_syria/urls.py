@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic import TemplateView
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -20,6 +21,10 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    # الصفحة الرئيسية
+    path('', TemplateView.as_view(template_name='index.html'), name='home'),
+    
+    # لوحة التحكم
     path('admin/', admin.site.urls),
     
     # توثيق API
