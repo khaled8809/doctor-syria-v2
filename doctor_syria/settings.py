@@ -17,12 +17,20 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # تحسين إعدادات الأمان - تعطيل مؤقتاً للتطوير المحلي
-SECURE_SSL_REDIRECT = False
-SECURE_HSTS_SECONDS = 0
-SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-SECURE_HSTS_PRELOAD = False
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    SECURE_SSL_REDIRECT = False
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 
 # Application definition
 INSTALLED_APPS = [
@@ -38,16 +46,31 @@ INSTALLED_APPS = [
     'django_filters',
     'drf_yasg',
     'corsheaders',
+    'django_celery_beat',
+    'django_celery_results',
+    'channels',
+    'storages',
     
     # Local apps
-    'saas.apps.SaasConfig',
-    'saas_core.apps.SaasCoreConfig',
-    'appointments',
-    'doctor.apps.DoctorConfig',
+    'accounts.apps.AccountsConfig',
+    'analytics.apps.AnalyticsConfig',
+    'appointments.apps.AppointmentsConfig',
+    'billing.apps.BillingConfig',
     'clinics.apps.ClinicsConfig',
-    'medical_store.apps.MedicalStoreConfig',
     'commerce.apps.CommerceConfig',
+    'core.apps.CoreConfig',
+    'doctor.apps.DoctorConfig',
+    'hospitals.apps.HospitalsConfig',
+    'laboratory.apps.LaboratoryConfig',
+    'medical_store.apps.MedicalStoreConfig',
+    'monitoring.apps.MonitoringConfig',
+    'notifications.apps.NotificationsConfig',
     'patient_records.apps.PatientRecordsConfig',
+    'pharmacy.apps.PharmacyConfig',
+    'saas.apps.SaasConfig',
+    'security.apps.SecurityConfig',
+    'system_notifications.apps.SystemNotificationsConfig',
+    'utils.apps.UtilsConfig',
 ]
 
 MIDDLEWARE = [
@@ -138,18 +161,18 @@ PUBLIC_URLS = [
 
 # REST Framework settings
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ],
-    'DEFAULT_FILTER_BACKENDS': [
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
-    ],
+    ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
 }
@@ -159,5 +182,23 @@ SWAGGER_SETTINGS = {
         'Basic': {
             'type': 'basic'
         }
+    },
+}
+
+# Celery settings
+CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Damascus'
+
+# Channels settings
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [os.getenv('REDIS_URL', 'redis://localhost:6379/0')],
+        },
     },
 }
