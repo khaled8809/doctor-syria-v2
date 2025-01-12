@@ -20,30 +20,44 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json'
 
       - name: Install dependencies
         working-directory: ./frontend
+        run: npm ci
+
+      - name: Update Vite config
+        working-directory: ./frontend
         run: |
-          npm install
-          npm ci
+          echo 'export default {
+            base: "/doctor-syria-v2/",
+            build: {
+              outDir: "dist",
+              assetsDir: "assets",
+              sourcemap: true
+            }
+          }' > vite.config.js
 
       - name: Build
         working-directory: ./frontend
         env:
-          CI: false
+          VITE_API_URL: 'https://api.doctor-syria.com'
+          VITE_SOCKET_URL: 'wss://api.doctor-syria.com'
         run: npm run build
 
-      - name: Copy build files
+      - name: Prepare deployment
         run: |
-          cp -r frontend/build/* .
-          cp frontend/build/index.html .
-          touch .nojekyll
+          mkdir -p dist
+          cp -r frontend/dist/* dist/
+          cp frontend/dist/index.html dist/
+          touch dist/.nojekyll
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: ./dist
           publish_branch: gh-pages
           force_orphan: true
           enable_jekyll: false
