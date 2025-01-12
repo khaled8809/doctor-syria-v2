@@ -12,7 +12,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor': [
+          vendor: [
             'react',
             'react-dom',
             'react-router-dom',
@@ -29,9 +29,13 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:8000',
+        target: process.env.VITE_API_URL || 'http://localhost:8000',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/ws': {
+        target: process.env.VITE_SOCKET_URL || 'ws://localhost:8000',
+        ws: true
       }
     }
   },

@@ -20,44 +20,61 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'npm'
-          cache-dependency-path: './frontend/package-lock.json'
 
       - name: Install dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: |
+          npm install
+          rm -rf dist
 
       - name: Update Vite config
         working-directory: ./frontend
         run: |
-          echo 'export default {
+          echo 'import { defineConfig } from "vite";
+          import react from "@vitejs/plugin-react";
+
+          export default defineConfig({
+            plugins: [react()],
             base: "/doctor-syria-v2/",
             build: {
               outDir: "dist",
               assetsDir: "assets",
-              sourcemap: true
+              sourcemap: true,
+              rollupOptions: {
+                output: {
+                  manualChunks: {
+                    vendor: [
+                      "react",
+                      "react-dom",
+                      "react-router-dom",
+                      "@mui/material",
+                      "@mui/icons-material",
+                      "@reduxjs/toolkit",
+                      "react-redux"
+                    ]
+                  }
+                }
+              }
             }
-          }' > vite.config.js
+          });' > vite.config.js
 
       - name: Build
         working-directory: ./frontend
         env:
           VITE_API_URL: 'https://api.doctor-syria.com'
           VITE_SOCKET_URL: 'wss://api.doctor-syria.com'
-        run: npm run build
-
-      - name: Prepare deployment
         run: |
-          mkdir -p dist
-          cp -r frontend/dist/* dist/
-          cp frontend/dist/index.html dist/
-          touch dist/.nojekyll
+          npm run build
+          cp dist/index.html dist/404.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          publish_dir: ./frontend/dist
           publish_branch: gh-pages
           force_orphan: true
           enable_jekyll: false
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Deploy to GitHub Pages'
