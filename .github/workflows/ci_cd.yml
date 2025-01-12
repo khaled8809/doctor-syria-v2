@@ -35,21 +35,17 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: |
+          requirements.txt
+          requirements-dev.txt
         
-    - name: Cache pip packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-          
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install wheel setuptools
         pip install -r requirements.txt
         pip install -r requirements-dev.txt
-        pip install pytest pytest-cov
         
     - name: Run tests
       env:
@@ -64,20 +60,62 @@ jobs:
         file: ./coverage.xml
         fail_ci_if_error: true
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+        cache-dependency-path: |
+          requirements.txt
+          requirements-dev.txt
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wheel setuptools
+        pip install black flake8 isort
+        
+    - name: Check code style
+      run: |
+        black --check --exclude="migrations|.venv|venv" .
+        flake8 --exclude="migrations,settings.py,.venv,venv" .
+        isort --check-only --diff --skip migrations --skip .venv --skip venv .
+
   security:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     
-    - name: Security scan
-      uses: snyk/actions/python@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
-        args: --severity-threshold=high
+        python-version: '3.10'
+        cache: 'pip'
+        cache-dependency-path: |
+          requirements.txt
+          requirements-dev.txt
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install wheel setuptools
+        pip install bandit safety
+        
+    - name: Run security checks
+      run: |
+        bandit -r . -x ".venv,venv,tests"
+        safety check
 
-  lint:
+  deploy-staging:
+    needs: [test, security, lint]
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
+    
     steps:
     - uses: actions/checkout@v3
     
@@ -89,34 +127,15 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install black==24.1.1 flake8==7.0.0 isort==5.13.2
+        pip install wheel setuptools
+        pip install -r requirements.txt
         
-    - name: Check code style
-      run: |
-        black --check --exclude=migrations .
-        flake8 --exclude=migrations,settings.py,venv .
-        isort --check-only --diff --skip migrations .
-        
-  deploy-staging:
-    needs: [test, security, lint]
-    if: github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Deploy to staging
-      uses: akhileshns/heroku-deploy@v3.12.14
-      with:
-        heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-        heroku_app_name: "doctor-syria-staging"
-        heroku_email: ${{ secrets.HEROKU_EMAIL }}
-        
-    - name: Run migrations
+    - name: Build and deploy
       env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        DJANGO_SETTINGS_MODULE: doctor_syria.settings.staging
       run: |
-        heroku run python manage.py migrate --app doctor-syria-staging
+        python manage.py collectstatic --noinput
+        python manage.py migrate --noinput
 
   deploy-production:
     needs: [test, security, lint]
