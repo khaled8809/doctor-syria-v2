@@ -20,17 +20,20 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json'
 
       - name: Install dependencies
         working-directory: ./frontend
         run: |
-          npm install
+          npm ci
           rm -rf dist
 
-      - name: Update Vite config
+      - name: Create Vite config
         working-directory: ./frontend
         run: |
-          echo 'import { defineConfig } from "vite";
+          cat > vite.config.ts << 'EOL'
+          import { defineConfig } from "vite";
           import react from "@vitejs/plugin-react";
 
           export default defineConfig({
@@ -56,7 +59,53 @@ jobs:
                 }
               }
             }
-          });' > vite.config.js
+          });
+          EOL
+
+      - name: Create tsconfig
+        working-directory: ./frontend
+        run: |
+          cat > tsconfig.json << 'EOL'
+          {
+            "compilerOptions": {
+              "target": "ESNext",
+              "lib": ["DOM", "DOM.Iterable", "ESNext"],
+              "allowJs": true,
+              "skipLibCheck": true,
+              "esModuleInterop": true,
+              "allowSyntheticDefaultImports": true,
+              "strict": true,
+              "forceConsistentCasingInFileNames": true,
+              "module": "ESNext",
+              "moduleResolution": "Node",
+              "resolveJsonModule": true,
+              "isolatedModules": true,
+              "noEmit": true,
+              "jsx": "react-jsx",
+              "baseUrl": ".",
+              "paths": {
+                "@/*": ["src/*"]
+              }
+            },
+            "include": ["src"],
+            "references": [{ "path": "./tsconfig.node.json" }]
+          }
+          EOL
+
+      - name: Create tsconfig.node
+        working-directory: ./frontend
+        run: |
+          cat > tsconfig.node.json << 'EOL'
+          {
+            "compilerOptions": {
+              "composite": true,
+              "module": "ESNext",
+              "moduleResolution": "Node",
+              "allowSyntheticDefaultImports": true
+            },
+            "include": ["vite.config.ts"]
+          }
+          EOL
 
       - name: Build
         working-directory: ./frontend
