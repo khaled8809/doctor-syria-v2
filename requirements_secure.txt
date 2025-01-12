@@ -29,6 +29,11 @@ django-honeypot==1.1.1
 django-stronghold==0.4.0
 django-defender==0.9.7
 django-password-validation==0.2.1
+cryptography==42.0.0
+pyOpenSSL==24.0.0
+certifi==2024.12.14
+urllib3==2.2.0
+requests==2.31.0
 
 # Task queue
 celery==5.4.0
@@ -60,3 +65,9 @@ sphinx-rtd-theme==3.0.2
 python-dateutil==2.9.0.post0
 pytz==2024.2
 python-magic==0.4.27
+
+# Security scanning
+safety==3.0.1
+bandit==1.7.8
+detect-secrets==1.4.0
+pyup-safety==0.3.0
