@@ -19,6 +19,10 @@ from .models import Appointment
 from .forms import AppointmentForm
 from doctor.models import Doctor
 from notifications.utils import send_notification
+from rest_framework import viewsets, permissions, status
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from .serializers import AppointmentSerializer
 
 class AppointmentListView(LoginRequiredMixin, ListView):
     """
@@ -170,3 +174,82 @@ def reschedule_appointment(
     )
     
     return JsonResponse({'status': 'success'})
+
+class AppointmentViewSet(viewsets.ModelViewSet):
+    """
+    واجهة برمجة التطبيقات للمواعيد
+    API endpoint for managing appointments
+    """
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        تصفية المواعيد حسب المستخدم
+        Filter appointments based on user type
+        """
+        user = self.request.user
+        if hasattr(user, 'doctor_profile'):
+            return Appointment.objects.filter(doctor=user)
+        return Appointment.objects.filter(patient=user)
+
+    def perform_create(self, serializer):
+        """
+        إنشاء موعد جديد
+        Create a new appointment
+        """
+        serializer.save(patient=self.request.user)
+        
+        # إرسال إشعار للطبيب | Send notification to doctor
+        appointment = serializer.instance
+        send_notification(
+            recipient=appointment.doctor,
+            message=f'موعد جديد: {appointment.appointment_date}'
+        )
+
+    @action(detail=True, methods=['post'])
+    def cancel(self, request, pk=None):
+        """
+        إلغاء موعد
+        Cancel an appointment
+        """
+        appointment = self.get_object()
+        appointment.status = 'cancelled'
+        appointment.save()
+        
+        # إرسال إشعار | Send notifications
+        send_notification(
+            recipient=appointment.doctor,
+            message=f'تم إلغاء الموعد: {appointment.appointment_date}'
+        )
+        send_notification(
+            recipient=appointment.patient,
+            message=f'تم إلغاء موعدك: {appointment.appointment_date}'
+        )
+        
+        return Response({'status': 'appointment cancelled'})
+
+    @action(detail=True, methods=['post'])
+    def reschedule(self, request, pk=None):
+        """
+        إعادة جدولة موعد
+        Reschedule an appointment
+        """
+        appointment = self.get_object()
+        serializer = AppointmentSerializer(appointment, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            
+            # إرسال إشعار | Send notifications
+            send_notification(
+                recipient=appointment.doctor,
+                message=f'تم إعادة جدولة الموعد إلى: {appointment.appointment_date}'
+            )
+            send_notification(
+                recipient=appointment.patient,
+                message=f'تم إعادة جدولة موعدك إلى: {appointment.appointment_date}'
+            )
+            
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
