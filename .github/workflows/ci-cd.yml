@@ -36,6 +36,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -58,11 +60,11 @@ jobs:
       run: |
         pytest --cov=. --cov-report=xml
         
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: true
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   lint:
     runs-on: ubuntu-latest

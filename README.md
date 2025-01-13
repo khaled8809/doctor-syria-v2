@@ -1,5 +1,10 @@
 # Doctor Syria - نظام إدارة المستشفيات والعيادات
 
+[![CI/CD](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/ci-cd.yml)
+[![codecov](https://codecov.io/gh/khaled8809/doctor-syria-v2/branch/main/graph/badge.svg)](https://codecov.io/gh/khaled8809/doctor-syria-v2)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=khaled8809_doctor-syria-v2&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=khaled8809_doctor-syria-v2)
+[![Maintainability](https://api.codeclimate.com/v1/badges/your-repo-id/maintainability)](https://codeclimate.com/github/khaled8809/doctor-syria-v2)
+
 نظام شامل لإدارة المستشفيات والعيادات الطبية، مبني باستخدام Django وDocker.
 
 ## المميزات الرئيسية
