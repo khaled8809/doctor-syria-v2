@@ -79,3 +79,39 @@ htmlcov/
 # Celery
 celerybeat-schedule
 celerybeat.pid
+
+# Production Environment Files
+.env.production
+.env.staging
+
+# SSL/Certificates
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.priv
+
+# Logs and Backups
+logs/
+backups/
+*.log.*
+*.backup
+*.bak
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Coverage and Test Reports
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+test-reports/

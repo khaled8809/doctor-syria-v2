@@ -64,3 +64,55 @@ chown -R doctor_syria:doctor_syria /var/www/doctor-syria/backups
 
 # تثبيت أدوات المراقبة
 apt-get install -y prometheus node-exporter
+
+# إعداد المراقبة - فتح المنافذ للشبكة الداخلية فقط
+ufw allow from 10.0.0.0/8 to any port 9090 # Prometheus
+ufw allow from 10.0.0.0/8 to any port 9093 # Alertmanager
+ufw allow from 10.0.0.0/8 to any port 3000 # Grafana
+ufw allow from 10.0.0.0/8 to any port 5555 # Flower
+
+# إنشاء شهادات SSL للنطاقات
+certbot certonly --nginx \
+    -d doctor-syria.com \
+    -d www.doctor-syria.com \
+    -d monitoring.doctor-syria.com \
+    --email ${SSL_EMAIL} \
+    --agree-tos \
+    --non-interactive
+
+# إنشاء النسخ الاحتياطي التلقائي
+mkdir -p /var/backups/doctor-syria
+cat > /etc/cron.daily/backup-doctor-syria << 'EOF'
+#!/bin/bash
+DATE=$(date +%Y%m%d)
+BACKUP_DIR="/var/backups/doctor-syria"
+
+# نسخ احتياطي لقاعدة البيانات
+docker-compose exec -T db pg_dump -U ${DB_USER} ${DB_NAME} > ${BACKUP_DIR}/db_${DATE}.sql
+
+# ضغط النسخة الاحتياطية
+gzip ${BACKUP_DIR}/db_${DATE}.sql
+
+# حذف النسخ الاحتياطية القديمة (أكثر من 7 أيام)
+find ${BACKUP_DIR} -name "db_*.sql.gz" -mtime +7 -delete
+EOF
+
+chmod +x /etc/cron.daily/backup-doctor-syria
+
+# تشغيل الخدمات
+cd /var/www/doctor-syria
+docker-compose -f docker-compose.yml up -d --build
+
+# إنتظار حتى تكون الخدمات جاهزة
+sleep 30
+
+# التحقق من حالة الخدمات
+docker-compose ps
+
+# عرض السجلات للتأكد من عدم وجود أخطاء
+docker-compose logs --tail=100
+
+echo "تم نشر التطبيق بنجاح!"
+echo "يمكنك الوصول إلى:"
+echo "- التطبيق الرئيسي: https://doctor-syria.com"
+echo "- لوحة المراقبة: https://monitoring.doctor-syria.com"

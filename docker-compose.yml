@@ -3,16 +3,7 @@ version: '3.8'
 services:
   web:
     build: .
-    command: >
-      gunicorn doctor_syria.wsgi:application 
-      --bind unix:/run/gunicorn.sock 
-      --workers $$(( 2 * $(nproc) )) 
-      --threads 4 
-      --worker-class=gthread 
-      --worker-tmp-dir /dev/shm 
-      --max-requests 1000 
-      --max-requests-jitter 50 
-      --keepalive 65
+    command: gunicorn doctor_syria.wsgi:application --bind unix:/run/gunicorn.sock --workers 8 --threads 4 --worker-class=gthread --worker-tmp-dir /dev/shm --max-requests 1000 --max-requests-jitter 50 --keepalive 65
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
@@ -26,6 +17,14 @@ services:
     env_file:
       - .env.production
     restart: unless-stopped
+    networks:
+      - backend
+      - frontend
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
 
   db:
     image: postgres:15-alpine
@@ -35,22 +34,24 @@ services:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_SHARED_BUFFERS=256MB
-      - POSTGRES_EFFECTIVE_CACHE_SIZE=768MB
-      - POSTGRES_WORK_MEM=16MB
-      - POSTGRES_MAINTENANCE_WORK_MEM=128MB
-      - POSTGRES_MAX_CONNECTIONS=100
+      - POSTGRES_SHARED_BUFFERS=512MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=1536MB
+      - POSTGRES_WORK_MEM=32MB
+      - POSTGRES_MAINTENANCE_WORK_MEM=256MB
+      - POSTGRES_MAX_CONNECTIONS=200
     command: >
       postgres
-      -c shared_buffers=256MB
-      -c effective_cache_size=768MB
-      -c work_mem=16MB
-      -c maintenance_work_mem=128MB
-      -c max_connections=100
+      -c shared_buffers=512MB
+      -c effective_cache_size=1536MB
+      -c work_mem=32MB
+      -c maintenance_work_mem=256MB
+      -c max_connections=200
       -c synchronous_commit=off
       -c checkpoint_timeout=1h
-      -c max_wal_size=1GB
+      -c max_wal_size=2GB
     restart: unless-stopped
+    networks:
+      - backend
 
   redis:
     image: redis:7-alpine
@@ -67,6 +68,8 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    networks:
+      - backend
 
   celery:
     build: .
@@ -79,6 +82,8 @@ services:
     env_file:
       - .env.production
     restart: unless-stopped
+    networks:
+      - backend
 
   celery-beat:
     build: .
@@ -90,6 +95,8 @@ services:
     env_file:
       - .env.production
     restart: unless-stopped
+    networks:
+      - backend
 
   nginx:
     image: nginx:alpine
@@ -105,6 +112,8 @@ services:
     depends_on:
       - web
     restart: unless-stopped
+    networks:
+      - frontend
 
   prometheus:
     image: prom/prometheus:latest
@@ -120,6 +129,8 @@ services:
     ports:
       - "9090:9090"
     restart: unless-stopped
+    networks:
+      - monitoring
 
   alertmanager:
     image: prom/alertmanager:latest
@@ -131,6 +142,8 @@ services:
     ports:
       - "9093:9093"
     restart: unless-stopped
+    networks:
+      - monitoring
 
   grafana:
     image: grafana/grafana:latest
@@ -139,11 +152,30 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
       - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=https://monitoring.your-domain.com
+      - GF_SECURITY_ALLOW_EMBEDDING=true
     ports:
       - "3000:3000"
     depends_on:
       - prometheus
     restart: unless-stopped
+    networks:
+      - monitoring
+
+  flower:
+    build: .
+    command: celery -A doctor_syria flower --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - FLOWER_BASIC_AUTH=${FLOWER_USER}:${FLOWER_PASSWORD}
+    volumes:
+      - .:/app
+    depends_on:
+      - celery
+    restart: unless-stopped
+    networks:
+      - monitoring
 
   node-exporter:
     image: prom/node-exporter:latest
@@ -190,6 +222,16 @@ services:
     depends_on:
       - nginx
     restart: unless-stopped
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+    internal: true
+  monitoring:
+    driver: bridge
+    internal: true
 
 volumes:
   postgres_data:
