@@ -14,7 +14,7 @@ schema_view = get_schema_view(
     openapi.Info(
         title="Doctor Syria API",
         default_version='v1',
-        description="Doctor Syria API documentation",
+        description="API documentation for Doctor Syria platform",
         terms_of_service="https://www.doctor-syria.com/terms/",
         contact=openapi.Contact(email="contact@doctor-syria.com"),
         license=openapi.License(name="MIT License"),

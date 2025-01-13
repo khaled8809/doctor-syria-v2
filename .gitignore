@@ -42,6 +42,7 @@ venv-3.11/
 # IDE
 .idea/
 .vscode/
+.vs/
 *.swp
 *.swo
 .DS_Store

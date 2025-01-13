@@ -19,14 +19,26 @@
     "date-fns": "^2.30.0",
     "recharts": "^2.6.2",
     "socket.io-client": "^4.6.1",
-    "react-query": "^3.39.3"
+    "react-query": "^3.39.3",
+    "@headlessui/react": "^1.7.18",
+    "@heroicons/react": "^2.1.1",
+    "framer-motion": "^11.0.3",
+    "workbox-core": "^7.0.0",
+    "workbox-expiration": "^7.0.0",
+    "workbox-precaching": "^7.0.0",
+    "workbox-routing": "^7.0.0",
+    "workbox-strategies": "^7.0.0",
+    "workbox-window": "^7.0.0"
   },
   "scripts": {
     "start": "vite",
     "build": "vite build",
     "serve": "vite preview",
     "test": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "build:css": "tailwindcss -i ./src/styles/tailwind.css -o ./dist/styles.css --watch",
+    "generate-pwa-assets": "pwa-assets-generator",
+    "analyze": "vite build && vite preview dist/stats.html"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
@@ -38,6 +50,17 @@
     "@testing-library/jest-dom": "^5.16.5",
     "vitest": "^0.34.0",
     "jsdom": "^22.1.0",
-    "@vitest/coverage-v8": "^0.34.0"
+    "@vitest/coverage-v8": "^0.34.0",
+    "tailwindcss": "^3.4.1",
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "@tailwindcss/aspect-ratio": "^0.4.2",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33",
+    "vite-plugin-pwa": "^0.17.4",
+    "@vite-pwa/assets-generator": "^0.2.3",
+    "vite-plugin-compression": "^0.5.1",
+    "rollup-plugin-visualizer": "^5.12.0",
+    "terser": "^5.27.0"
   }
 }
