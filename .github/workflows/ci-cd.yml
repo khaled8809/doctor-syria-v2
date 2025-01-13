@@ -57,8 +57,9 @@ jobs:
         DB_USER: test_user
         DB_PASSWORD: test_password
         DB_HOST: localhost
+        REDIS_HOST: localhost
       run: |
-        pytest --cov=. --cov-report=xml
+        pytest --cov=. --cov-report=xml --cov-report=html
         
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
