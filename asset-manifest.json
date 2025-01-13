@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/doctor-syria-v2/static/css/main.721f6d1a.css",
+    "main.js": "/doctor-syria-v2/static/js/main.81215b54.js",
+    "static/js/453.3d5edf69.chunk.js": "/doctor-syria-v2/static/js/453.3d5edf69.chunk.js",
+    "index.html": "/doctor-syria-v2/index.html",
+    "main.721f6d1a.css.map": "/doctor-syria-v2/static/css/main.721f6d1a.css.map",
+    "main.81215b54.js.map": "/doctor-syria-v2/static/js/main.81215b54.js.map",
+    "453.3d5edf69.chunk.js.map": "/doctor-syria-v2/static/js/453.3d5edf69.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.721f6d1a.css",
+    "static/js/main.81215b54.js"
+  ]
+}
