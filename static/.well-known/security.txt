@@ -1,0 +1,7 @@
+Contact: mailto:security@doctor-syria.com
+Expires: 2026-01-13T23:59:59+00:00
+Encryption: https://doctor-syria.com/pgp-key.txt
+Preferred-Languages: ar, en
+Canonical: https://doctor-syria.com/.well-known/security.txt
+Policy: https://doctor-syria.com/security-policy
+Hiring: https://doctor-syria.com/careers

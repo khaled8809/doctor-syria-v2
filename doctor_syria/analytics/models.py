@@ -5,8 +5,10 @@ from accounts.models import Doctor, Patient, Hospital, Clinic
 from medical_records.models import MedicalRecord
 from consultations.models import Consultation
 
+
 class HealthMetric(models.Model):
     """مؤشرات صحية"""
+
     name = models.CharField(max_length=100)
     description = models.TextField()
     unit = models.CharField(max_length=50)
@@ -17,32 +19,36 @@ class HealthMetric(models.Model):
     def __str__(self):
         return self.name
 
+
 class MetricRecord(models.Model):
     """سجلات المؤشرات"""
+
     metric = models.ForeignKey(HealthMetric, on_delete=models.CASCADE)
     value = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
-    
+
     # Generic Foreign Key للربط مع أي نوع من الكيانات
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey("content_type", "object_id")
 
     class Meta:
-        ordering = ['-date']
+        ordering = ["-date"]
 
     def __str__(self):
         return f"{self.metric.name}: {self.value} {self.metric.unit}"
 
+
 class Report(models.Model):
     """التقارير"""
+
     REPORT_TYPES = [
-        ('patient', 'تقرير المريض'),
-        ('doctor', 'تقرير الطبيب'),
-        ('hospital', 'تقرير المستشفى'),
-        ('clinic', 'تقرير العيادة'),
-        ('disease', 'تقرير الأمراض'),
-        ('consultation', 'تقرير الاستشارات'),
+        ("patient", "تقرير المريض"),
+        ("doctor", "تقرير الطبيب"),
+        ("hospital", "تقرير المستشفى"),
+        ("clinic", "تقرير العيادة"),
+        ("disease", "تقرير الأمراض"),
+        ("consultation", "تقرير الاستشارات"),
     ]
 
     title = models.CharField(max_length=200)
@@ -55,19 +61,21 @@ class Report(models.Model):
     def __str__(self):
         return self.title
 
+
 class ReportSchedule(models.Model):
     """جدولة التقارير"""
+
     FREQUENCY_CHOICES = [
-        ('daily', 'يومي'),
-        ('weekly', 'أسبوعي'),
-        ('monthly', 'شهري'),
-        ('quarterly', 'ربع سنوي'),
-        ('yearly', 'سنوي'),
+        ("daily", "يومي"),
+        ("weekly", "أسبوعي"),
+        ("monthly", "شهري"),
+        ("quarterly", "ربع سنوي"),
+        ("yearly", "سنوي"),
     ]
 
     report = models.ForeignKey(Report, on_delete=models.CASCADE)
     frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES)
-    recipients = models.ManyToManyField('accounts.User')
+    recipients = models.ManyToManyField("accounts.User")
     is_active = models.BooleanField(default=True)
     last_run = models.DateTimeField(null=True, blank=True)
     next_run = models.DateTimeField()
@@ -75,14 +83,16 @@ class ReportSchedule(models.Model):
     def __str__(self):
         return f"جدولة {self.report.title}"
 
+
 class PerformanceMetric(models.Model):
     """مؤشرات الأداء"""
+
     METRIC_TYPES = [
-        ('satisfaction', 'رضا المرضى'),
-        ('wait_time', 'وقت الانتظار'),
-        ('consultation_duration', 'مدة الاستشارة'),
-        ('response_time', 'وقت الاستجابة'),
-        ('success_rate', 'معدل النجاح'),
+        ("satisfaction", "رضا المرضى"),
+        ("wait_time", "وقت الانتظار"),
+        ("consultation_duration", "مدة الاستشارة"),
+        ("response_time", "وقت الاستجابة"),
+        ("success_rate", "معدل النجاح"),
     ]
 
     name = models.CharField(max_length=100)
@@ -91,12 +101,12 @@ class PerformanceMetric(models.Model):
     target_value = models.DecimalField(max_digits=10, decimal_places=2)
     current_value = models.DecimalField(max_digits=10, decimal_places=2)
     unit = models.CharField(max_length=50)
-    
+
     # Generic Foreign Key للربط مع الأطباء أو المستشفيات أو العيادات
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
-    
+    content_object = GenericForeignKey("content_type", "object_id")
+
     period_start = models.DateField()
     period_end = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -109,8 +119,10 @@ class PerformanceMetric(models.Model):
         """حساب نسبة تحقيق الهدف"""
         return (self.current_value / self.target_value) * 100
 
+
 class DiseaseStatistic(models.Model):
     """إحصائيات الأمراض"""
+
     disease_name = models.CharField(max_length=200)
     total_cases = models.IntegerField()
     active_cases = models.IntegerField()
@@ -124,13 +136,15 @@ class DiseaseStatistic(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['-total_cases']
+        ordering = ["-total_cases"]
 
     def __str__(self):
         return f"{self.disease_name} - {self.region}"
 
+
 class PatientSatisfactionSurvey(models.Model):
     """استبيانات رضا المرضى"""
+
     RATING_CHOICES = [(i, str(i)) for i in range(1, 6)]
 
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
@@ -154,6 +168,6 @@ class PatientSatisfactionSurvey(models.Model):
             self.communication_rating,
             self.wait_time_rating,
             self.facility_rating,
-            self.overall_satisfaction
+            self.overall_satisfaction,
         ]
         return sum(ratings) / len(ratings)

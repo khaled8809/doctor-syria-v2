@@ -1,12 +1,13 @@
 from django.db import migrations
 
+
 class Migration(migrations.Migration):
     """
     تحسينات قاعدة البيانات وإضافة الفهارس
     """
 
     dependencies = [
-        ('core', '0001_initial'),
+        ("core", "0001_initial"),
     ]
 
     operations = [
@@ -95,7 +96,7 @@ class Migration(migrations.Migration):
             DROP INDEX IF EXISTS idx_patient_search;
             DROP MATERIALIZED VIEW IF EXISTS mv_appointment_stats;
             DROP MATERIALIZED VIEW IF EXISTS mv_patient_metrics;
-            """
+            """,
         ),
         # إضافة قيود وتحسينات
         migrations.RunSQL(
@@ -134,6 +135,6 @@ class Migration(migrations.Migration):
             
             ALTER TABLE reports_healthmetric 
             DROP CONSTRAINT IF EXISTS check_metric_value;
-            """
-        )
+            """,
+        ),
     ]

@@ -3,6 +3,7 @@ from django_otp import devices
 from django_otp.plugins.otp_totp.models import TOTPDevice
 from django.core.exceptions import ObjectDoesNotExist
 
+
 class TwoFactorAuth:
     @staticmethod
     def setup_2fa(user):
@@ -12,14 +13,9 @@ class TwoFactorAuth:
             TOTPDevice.objects.filter(user=user).delete()
             # إنشاء جهاز جديد
             device = TOTPDevice.objects.create(
-                user=user,
-                name=f"Default device for {user.username}",
-                confirmed=False
+                user=user, name=f"Default device for {user.username}", confirmed=False
             )
-            return {
-                'config_url': device.config_url(),
-                'key': device.key.hex()
-            }
+            return {"config_url": device.config_url(), "key": device.key.hex()}
         except Exception as e:
             raise Exception(f"Error setting up 2FA: {str(e)}")
 

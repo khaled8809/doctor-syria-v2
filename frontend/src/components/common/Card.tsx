@@ -49,7 +49,7 @@ const Card: React.FC<CardProps> = ({
           </div>
         </div>
       )}
-      
+
       <div className="px-6 py-4">
         {loading ? (
           <div className="animate-pulse space-y-4">

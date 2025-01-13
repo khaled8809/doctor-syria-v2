@@ -4,6 +4,7 @@ from django.utils import timezone
 
 # Create your models here.
 
+
 class Tenant(models.Model):
     name = models.CharField(max_length=100)
     subdomain = models.CharField(max_length=100, unique=True)
@@ -11,10 +12,11 @@ class Tenant(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        app_label = 'saas_core'
+        app_label = "saas_core"
 
     def __str__(self):
         return self.name
+
 
 class TenantUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -23,11 +25,12 @@ class TenantUser(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        app_label = 'saas_core'
-        unique_together = ('user', 'tenant')
+        app_label = "saas_core"
+        unique_together = ("user", "tenant")
 
     def __str__(self):
         return f"{self.user.username} - {self.tenant.name}"
+
 
 class SubscriptionFeature(models.Model):
     name = models.CharField(max_length=100)
@@ -36,10 +39,11 @@ class SubscriptionFeature(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        app_label = 'saas_core'
+        app_label = "saas_core"
 
     def __str__(self):
         return self.name
+
 
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=100)
@@ -52,10 +56,11 @@ class SubscriptionPlan(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        app_label = 'saas_core'
+        app_label = "saas_core"
 
     def __str__(self):
         return self.name
+
 
 class Subscription(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
@@ -67,14 +72,15 @@ class Subscription(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        app_label = 'saas_core'
+        app_label = "saas_core"
 
     def __str__(self):
         return f"{self.tenant.name} - {self.plan.name}"
 
     @property
     def is_active(self):
-        return self.status == 'active' and self.end_date > timezone.now()
+        return self.status == "active" and self.end_date > timezone.now()
+
 
 class Usage(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
@@ -83,11 +89,12 @@ class Usage(models.Model):
     count = models.IntegerField(default=0)
 
     class Meta:
-        app_label = 'saas_core'
-        unique_together = ('tenant', 'feature', 'date')
+        app_label = "saas_core"
+        unique_together = ("tenant", "feature", "date")
 
     def __str__(self):
         return f"{self.tenant.name} - {self.feature.name} - {self.date}"
+
 
 class Invoice(models.Model):
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
@@ -100,7 +107,7 @@ class Invoice(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        app_label = 'saas_core'
+        app_label = "saas_core"
 
     def __str__(self):
         return f"{self.tenant.name} - {self.amount} - {self.status}"

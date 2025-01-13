@@ -28,7 +28,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             className={`
               block w-full rounded-md sm:text-sm
-              ${error ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' : 
+              ${error ? 'border-red-300 text-red-900 placeholder-red-300 focus:ring-red-500 focus:border-red-500' :
                 'border-gray-300 focus:ring-primary-500 focus:border-primary-500'}
               ${leftIcon ? 'pr-10' : ''}
               ${rightIcon ? 'pl-10' : ''}

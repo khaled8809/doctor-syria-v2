@@ -2,9 +2,14 @@ from cryptography.fernet import Fernet
 from django.conf import settings
 from base64 import b64encode, b64decode
 
+
 class DataEncryption:
     def __init__(self):
-        self.key = settings.ENCRYPTION_KEY.encode() if hasattr(settings, 'ENCRYPTION_KEY') else Fernet.generate_key()
+        self.key = (
+            settings.ENCRYPTION_KEY.encode()
+            if hasattr(settings, "ENCRYPTION_KEY")
+            else Fernet.generate_key()
+        )
         self.cipher_suite = Fernet(self.key)
 
     def encrypt_data(self, data):

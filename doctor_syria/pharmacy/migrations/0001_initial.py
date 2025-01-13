@@ -9,98 +9,232 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('accounts', '0001_initial'),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Medicine',
+            name="Medicine",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('scientific_name', models.CharField(max_length=200)),
-                ('description', models.TextField()),
-                ('dosage_form', models.CharField(max_length=100)),
-                ('strength', models.CharField(max_length=100)),
-                ('price', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('requires_prescription', models.BooleanField(default=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('manufacturer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='medicines', to='accounts.pharmaceuticalcompany')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("scientific_name", models.CharField(max_length=200)),
+                ("description", models.TextField()),
+                ("dosage_form", models.CharField(max_length=100)),
+                ("strength", models.CharField(max_length=100)),
+                ("price", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("requires_prescription", models.BooleanField(default=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "manufacturer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="medicines",
+                        to="accounts.pharmaceuticalcompany",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='MedicineCategory',
+            name="MedicineCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('description', models.TextField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField()),
             ],
             options={
-                'verbose_name_plural': 'Medicine Categories',
+                "verbose_name_plural": "Medicine Categories",
             },
         ),
         migrations.CreateModel(
-            name='MedicineOrder',
+            name="MedicineOrder",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('processing', 'Processing'), ('shipped', 'Shipped'), ('delivered', 'Delivered'), ('cancelled', 'Cancelled')], default='pending', max_length=20)),
-                ('total_amount', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('order_date', models.DateTimeField(auto_now_add=True)),
-                ('delivery_date', models.DateField(blank=True, null=True)),
-                ('notes', models.TextField(blank=True)),
-                ('pharmacy', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='orders', to='accounts.pharmacy')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("processing", "Processing"),
+                            ("shipped", "Shipped"),
+                            ("delivered", "Delivered"),
+                            ("cancelled", "Cancelled"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                ("total_amount", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("order_date", models.DateTimeField(auto_now_add=True)),
+                ("delivery_date", models.DateField(blank=True, null=True)),
+                ("notes", models.TextField(blank=True)),
+                (
+                    "pharmacy",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="orders",
+                        to="accounts.pharmacy",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='PharmacyInventory',
+            name="PharmacyInventory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quantity', models.PositiveIntegerField()),
-                ('batch_number', models.CharField(max_length=100)),
-                ('expiry_date', models.DateField()),
-                ('last_updated', models.DateTimeField(auto_now=True)),
-                ('medicine', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pharmacy_inventory', to='pharmacy.medicine')),
-                ('pharmacy', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='inventory', to='accounts.pharmacy')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("quantity", models.PositiveIntegerField()),
+                ("batch_number", models.CharField(max_length=100)),
+                ("expiry_date", models.DateField()),
+                ("last_updated", models.DateTimeField(auto_now=True)),
+                (
+                    "medicine",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pharmacy_inventory",
+                        to="pharmacy.medicine",
+                    ),
+                ),
+                (
+                    "pharmacy",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="inventory",
+                        to="accounts.pharmacy",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Pharmacy Inventories',
+                "verbose_name_plural": "Pharmacy Inventories",
             },
         ),
         migrations.CreateModel(
-            name='OrderItem',
+            name="OrderItem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quantity', models.PositiveIntegerField()),
-                ('price_per_unit', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('medicine', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='pharmacy.medicine')),
-                ('order', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='items', to='pharmacy.medicineorder')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("quantity", models.PositiveIntegerField()),
+                (
+                    "price_per_unit",
+                    models.DecimalField(decimal_places=2, max_digits=10),
+                ),
+                (
+                    "medicine",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="pharmacy.medicine",
+                    ),
+                ),
+                (
+                    "order",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="items",
+                        to="pharmacy.medicineorder",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='DeliveryAddress',
+            name="DeliveryAddress",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('street_address', models.CharField(max_length=255)),
-                ('city', models.CharField(max_length=100)),
-                ('state', models.CharField(max_length=100)),
-                ('postal_code', models.CharField(max_length=20)),
-                ('is_default', models.BooleanField(default=False)),
-                ('pharmacy', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='delivery_addresses', to='accounts.pharmacy')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("street_address", models.CharField(max_length=255)),
+                ("city", models.CharField(max_length=100)),
+                ("state", models.CharField(max_length=100)),
+                ("postal_code", models.CharField(max_length=20)),
+                ("is_default", models.BooleanField(default=False)),
+                (
+                    "pharmacy",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="delivery_addresses",
+                        to="accounts.pharmacy",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Delivery Addresses',
+                "verbose_name_plural": "Delivery Addresses",
             },
         ),
         migrations.CreateModel(
-            name='MedicineCategoryRelation',
+            name="MedicineCategoryRelation",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('category', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='medicines', to='pharmacy.medicinecategory')),
-                ('medicine', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='categories', to='pharmacy.medicine')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "category",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="medicines",
+                        to="pharmacy.medicinecategory",
+                    ),
+                ),
+                (
+                    "medicine",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="categories",
+                        to="pharmacy.medicine",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('medicine', 'category')},
+                "unique_together": {("medicine", "category")},
             },
         ),
     ]

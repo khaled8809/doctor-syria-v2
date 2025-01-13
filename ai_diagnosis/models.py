@@ -3,15 +3,19 @@ from django.contrib.auth.models import User
 from saas_core.models import Tenant
 from patient_records.models import Patient, MedicalRecord
 
+
 class Symptom(models.Model):
     """نموذج الأعراض المرضية"""
+
     name = models.CharField(max_length=200)
     description = models.TextField()
-    severity_level = models.IntegerField(choices=[
-        (1, 'خفيف'),
-        (2, 'متوسط'),
-        (3, 'شديد'),
-    ])
+    severity_level = models.IntegerField(
+        choices=[
+            (1, "خفيف"),
+            (2, "متوسط"),
+            (3, "شديد"),
+        ]
+    )
     keywords = models.JSONField(help_text="الكلمات المفتاحية المرتبطة بالعرض")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -19,17 +23,21 @@ class Symptom(models.Model):
     def __str__(self):
         return self.name
 
+
 class Disease(models.Model):
     """نموذج الأمراض"""
+
     name = models.CharField(max_length=200)
     description = models.TextField()
-    symptoms = models.ManyToManyField(Symptom, through='DiseaseSymptom')
+    symptoms = models.ManyToManyField(Symptom, through="DiseaseSymptom")
     icd_code = models.CharField(max_length=20, help_text="رمز التصنيف الدولي للأمراض")
-    risk_level = models.IntegerField(choices=[
-        (1, 'منخفض'),
-        (2, 'متوسط'),
-        (3, 'مرتفع'),
-    ])
+    risk_level = models.IntegerField(
+        choices=[
+            (1, "منخفض"),
+            (2, "متوسط"),
+            (3, "مرتفع"),
+        ]
+    )
     common_treatments = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -37,29 +45,33 @@ class Disease(models.Model):
     def __str__(self):
         return f"{self.name} ({self.icd_code})"
 
+
 class DiseaseSymptom(models.Model):
     """نموذج العلاقة بين المرض والأعراض"""
+
     disease = models.ForeignKey(Disease, on_delete=models.CASCADE)
     symptom = models.ForeignKey(Symptom, on_delete=models.CASCADE)
     probability = models.FloatField(help_text="احتمالية ظهور العرض مع المرض")
     importance = models.IntegerField(help_text="أهمية العرض في تشخيص المرض")
 
     class Meta:
-        unique_together = ['disease', 'symptom']
+        unique_together = ["disease", "symptom"]
+
 
 class AIModel(models.Model):
     """نموذج نماذج الذكاء الاصطناعي"""
+
     MODEL_TYPES = [
-        ('DIAGNOSIS', 'تشخيص'),
-        ('PREDICTION', 'تنبؤ'),
-        ('ANALYSIS', 'تحليل'),
+        ("DIAGNOSIS", "تشخيص"),
+        ("PREDICTION", "تنبؤ"),
+        ("ANALYSIS", "تحليل"),
     ]
 
     name = models.CharField(max_length=100)
     model_type = models.CharField(max_length=20, choices=MODEL_TYPES)
     version = models.CharField(max_length=20)
     description = models.TextField()
-    model_file = models.FileField(upload_to='ai_models/')
+    model_file = models.FileField(upload_to="ai_models/")
     accuracy = models.FloatField()
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -68,19 +80,21 @@ class AIModel(models.Model):
     def __str__(self):
         return f"{self.name} v{self.version}"
 
+
 class DiagnosisSession(models.Model):
     """نموذج جلسة التشخيص"""
+
     STATUS_CHOICES = [
-        ('ACTIVE', 'نشط'),
-        ('COMPLETED', 'مكتمل'),
-        ('CANCELLED', 'ملغي'),
+        ("ACTIVE", "نشط"),
+        ("COMPLETED", "مكتمل"),
+        ("CANCELLED", "ملغي"),
     ]
 
     tenant = models.ForeignKey(Tenant, on_delete=models.CASCADE)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
     doctor = models.ForeignKey(User, on_delete=models.CASCADE)
     ai_model = models.ForeignKey(AIModel, on_delete=models.PROTECT)
-    symptoms = models.ManyToManyField(Symptom, through='SessionSymptom')
+    symptoms = models.ManyToManyField(Symptom, through="SessionSymptom")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES)
     start_time = models.DateTimeField(auto_now_add=True)
     end_time = models.DateTimeField(null=True, blank=True)
@@ -89,16 +103,20 @@ class DiagnosisSession(models.Model):
     def __str__(self):
         return f"جلسة {self.patient.name} - {self.start_time}"
 
+
 class SessionSymptom(models.Model):
     """نموذج أعراض الجلسة"""
+
     session = models.ForeignKey(DiagnosisSession, on_delete=models.CASCADE)
     symptom = models.ForeignKey(Symptom, on_delete=models.CASCADE)
     severity = models.IntegerField(choices=Symptom.severity_level.field.choices)
     notes = models.TextField(blank=True)
     recorded_at = models.DateTimeField(auto_now_add=True)
 
+
 class DiagnosisResult(models.Model):
     """نموذج نتائج التشخيص"""
+
     session = models.ForeignKey(DiagnosisSession, on_delete=models.CASCADE)
     disease = models.ForeignKey(Disease, on_delete=models.CASCADE)
     confidence = models.FloatField(help_text="نسبة الثقة في التشخيص")
@@ -109,8 +127,10 @@ class DiagnosisResult(models.Model):
     def __str__(self):
         return f"تشخيص {self.disease.name} ({self.confidence}%)"
 
+
 class PredictionModel(models.Model):
     """نموذج التنبؤات"""
+
     name = models.CharField(max_length=100)
     description = models.TextField()
     model_type = models.CharField(max_length=50)

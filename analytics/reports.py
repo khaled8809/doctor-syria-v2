@@ -4,9 +4,12 @@ from typing import Dict, List
 from django.db.models import Count, Avg
 from django.utils import timezone
 
+
 class AnalyticsService:
     @staticmethod
-    def get_hospital_statistics(start_date: datetime = None, end_date: datetime = None) -> Dict:
+    def get_hospital_statistics(
+        start_date: datetime = None, end_date: datetime = None
+    ) -> Dict:
         """إحصائيات المستشفى"""
         if not start_date:
             start_date = timezone.now() - timedelta(days=30)
@@ -18,12 +21,12 @@ class AnalyticsService:
         from accounts.models import User
 
         return {
-            'total_patients': User.objects.filter(role='patient').count(),
-            'total_doctors': User.objects.filter(role='doctor').count(),
-            'appointments': Appointment.objects.filter(
+            "total_patients": User.objects.filter(role="patient").count(),
+            "total_doctors": User.objects.filter(role="doctor").count(),
+            "appointments": Appointment.objects.filter(
                 date__range=(start_date, end_date)
             ).count(),
-            'visits': PatientVisit.objects.filter(
+            "visits": PatientVisit.objects.filter(
                 date__range=(start_date, end_date)
             ).count(),
         }
@@ -33,11 +36,11 @@ class AnalyticsService:
         """أداء الأقسام"""
         from medical_records.models import PatientVisit
 
-        return list(PatientVisit.objects.values('department')
-            .annotate(
-                total_visits=Count('id'),
-                avg_duration=Avg('duration')
-            ).order_by('-total_visits'))
+        return list(
+            PatientVisit.objects.values("department")
+            .annotate(total_visits=Count("id"), avg_duration=Avg("duration"))
+            .order_by("-total_visits")
+        )
 
     @staticmethod
     def get_ai_diagnosis_accuracy() -> Dict:
@@ -46,11 +49,11 @@ class AnalyticsService:
 
         total = AIDiagnosis.objects.count()
         correct = AIDiagnosis.objects.filter(is_correct=True).count()
-        
+
         return {
-            'total_diagnoses': total,
-            'correct_diagnoses': correct,
-            'accuracy': (correct / total * 100) if total > 0 else 0
+            "total_diagnoses": total,
+            "correct_diagnoses": correct,
+            "accuracy": (correct / total * 100) if total > 0 else 0,
         }
 
     @staticmethod
@@ -59,12 +62,12 @@ class AnalyticsService:
         from pharmacy.models import Medicine
 
         return {
-            'total_medicines': Medicine.objects.count(),
-            'low_stock': Medicine.objects.filter(quantity__lte=10).count(),
-            'out_of_stock': Medicine.objects.filter(quantity=0).count(),
-            'expiring_soon': Medicine.objects.filter(
+            "total_medicines": Medicine.objects.count(),
+            "low_stock": Medicine.objects.filter(quantity__lte=10).count(),
+            "out_of_stock": Medicine.objects.filter(quantity=0).count(),
+            "expiring_soon": Medicine.objects.filter(
                 expiry_date__lte=timezone.now() + timedelta(days=90)
-            ).count()
+            ).count(),
         }
 
     @staticmethod
@@ -77,12 +80,12 @@ class AnalyticsService:
 
         invoices = Invoice.objects.filter(date__year=year)
         return {
-            'total_revenue': sum(inv.total for inv in invoices),
-            'paid_invoices': invoices.filter(status='paid').count(),
-            'pending_invoices': invoices.filter(status='pending').count(),
-            'monthly_revenue': list(
-                invoices.values('date__month')
-                .annotate(total=Sum('total'))
-                .order_by('date__month')
-            )
+            "total_revenue": sum(inv.total for inv in invoices),
+            "paid_invoices": invoices.filter(status="paid").count(),
+            "pending_invoices": invoices.filter(status="pending").count(),
+            "monthly_revenue": list(
+                invoices.values("date__month")
+                .annotate(total=Sum("total"))
+                .order_by("date__month")
+            ),
         }

@@ -9,351 +9,828 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('medical_records', '0001_initial'),
-        ('pharmacy', '0001_initial'),
+        ("medical_records", "0001_initial"),
+        ("pharmacy", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='medicinecategoryrelation',
-            name='category',
+            model_name="medicinecategoryrelation",
+            name="category",
         ),
         migrations.AlterUniqueTogether(
-            name='medicinecategoryrelation',
+            name="medicinecategoryrelation",
             unique_together=None,
         ),
         migrations.RemoveField(
-            model_name='medicinecategoryrelation',
-            name='medicine',
+            model_name="medicinecategoryrelation",
+            name="medicine",
         ),
         migrations.RemoveField(
-            model_name='medicineorder',
-            name='pharmacy',
+            model_name="medicineorder",
+            name="pharmacy",
         ),
         migrations.RemoveField(
-            model_name='pharmacyinventory',
-            name='medicine',
+            model_name="pharmacyinventory",
+            name="medicine",
         ),
         migrations.RemoveField(
-            model_name='pharmacyinventory',
-            name='pharmacy',
+            model_name="pharmacyinventory",
+            name="pharmacy",
         ),
         migrations.AlterModelOptions(
-            name='medicine',
-            options={'ordering': ['name'], 'verbose_name': 'دواء', 'verbose_name_plural': 'الأدوية'},
+            name="medicine",
+            options={
+                "ordering": ["name"],
+                "verbose_name": "دواء",
+                "verbose_name_plural": "الأدوية",
+            },
         ),
         migrations.AlterModelOptions(
-            name='orderitem',
-            options={'ordering': ['id'], 'verbose_name': 'عنصر الطلب', 'verbose_name_plural': 'عناصر الطلب'},
+            name="orderitem",
+            options={
+                "ordering": ["id"],
+                "verbose_name": "عنصر الطلب",
+                "verbose_name_plural": "عناصر الطلب",
+            },
         ),
         migrations.RemoveField(
-            model_name='medicine',
-            name='dosage_form',
+            model_name="medicine",
+            name="dosage_form",
         ),
         migrations.RemoveField(
-            model_name='medicine',
-            name='strength',
+            model_name="medicine",
+            name="strength",
         ),
         migrations.RemoveField(
-            model_name='orderitem',
-            name='price_per_unit',
+            model_name="orderitem",
+            name="price_per_unit",
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='barcode',
-            field=models.CharField(blank=True, max_length=50, null=True, unique=True, verbose_name='الباركود'),
+            model_name="medicine",
+            name="barcode",
+            field=models.CharField(
+                blank=True,
+                max_length=50,
+                null=True,
+                unique=True,
+                verbose_name="الباركود",
+            ),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='category',
-            field=models.CharField(choices=[('prescription', 'أدوية وصفة طبية'), ('otc', 'أدوية بدون وصفة'), ('controlled', 'أدوية مراقبة'), ('supplements', 'مكملات غذائية'), ('medical_supplies', 'مستلزمات طبية'), ('cosmetics', 'مستحضرات تجميل'), ('other', 'أخرى')], default='other', max_length=20, verbose_name='الفئة'),
+            model_name="medicine",
+            name="category",
+            field=models.CharField(
+                choices=[
+                    ("prescription", "أدوية وصفة طبية"),
+                    ("otc", "أدوية بدون وصفة"),
+                    ("controlled", "أدوية مراقبة"),
+                    ("supplements", "مكملات غذائية"),
+                    ("medical_supplies", "مستلزمات طبية"),
+                    ("cosmetics", "مستحضرات تجميل"),
+                    ("other", "أخرى"),
+                ],
+                default="other",
+                max_length=20,
+                verbose_name="الفئة",
+            ),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='contraindications',
-            field=models.TextField(blank=True, verbose_name='موانع الاستعمال'),
+            model_name="medicine",
+            name="contraindications",
+            field=models.TextField(blank=True, verbose_name="موانع الاستعمال"),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL, verbose_name='تم الإنشاء بواسطة'),
+            model_name="medicine",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="تم الإنشاء بواسطة",
+            ),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='deleted_at',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='تاريخ الحذف'),
+            model_name="medicine",
+            name="deleted_at",
+            field=models.DateTimeField(
+                blank=True, null=True, verbose_name="تاريخ الحذف"
+            ),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL, verbose_name='تم الحذف بواسطة'),
+            model_name="medicine",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="تم الحذف بواسطة",
+            ),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='dosage',
-            field=models.CharField(blank=True, max_length=100, null=True, verbose_name='الجرعة'),
+            model_name="medicine",
+            name="dosage",
+            field=models.CharField(
+                blank=True, max_length=100, null=True, verbose_name="الجرعة"
+            ),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='expiry_date',
-            field=models.DateField(default=django.utils.timezone.now, verbose_name='تاريخ الصلاحية'),
+            model_name="medicine",
+            name="expiry_date",
+            field=models.DateField(
+                default=django.utils.timezone.now, verbose_name="تاريخ الصلاحية"
+            ),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='form',
-            field=models.CharField(choices=[('tablet', 'أقراص'), ('capsule', 'كبسولات'), ('syrup', 'شراب'), ('injection', 'حقن'), ('cream', 'كريم'), ('ointment', 'مرهم'), ('drops', 'قطرات'), ('inhaler', 'بخاخ'), ('suppository', 'تحاميل'), ('patch', 'لصقات')], default='tablet', max_length=20, verbose_name='الشكل'),
+            model_name="medicine",
+            name="form",
+            field=models.CharField(
+                choices=[
+                    ("tablet", "أقراص"),
+                    ("capsule", "كبسولات"),
+                    ("syrup", "شراب"),
+                    ("injection", "حقن"),
+                    ("cream", "كريم"),
+                    ("ointment", "مرهم"),
+                    ("drops", "قطرات"),
+                    ("inhaler", "بخاخ"),
+                    ("suppository", "تحاميل"),
+                    ("patch", "لصقات"),
+                ],
+                default="tablet",
+                max_length=20,
+                verbose_name="الشكل",
+            ),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='image',
-            field=models.ImageField(blank=True, null=True, upload_to='medicines/', verbose_name='الصورة'),
+            model_name="medicine",
+            name="image",
+            field=models.ImageField(
+                blank=True, null=True, upload_to="medicines/", verbose_name="الصورة"
+            ),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='interactions',
-            field=models.TextField(blank=True, verbose_name='التفاعلات الدوائية'),
+            model_name="medicine",
+            name="interactions",
+            field=models.TextField(blank=True, verbose_name="التفاعلات الدوائية"),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='is_available',
-            field=models.BooleanField(default=True, verbose_name='متوفر'),
+            model_name="medicine",
+            name="is_available",
+            field=models.BooleanField(default=True, verbose_name="متوفر"),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='is_deleted',
-            field=models.BooleanField(default=False, verbose_name='محذوف'),
+            model_name="medicine",
+            name="is_deleted",
+            field=models.BooleanField(default=False, verbose_name="محذوف"),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='notes',
-            field=models.TextField(blank=True, verbose_name='ملاحظات'),
+            model_name="medicine",
+            name="notes",
+            field=models.TextField(blank=True, verbose_name="ملاحظات"),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='side_effects',
-            field=models.TextField(blank=True, verbose_name='الآثار الجانبية'),
+            model_name="medicine",
+            name="side_effects",
+            field=models.TextField(blank=True, verbose_name="الآثار الجانبية"),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='storage_condition',
-            field=models.CharField(choices=[('room_temp', 'درجة حرارة الغرفة'), ('refrigerated', 'مبرد'), ('frozen', 'مجمد'), ('cool_dry', 'بارد وجاف'), ('protected_light', 'محمي من الضوء')], default='room_temp', max_length=20, verbose_name='ظروف التخزين'),
+            model_name="medicine",
+            name="storage_condition",
+            field=models.CharField(
+                choices=[
+                    ("room_temp", "درجة حرارة الغرفة"),
+                    ("refrigerated", "مبرد"),
+                    ("frozen", "مجمد"),
+                    ("cool_dry", "بارد وجاف"),
+                    ("protected_light", "محمي من الضوء"),
+                ],
+                default="room_temp",
+                max_length=20,
+                verbose_name="ظروف التخزين",
+            ),
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL, verbose_name='تم التحديث بواسطة'),
+            model_name="medicine",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="تم التحديث بواسطة",
+            ),
         ),
         migrations.AddField(
-            model_name='orderitem',
-            name='created_at',
-            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name='تاريخ الإنشاء'),
+            model_name="orderitem",
+            name="created_at",
+            field=models.DateTimeField(
+                default=django.utils.timezone.now, verbose_name="تاريخ الإنشاء"
+            ),
         ),
         migrations.AddField(
-            model_name='orderitem',
-            name='created_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL, verbose_name='تم الإنشاء بواسطة'),
+            model_name="orderitem",
+            name="created_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_created",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="تم الإنشاء بواسطة",
+            ),
         ),
         migrations.AddField(
-            model_name='orderitem',
-            name='deleted_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL, verbose_name='تم الحذف بواسطة'),
+            model_name="orderitem",
+            name="deleted_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_deleted",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="تم الحذف بواسطة",
+            ),
         ),
         migrations.AddField(
-            model_name='orderitem',
-            name='notes',
-            field=models.TextField(blank=True, verbose_name='ملاحظات'),
+            model_name="orderitem",
+            name="notes",
+            field=models.TextField(blank=True, verbose_name="ملاحظات"),
         ),
         migrations.AddField(
-            model_name='orderitem',
-            name='total_price',
-            field=models.DecimalField(decimal_places=2, default=0, max_digits=10, verbose_name='السعر الإجمالي'),
+            model_name="orderitem",
+            name="total_price",
+            field=models.DecimalField(
+                decimal_places=2,
+                default=0,
+                max_digits=10,
+                verbose_name="السعر الإجمالي",
+            ),
         ),
         migrations.AddField(
-            model_name='orderitem',
-            name='unit_price',
-            field=models.DecimalField(decimal_places=2, default=0, max_digits=10, verbose_name='سعر الوحدة'),
+            model_name="orderitem",
+            name="unit_price",
+            field=models.DecimalField(
+                decimal_places=2, default=0, max_digits=10, verbose_name="سعر الوحدة"
+            ),
         ),
         migrations.AddField(
-            model_name='orderitem',
-            name='updated_at',
-            field=models.DateTimeField(auto_now=True, verbose_name='تاريخ التحديث'),
+            model_name="orderitem",
+            name="updated_at",
+            field=models.DateTimeField(auto_now=True, verbose_name="تاريخ التحديث"),
         ),
         migrations.AddField(
-            model_name='orderitem',
-            name='updated_by',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL, verbose_name='تم التحديث بواسطة'),
+            model_name="orderitem",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="%(class)s_updated",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="تم التحديث بواسطة",
+            ),
         ),
         migrations.AlterField(
-            model_name='medicine',
-            name='created_at',
-            field=models.DateTimeField(default=django.utils.timezone.now, verbose_name='تاريخ الإنشاء'),
+            model_name="medicine",
+            name="created_at",
+            field=models.DateTimeField(
+                default=django.utils.timezone.now, verbose_name="تاريخ الإنشاء"
+            ),
         ),
         migrations.AlterField(
-            model_name='medicine',
-            name='description',
-            field=models.TextField(verbose_name='الوصف'),
+            model_name="medicine",
+            name="description",
+            field=models.TextField(verbose_name="الوصف"),
         ),
         migrations.AlterField(
-            model_name='medicine',
-            name='manufacturer',
-            field=models.CharField(max_length=200, verbose_name='الشركة المصنعة'),
+            model_name="medicine",
+            name="manufacturer",
+            field=models.CharField(max_length=200, verbose_name="الشركة المصنعة"),
         ),
         migrations.AlterField(
-            model_name='medicine',
-            name='name',
-            field=models.CharField(max_length=200, verbose_name='اسم الدواء'),
+            model_name="medicine",
+            name="name",
+            field=models.CharField(max_length=200, verbose_name="اسم الدواء"),
         ),
         migrations.AlterField(
-            model_name='medicine',
-            name='price',
-            field=models.DecimalField(decimal_places=2, max_digits=10, verbose_name='السعر'),
+            model_name="medicine",
+            name="price",
+            field=models.DecimalField(
+                decimal_places=2, max_digits=10, verbose_name="السعر"
+            ),
         ),
         migrations.AlterField(
-            model_name='medicine',
-            name='requires_prescription',
-            field=models.BooleanField(default=True, verbose_name='يتطلب وصفة طبية'),
+            model_name="medicine",
+            name="requires_prescription",
+            field=models.BooleanField(default=True, verbose_name="يتطلب وصفة طبية"),
         ),
         migrations.AlterField(
-            model_name='medicine',
-            name='scientific_name',
-            field=models.CharField(max_length=200, verbose_name='الاسم العلمي'),
+            model_name="medicine",
+            name="scientific_name",
+            field=models.CharField(max_length=200, verbose_name="الاسم العلمي"),
         ),
         migrations.AlterField(
-            model_name='medicine',
-            name='updated_at',
-            field=models.DateTimeField(auto_now=True, verbose_name='تاريخ التحديث'),
+            model_name="medicine",
+            name="updated_at",
+            field=models.DateTimeField(auto_now=True, verbose_name="تاريخ التحديث"),
         ),
         migrations.AlterField(
-            model_name='orderitem',
-            name='medicine',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='order_items', to='pharmacy.medicine', verbose_name='الدواء'),
+            model_name="orderitem",
+            name="medicine",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="order_items",
+                to="pharmacy.medicine",
+                verbose_name="الدواء",
+            ),
         ),
         migrations.AlterField(
-            model_name='orderitem',
-            name='quantity',
-            field=models.PositiveIntegerField(verbose_name='الكمية'),
+            model_name="orderitem",
+            name="quantity",
+            field=models.PositiveIntegerField(verbose_name="الكمية"),
         ),
         migrations.CreateModel(
-            name='ExpiryAlert',
+            name="ExpiryAlert",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='تاريخ الإنشاء')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='تاريخ التحديث')),
-                ('batch_number', models.CharField(max_length=50, verbose_name='رقم التشغيلة')),
-                ('expiry_date', models.DateField(verbose_name='تاريخ الصلاحية')),
-                ('quantity', models.PositiveIntegerField(verbose_name='الكمية')),
-                ('is_resolved', models.BooleanField(default=False, verbose_name='تم الحل')),
-                ('resolved_at', models.DateTimeField(blank=True, null=True, verbose_name='تاريخ الحل')),
-                ('resolution_notes', models.TextField(blank=True, verbose_name='ملاحظات الحل')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL, verbose_name='تم الإنشاء بواسطة')),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL, verbose_name='تم الحذف بواسطة')),
-                ('medicine', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='expiry_alerts', to='pharmacy.medicine', verbose_name='الدواء')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL, verbose_name='تم التحديث بواسطة')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="تاريخ الإنشاء"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="تاريخ التحديث"),
+                ),
+                (
+                    "batch_number",
+                    models.CharField(max_length=50, verbose_name="رقم التشغيلة"),
+                ),
+                ("expiry_date", models.DateField(verbose_name="تاريخ الصلاحية")),
+                ("quantity", models.PositiveIntegerField(verbose_name="الكمية")),
+                (
+                    "is_resolved",
+                    models.BooleanField(default=False, verbose_name="تم الحل"),
+                ),
+                (
+                    "resolved_at",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="تاريخ الحل"
+                    ),
+                ),
+                (
+                    "resolution_notes",
+                    models.TextField(blank=True, verbose_name="ملاحظات الحل"),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم الإنشاء بواسطة",
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم الحذف بواسطة",
+                    ),
+                ),
+                (
+                    "medicine",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="expiry_alerts",
+                        to="pharmacy.medicine",
+                        verbose_name="الدواء",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم التحديث بواسطة",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'تنبيه صلاحية',
-                'verbose_name_plural': 'تنبيهات الصلاحية',
-                'ordering': ['expiry_date'],
+                "verbose_name": "تنبيه صلاحية",
+                "verbose_name_plural": "تنبيهات الصلاحية",
+                "ordering": ["expiry_date"],
             },
         ),
         migrations.CreateModel(
-            name='Inventory',
+            name="Inventory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='تاريخ الإنشاء')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='تاريخ التحديث')),
-                ('is_deleted', models.BooleanField(default=False, verbose_name='محذوف')),
-                ('deleted_at', models.DateTimeField(blank=True, null=True, verbose_name='تاريخ الحذف')),
-                ('batch_number', models.CharField(max_length=50, verbose_name='رقم التشغيلة')),
-                ('quantity', models.PositiveIntegerField(verbose_name='الكمية')),
-                ('unit_cost', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='تكلفة الوحدة')),
-                ('expiry_date', models.DateField(verbose_name='تاريخ الصلاحية')),
-                ('supplier', models.CharField(max_length=200, verbose_name='المورد')),
-                ('purchase_date', models.DateField(verbose_name='تاريخ الشراء')),
-                ('notes', models.TextField(blank=True, verbose_name='ملاحظات')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL, verbose_name='تم الإنشاء بواسطة')),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL, verbose_name='تم الحذف بواسطة')),
-                ('medicine', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='inventory_records', to='pharmacy.medicine', verbose_name='الدواء')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL, verbose_name='تم التحديث بواسطة')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="تاريخ الإنشاء"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="تاريخ التحديث"),
+                ),
+                (
+                    "is_deleted",
+                    models.BooleanField(default=False, verbose_name="محذوف"),
+                ),
+                (
+                    "deleted_at",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="تاريخ الحذف"
+                    ),
+                ),
+                (
+                    "batch_number",
+                    models.CharField(max_length=50, verbose_name="رقم التشغيلة"),
+                ),
+                ("quantity", models.PositiveIntegerField(verbose_name="الكمية")),
+                (
+                    "unit_cost",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=10, verbose_name="تكلفة الوحدة"
+                    ),
+                ),
+                ("expiry_date", models.DateField(verbose_name="تاريخ الصلاحية")),
+                ("supplier", models.CharField(max_length=200, verbose_name="المورد")),
+                ("purchase_date", models.DateField(verbose_name="تاريخ الشراء")),
+                ("notes", models.TextField(blank=True, verbose_name="ملاحظات")),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم الإنشاء بواسطة",
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم الحذف بواسطة",
+                    ),
+                ),
+                (
+                    "medicine",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="inventory_records",
+                        to="pharmacy.medicine",
+                        verbose_name="الدواء",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم التحديث بواسطة",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'مخزون',
-                'verbose_name_plural': 'المخزون',
-                'ordering': ['expiry_date'],
-                'unique_together': {('medicine', 'batch_number')},
+                "verbose_name": "مخزون",
+                "verbose_name_plural": "المخزون",
+                "ordering": ["expiry_date"],
+                "unique_together": {("medicine", "batch_number")},
             },
         ),
         migrations.CreateModel(
-            name='Order',
+            name="Order",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='تاريخ الإنشاء')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='تاريخ التحديث')),
-                ('is_deleted', models.BooleanField(default=False, verbose_name='محذوف')),
-                ('deleted_at', models.DateTimeField(blank=True, null=True, verbose_name='تاريخ الحذف')),
-                ('status', models.CharField(choices=[('pending', 'قيد الانتظار'), ('confirmed', 'مؤكد'), ('processing', 'قيد التجهيز'), ('ready', 'جاهز للتسليم'), ('delivered', 'تم التسليم'), ('cancelled', 'ملغي')], default='pending', max_length=20, verbose_name='الحالة')),
-                ('payment_method', models.CharField(choices=[('cash', 'نقداً'), ('credit_card', 'بطاقة ائتمان'), ('insurance', 'تأمين صحي'), ('bank_transfer', 'تحويل بنكي')], default='cash', max_length=20, verbose_name='طريقة الدفع')),
-                ('payment_status', models.CharField(choices=[('pending', 'قيد الانتظار'), ('paid', 'مدفوع'), ('partially_paid', 'مدفوع جزئياً'), ('refunded', 'مسترد'), ('failed', 'فشل الدفع')], default='pending', max_length=20, verbose_name='حالة الدفع')),
-                ('delivery_address', models.TextField(blank=True, verbose_name='عنوان التوصيل')),
-                ('delivery_notes', models.TextField(blank=True, verbose_name='ملاحظات التوصيل')),
-                ('total_amount', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='المبلغ الإجمالي')),
-                ('discount', models.DecimalField(decimal_places=2, default=0, max_digits=10, verbose_name='الخصم')),
-                ('insurance_coverage', models.DecimalField(decimal_places=2, default=0, max_digits=10, verbose_name='تغطية التأمين')),
-                ('final_amount', models.DecimalField(decimal_places=2, max_digits=10, verbose_name='المبلغ النهائي')),
-                ('notes', models.TextField(blank=True, verbose_name='ملاحظات')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL, verbose_name='تم الإنشاء بواسطة')),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL, verbose_name='تم الحذف بواسطة')),
-                ('patient', models.ForeignKey(limit_choices_to={'user_type': 'patient'}, on_delete=django.db.models.deletion.PROTECT, related_name='pharmacy_orders', to=settings.AUTH_USER_MODEL, verbose_name='المريض')),
-                ('prescription', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='pharmacy_orders', to='medical_records.prescription', verbose_name='الوصفة الطبية')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL, verbose_name='تم التحديث بواسطة')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="تاريخ الإنشاء"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="تاريخ التحديث"),
+                ),
+                (
+                    "is_deleted",
+                    models.BooleanField(default=False, verbose_name="محذوف"),
+                ),
+                (
+                    "deleted_at",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="تاريخ الحذف"
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "قيد الانتظار"),
+                            ("confirmed", "مؤكد"),
+                            ("processing", "قيد التجهيز"),
+                            ("ready", "جاهز للتسليم"),
+                            ("delivered", "تم التسليم"),
+                            ("cancelled", "ملغي"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                        verbose_name="الحالة",
+                    ),
+                ),
+                (
+                    "payment_method",
+                    models.CharField(
+                        choices=[
+                            ("cash", "نقداً"),
+                            ("credit_card", "بطاقة ائتمان"),
+                            ("insurance", "تأمين صحي"),
+                            ("bank_transfer", "تحويل بنكي"),
+                        ],
+                        default="cash",
+                        max_length=20,
+                        verbose_name="طريقة الدفع",
+                    ),
+                ),
+                (
+                    "payment_status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "قيد الانتظار"),
+                            ("paid", "مدفوع"),
+                            ("partially_paid", "مدفوع جزئياً"),
+                            ("refunded", "مسترد"),
+                            ("failed", "فشل الدفع"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                        verbose_name="حالة الدفع",
+                    ),
+                ),
+                (
+                    "delivery_address",
+                    models.TextField(blank=True, verbose_name="عنوان التوصيل"),
+                ),
+                (
+                    "delivery_notes",
+                    models.TextField(blank=True, verbose_name="ملاحظات التوصيل"),
+                ),
+                (
+                    "total_amount",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=10, verbose_name="المبلغ الإجمالي"
+                    ),
+                ),
+                (
+                    "discount",
+                    models.DecimalField(
+                        decimal_places=2, default=0, max_digits=10, verbose_name="الخصم"
+                    ),
+                ),
+                (
+                    "insurance_coverage",
+                    models.DecimalField(
+                        decimal_places=2,
+                        default=0,
+                        max_digits=10,
+                        verbose_name="تغطية التأمين",
+                    ),
+                ),
+                (
+                    "final_amount",
+                    models.DecimalField(
+                        decimal_places=2, max_digits=10, verbose_name="المبلغ النهائي"
+                    ),
+                ),
+                ("notes", models.TextField(blank=True, verbose_name="ملاحظات")),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم الإنشاء بواسطة",
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم الحذف بواسطة",
+                    ),
+                ),
+                (
+                    "patient",
+                    models.ForeignKey(
+                        limit_choices_to={"user_type": "patient"},
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="pharmacy_orders",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="المريض",
+                    ),
+                ),
+                (
+                    "prescription",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="pharmacy_orders",
+                        to="medical_records.prescription",
+                        verbose_name="الوصفة الطبية",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم التحديث بواسطة",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'طلب',
-                'verbose_name_plural': 'الطلبات',
-                'ordering': ['-created_at'],
+                "verbose_name": "طلب",
+                "verbose_name_plural": "الطلبات",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.AlterField(
-            model_name='orderitem',
-            name='order',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='items', to='pharmacy.order', verbose_name='الطلب'),
+            model_name="orderitem",
+            name="order",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="items",
+                to="pharmacy.order",
+                verbose_name="الطلب",
+            ),
         ),
         migrations.CreateModel(
-            name='StockAlert',
+            name="StockAlert",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, verbose_name='تاريخ الإنشاء')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='تاريخ التحديث')),
-                ('min_quantity', models.PositiveIntegerField(verbose_name='الحد الأدنى للكمية')),
-                ('current_quantity', models.PositiveIntegerField(verbose_name='الكمية الحالية')),
-                ('is_resolved', models.BooleanField(default=False, verbose_name='تم الحل')),
-                ('resolved_at', models.DateTimeField(blank=True, null=True, verbose_name='تاريخ الحل')),
-                ('notes', models.TextField(blank=True, verbose_name='ملاحظات')),
-                ('created_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_created', to=settings.AUTH_USER_MODEL, verbose_name='تم الإنشاء بواسطة')),
-                ('deleted_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_deleted', to=settings.AUTH_USER_MODEL, verbose_name='تم الحذف بواسطة')),
-                ('medicine', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='stock_alerts', to='pharmacy.medicine', verbose_name='الدواء')),
-                ('updated_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='%(class)s_updated', to=settings.AUTH_USER_MODEL, verbose_name='تم التحديث بواسطة')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="تاريخ الإنشاء"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="تاريخ التحديث"),
+                ),
+                (
+                    "min_quantity",
+                    models.PositiveIntegerField(verbose_name="الحد الأدنى للكمية"),
+                ),
+                (
+                    "current_quantity",
+                    models.PositiveIntegerField(verbose_name="الكمية الحالية"),
+                ),
+                (
+                    "is_resolved",
+                    models.BooleanField(default=False, verbose_name="تم الحل"),
+                ),
+                (
+                    "resolved_at",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="تاريخ الحل"
+                    ),
+                ),
+                ("notes", models.TextField(blank=True, verbose_name="ملاحظات")),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_created",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم الإنشاء بواسطة",
+                    ),
+                ),
+                (
+                    "deleted_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_deleted",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم الحذف بواسطة",
+                    ),
+                ),
+                (
+                    "medicine",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="stock_alerts",
+                        to="pharmacy.medicine",
+                        verbose_name="الدواء",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_updated",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="تم التحديث بواسطة",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'تنبيه مخزون',
-                'verbose_name_plural': 'تنبيهات المخزون',
-                'ordering': ['-created_at'],
+                "verbose_name": "تنبيه مخزون",
+                "verbose_name_plural": "تنبيهات المخزون",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.DeleteModel(
-            name='DeliveryAddress',
+            name="DeliveryAddress",
         ),
         migrations.DeleteModel(
-            name='MedicineCategory',
+            name="MedicineCategory",
         ),
         migrations.DeleteModel(
-            name='MedicineCategoryRelation',
+            name="MedicineCategoryRelation",
         ),
         migrations.DeleteModel(
-            name='PharmacyInventory',
+            name="PharmacyInventory",
         ),
         migrations.DeleteModel(
-            name='MedicineOrder',
+            name="MedicineOrder",
         ),
     ]

@@ -10,7 +10,7 @@
     font-style: normal;
     font-display: swap;
   }
-  
+
   @font-face {
     font-family: 'Cairo';
     src: url('/fonts/Cairo-Bold.ttf') format('truetype');

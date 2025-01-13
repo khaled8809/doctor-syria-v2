@@ -14,21 +14,22 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('core.urls')),
-    path('accounts/', include('accounts.urls')),
-    path('appointments/', include('appointments.urls')),
-    path('pharmacy/', include('pharmacy.urls')),
-    path('laboratory/', include('laboratory.urls')),
-    path('preventive-care/', include('preventive_care.urls')),
-    path('ai-diagnosis/', include('ai_diagnosis.urls')),
-    path('resource-management/', include('resource_management.urls')),
-    path('medical-education/', include('medical_education.urls')),
-    path('decision-support/', include('decision_support.urls')),
+    path("admin/", admin.site.urls),
+    path("", include("core.urls")),
+    path("accounts/", include("accounts.urls")),
+    path("appointments/", include("appointments.urls")),
+    path("pharmacy/", include("pharmacy.urls")),
+    path("laboratory/", include("laboratory.urls")),
+    path("preventive-care/", include("preventive_care.urls")),
+    path("ai-diagnosis/", include("ai_diagnosis.urls")),
+    path("resource-management/", include("resource_management.urls")),
+    path("medical-education/", include("medical_education.urls")),
+    path("decision-support/", include("decision_support.urls")),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

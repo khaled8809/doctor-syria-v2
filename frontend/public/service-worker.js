@@ -45,15 +45,15 @@ self.addEventListener('activate', (event) => {
 // Helper function to determine cache strategy based on request
 const getCacheStrategy = (request) => {
   const url = new URL(request.url);
-  
+
   if (STATIC_ASSETS.includes(url.pathname)) {
     return CACHE_STRATEGIES.STATIC;
   }
-  
+
   if (url.pathname.startsWith('/api/')) {
     return CACHE_STRATEGIES.NETWORK_FIRST;
   }
-  
+
   return CACHE_STRATEGIES.CACHE_FIRST;
 };
 
@@ -90,16 +90,16 @@ const cacheFirst = async (request) => {
 // Fetch Event
 self.addEventListener('fetch', (event) => {
   const strategy = getCacheStrategy(event.request);
-  
+
   switch (strategy) {
     case CACHE_STRATEGIES.STATIC:
       event.respondWith(caches.match(event.request));
       break;
-      
+
     case CACHE_STRATEGIES.NETWORK_FIRST:
       event.respondWith(networkFirst(event.request));
       break;
-      
+
     case CACHE_STRATEGIES.CACHE_FIRST:
       event.respondWith(cacheFirst(event.request));
       break;
@@ -137,7 +137,7 @@ self.addEventListener('push', (event) => {
       }
     ]
   };
-  
+
   event.waitUntil(
     self.registration.showNotification('Doctor Syria', options)
   );

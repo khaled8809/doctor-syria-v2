@@ -15,6 +15,7 @@ from unittest.mock import patch, MagicMock
 
 User = get_user_model()
 
+
 @pytest.mark.django_db
 class TestMFA:
     @pytest.fixture
@@ -28,10 +29,10 @@ class TestMFA:
     @pytest.fixture
     def test_user(self):
         user = User.objects.create_user(
-            username='testuser',
-            email='test@example.com',
-            password='testpass123',
-            phone_number='+1234567890'
+            username="testuser",
+            email="test@example.com",
+            password="testpass123",
+            phone_number="+1234567890",
         )
         return user
 
@@ -43,9 +44,7 @@ class TestMFA:
         # Test secret generation
         secret = mfa_manager._get_or_create_secret()
         assert len(secret) == 32
-        assert pyotp.TOTP(secret).verify(
-            pyotp.TOTP(secret).now()
-        )
+        assert pyotp.TOTP(secret).verify(pyotp.TOTP(secret).now())
 
         # Test QR code generation
         qr_code = mfa_manager.generate_qr_code()
@@ -64,7 +63,7 @@ class TestMFA:
         assert not mfa_manager.verify_backup_code(code)  # Code should be used up
         assert len(mfa_manager.user.backup_codes) == 7
 
-    @patch('twilio.rest.Client')
+    @patch("twilio.rest.Client")
     def test_sms_verification(self, mock_twilio, mfa_manager):
         # Setup mock
         mock_client = MagicMock()
@@ -75,7 +74,7 @@ class TestMFA:
         mock_client.messages.create.assert_called_once()
 
         # Test code verification
-        cache_key = f'sms_code_{mfa_manager.user.id}'
+        cache_key = f"sms_code_{mfa_manager.user.id}"
         code = cache.get(cache_key)
         assert mfa_manager.verify_sms_code(code)
         assert not mfa_manager.verify_sms_code(code)  # Code should be used up
@@ -87,22 +86,22 @@ class TestMFA:
         assert mail.outbox[0].to == [mfa_manager.user.email]
 
         # Test code verification
-        cache_key = f'email_code_{mfa_manager.user.id}'
+        cache_key = f"email_code_{mfa_manager.user.id}"
         code = cache.get(cache_key)
         assert mfa_manager.verify_email_code(code)
         assert not mfa_manager.verify_email_code(code)  # Code should be used up
 
     def test_preferred_method(self, mfa_manager):
         # Test default method
-        assert mfa_manager.get_preferred_method() == 'totp'
+        assert mfa_manager.get_preferred_method() == "totp"
 
         # Test setting valid method
-        assert mfa_manager.set_preferred_method('sms')
-        assert mfa_manager.get_preferred_method() == 'sms'
+        assert mfa_manager.set_preferred_method("sms")
+        assert mfa_manager.get_preferred_method() == "sms"
 
         # Test setting invalid method
-        assert not mfa_manager.set_preferred_method('invalid')
-        assert mfa_manager.get_preferred_method() == 'sms'
+        assert not mfa_manager.set_preferred_method("invalid")
+        assert mfa_manager.get_preferred_method() == "sms"
 
     def test_totp_verification(self, mfa_manager):
         # Test valid code
@@ -111,5 +110,5 @@ class TestMFA:
         assert mfa_manager.verify_totp(code)
 
         # Test invalid code
-        assert not mfa_manager.verify_totp('000000')
-        assert not mfa_manager.verify_totp('invalid')
+        assert not mfa_manager.verify_totp("000000")
+        assert not mfa_manager.verify_totp("invalid")

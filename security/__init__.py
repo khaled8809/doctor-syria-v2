@@ -1,1 +1,1 @@
-default_app_config = 'security.apps.SecurityConfig'
+default_app_config = "security.apps.SecurityConfig"

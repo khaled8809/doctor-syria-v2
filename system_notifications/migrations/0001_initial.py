@@ -15,23 +15,72 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Notification',
+            name="Notification",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('notification_type', models.CharField(choices=[('appointment', 'Appointment'), ('medical', 'Medical'), ('system', 'System')], default='system', max_length=20, verbose_name='Notification Type')),
-                ('title', models.CharField(max_length=255, verbose_name='Title')),
-                ('message', models.TextField(verbose_name='Message')),
-                ('priority', models.CharField(choices=[('low', 'Low'), ('medium', 'Medium'), ('high', 'High')], default='medium', max_length=20, verbose_name='Priority')),
-                ('is_read', models.BooleanField(default=False, verbose_name='Is Read')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Created At')),
-                ('read_at', models.DateTimeField(blank=True, null=True, verbose_name='Read At')),
-                ('related_link', models.URLField(blank=True, verbose_name='Related Link')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='notifications', to=settings.AUTH_USER_MODEL, verbose_name='User')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "notification_type",
+                    models.CharField(
+                        choices=[
+                            ("appointment", "Appointment"),
+                            ("medical", "Medical"),
+                            ("system", "System"),
+                        ],
+                        default="system",
+                        max_length=20,
+                        verbose_name="Notification Type",
+                    ),
+                ),
+                ("title", models.CharField(max_length=255, verbose_name="Title")),
+                ("message", models.TextField(verbose_name="Message")),
+                (
+                    "priority",
+                    models.CharField(
+                        choices=[
+                            ("low", "Low"),
+                            ("medium", "Medium"),
+                            ("high", "High"),
+                        ],
+                        default="medium",
+                        max_length=20,
+                        verbose_name="Priority",
+                    ),
+                ),
+                ("is_read", models.BooleanField(default=False, verbose_name="Is Read")),
+                (
+                    "created_at",
+                    models.DateTimeField(auto_now_add=True, verbose_name="Created At"),
+                ),
+                (
+                    "read_at",
+                    models.DateTimeField(blank=True, null=True, verbose_name="Read At"),
+                ),
+                (
+                    "related_link",
+                    models.URLField(blank=True, verbose_name="Related Link"),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="notifications",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="User",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Notification',
-                'verbose_name_plural': 'Notifications',
-                'ordering': ['-created_at'],
+                "verbose_name": "Notification",
+                "verbose_name_plural": "Notifications",
+                "ordering": ["-created_at"],
             },
         ),
     ]

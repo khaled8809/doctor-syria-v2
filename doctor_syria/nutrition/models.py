@@ -2,22 +2,24 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from accounts.models import Patient, Doctor
 
+
 class NutritionProfile(models.Model):
     """الملف التغذوي"""
+
     ACTIVITY_LEVELS = [
-        ('sedentary', 'خامل'),
-        ('lightly_active', 'قليل النشاط'),
-        ('moderately_active', 'متوسط النشاط'),
-        ('very_active', 'نشيط جداً'),
-        ('extra_active', 'نشيط للغاية'),
+        ("sedentary", "خامل"),
+        ("lightly_active", "قليل النشاط"),
+        ("moderately_active", "متوسط النشاط"),
+        ("very_active", "نشيط جداً"),
+        ("extra_active", "نشيط للغاية"),
     ]
 
     GOAL_CHOICES = [
-        ('weight_loss', 'إنقاص الوزن'),
-        ('weight_gain', 'زيادة الوزن'),
-        ('maintenance', 'المحافظة على الوزن'),
-        ('muscle_gain', 'بناء العضلات'),
-        ('health_improvement', 'تحسين الصحة'),
+        ("weight_loss", "إنقاص الوزن"),
+        ("weight_gain", "زيادة الوزن"),
+        ("maintenance", "المحافظة على الوزن"),
+        ("muscle_gain", "بناء العضلات"),
+        ("health_improvement", "تحسين الصحة"),
     ]
 
     patient = models.OneToOneField(Patient, on_delete=models.CASCADE)
@@ -40,15 +42,17 @@ class NutritionProfile(models.Model):
     def bmi(self):
         """حساب مؤشر كتلة الجسم"""
         height_in_meters = self.height / 100
-        return self.current_weight / (height_in_meters ** 2)
+        return self.current_weight / (height_in_meters**2)
+
 
 class DietPlan(models.Model):
     """خطة الحمية الغذائية"""
+
     STATUS_CHOICES = [
-        ('active', 'نشطة'),
-        ('completed', 'مكتملة'),
-        ('paused', 'موقوفة'),
-        ('discontinued', 'متوقفة'),
+        ("active", "نشطة"),
+        ("completed", "مكتملة"),
+        ("paused", "موقوفة"),
+        ("discontinued", "متوقفة"),
     ]
 
     profile = models.ForeignKey(NutritionProfile, on_delete=models.CASCADE)
@@ -57,7 +61,7 @@ class DietPlan(models.Model):
     daily_calories = models.IntegerField()
     macronutrients = models.JSONField()  # نسب البروتين والكربوهيدرات والدهون
     meal_distribution = models.JSONField()  # توزيع السعرات على الوجبات
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="active")
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -65,15 +69,17 @@ class DietPlan(models.Model):
     def __str__(self):
         return f"خطة حمية - {self.profile.patient.user.get_full_name()}"
 
+
 class Meal(models.Model):
     """الوجبات الغذائية"""
+
     MEAL_TYPES = [
-        ('breakfast', 'فطور'),
-        ('morning_snack', 'وجبة خفيفة صباحية'),
-        ('lunch', 'غداء'),
-        ('afternoon_snack', 'وجبة خفيفة مسائية'),
-        ('dinner', 'عشاء'),
-        ('evening_snack', 'وجبة خفيفة ليلية'),
+        ("breakfast", "فطور"),
+        ("morning_snack", "وجبة خفيفة صباحية"),
+        ("lunch", "غداء"),
+        ("afternoon_snack", "وجبة خفيفة مسائية"),
+        ("dinner", "عشاء"),
+        ("evening_snack", "وجبة خفيفة ليلية"),
     ]
 
     diet_plan = models.ForeignKey(DietPlan, on_delete=models.CASCADE)
@@ -91,17 +97,19 @@ class Meal(models.Model):
     def __str__(self):
         return f"{self.get_meal_type_display()} - {self.name}"
 
+
 class FoodItem(models.Model):
     """العناصر الغذائية"""
+
     FOOD_CATEGORIES = [
-        ('fruits', 'فواكه'),
-        ('vegetables', 'خضروات'),
-        ('grains', 'حبوب'),
-        ('proteins', 'بروتينات'),
-        ('dairy', 'منتجات الألبان'),
-        ('fats', 'دهون'),
-        ('beverages', 'مشروبات'),
-        ('snacks', 'وجبات خفيفة'),
+        ("fruits", "فواكه"),
+        ("vegetables", "خضروات"),
+        ("grains", "حبوب"),
+        ("proteins", "بروتينات"),
+        ("dairy", "منتجات الألبان"),
+        ("fats", "دهون"),
+        ("beverages", "مشروبات"),
+        ("snacks", "وجبات خفيفة"),
     ]
 
     name = models.CharField(max_length=200)
@@ -114,13 +122,15 @@ class FoodItem(models.Model):
     vitamins = models.JSONField(default=dict)
     minerals = models.JSONField(default=dict)
     serving_size = models.CharField(max_length=100)
-    image = models.ImageField(upload_to='food_items/', null=True, blank=True)
+    image = models.ImageField(upload_to="food_items/", null=True, blank=True)
 
     def __str__(self):
         return self.name
 
+
 class NutritionLog(models.Model):
     """سجل التغذية"""
+
     profile = models.ForeignKey(NutritionProfile, on_delete=models.CASCADE)
     date = models.DateField()
     meals = models.JSONField()
@@ -134,8 +144,10 @@ class NutritionLog(models.Model):
     def __str__(self):
         return f"سجل تغذية - {self.profile.patient.user.get_full_name()} - {self.date}"
 
+
 class WeightLog(models.Model):
     """سجل الوزن"""
+
     profile = models.ForeignKey(NutritionProfile, on_delete=models.CASCADE)
     weight = models.FloatField()
     date = models.DateField()
@@ -147,8 +159,10 @@ class WeightLog(models.Model):
     def __str__(self):
         return f"سجل وزن - {self.profile.patient.user.get_full_name()} - {self.date}"
 
+
 class Recipe(models.Model):
     """الوصفات الصحية"""
+
     name = models.CharField(max_length=200)
     description = models.TextField()
     ingredients = models.JSONField()
@@ -160,20 +174,22 @@ class Recipe(models.Model):
     protein_per_serving = models.FloatField()
     carbs_per_serving = models.FloatField()
     fats_per_serving = models.FloatField()
-    image = models.ImageField(upload_to='recipes/', null=True, blank=True)
+    image = models.ImageField(upload_to="recipes/", null=True, blank=True)
     tags = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
+
 class NutritionGoal(models.Model):
     """الأهداف التغذوية"""
+
     STATUS_CHOICES = [
-        ('pending', 'قيد الانتظار'),
-        ('in_progress', 'قيد التنفيذ'),
-        ('achieved', 'محقق'),
-        ('failed', 'غير محقق'),
+        ("pending", "قيد الانتظار"),
+        ("in_progress", "قيد التنفيذ"),
+        ("achieved", "محقق"),
+        ("failed", "غير محقق"),
     ]
 
     profile = models.ForeignKey(NutritionProfile, on_delete=models.CASCADE)
@@ -183,7 +199,7 @@ class NutritionGoal(models.Model):
     current_value = models.FloatField()
     start_date = models.DateField()
     target_date = models.DateField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     progress_notes = models.TextField(blank=True)
 
     def __str__(self):

@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 
+
 class SaasConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'saas'
-    verbose_name = 'نظام إدارة المستشفيات'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "saas"
+    verbose_name = "نظام إدارة المستشفيات"

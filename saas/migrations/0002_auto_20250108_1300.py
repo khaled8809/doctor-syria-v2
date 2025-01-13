@@ -7,51 +7,86 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('saas_core', '0001_initial'),
-        ('saas', '0001_initial'),
+        ("saas_core", "0001_initial"),
+        ("saas", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='clinic',
-            name='tenant',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='clinics', to='saas_core.tenant'),
+            model_name="clinic",
+            name="tenant",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="clinics",
+                to="saas_core.tenant",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='clinicservice',
-            name='tenant',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='clinic_services', to='saas_core.tenant'),
+            model_name="clinicservice",
+            name="tenant",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="clinic_services",
+                to="saas_core.tenant",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='clinicequipment',
-            name='tenant',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='clinic_equipment', to='saas_core.tenant'),
+            model_name="clinicequipment",
+            name="tenant",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="clinic_equipment",
+                to="saas_core.tenant",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='medicine',
-            name='tenant',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='medicines', to='saas_core.tenant'),
+            model_name="medicine",
+            name="tenant",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="medicines",
+                to="saas_core.tenant",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='manufacturer',
-            name='tenant',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='manufacturers', to='saas_core.tenant'),
+            model_name="manufacturer",
+            name="tenant",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="manufacturers",
+                to="saas_core.tenant",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='product',
-            name='tenant',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='products', to='saas_core.tenant'),
+            model_name="product",
+            name="tenant",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="products",
+                to="saas_core.tenant",
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='commerceorder',
-            name='tenant',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, related_name='commerce_orders', to='saas_core.tenant'),
+            model_name="commerceorder",
+            name="tenant",
+            field=models.ForeignKey(
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="commerce_orders",
+                to="saas_core.tenant",
+            ),
             preserve_default=False,
         ),
     ]

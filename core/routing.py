@@ -7,12 +7,12 @@ from core.consumers import (
     NotificationConsumer,
     ChatConsumer,
     AppointmentStatusConsumer,
-    LiveDashboardConsumer
+    LiveDashboardConsumer,
 )
 
 websocket_urlpatterns = [
-    re_path(r'ws/notifications/$', NotificationConsumer.as_asgi()),
-    re_path(r'ws/chat/(?P<room_name>\w+)/$', ChatConsumer.as_asgi()),
-    re_path(r'ws/appointments/status/$', AppointmentStatusConsumer.as_asgi()),
-    re_path(r'ws/dashboard/live/$', LiveDashboardConsumer.as_asgi()),
+    re_path(r"ws/notifications/$", NotificationConsumer.as_asgi()),
+    re_path(r"ws/chat/(?P<room_name>\w+)/$", ChatConsumer.as_asgi()),
+    re_path(r"ws/appointments/status/$", AppointmentStatusConsumer.as_asgi()),
+    re_path(r"ws/dashboard/live/$", LiveDashboardConsumer.as_asgi()),
 ]

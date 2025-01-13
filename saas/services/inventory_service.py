@@ -8,8 +8,9 @@ from ..models import (
     PurchaseOrder,
     PurchaseOrderItem,
     Warehouse,
-    MedicalCompany
+    MedicalCompany,
 )
+
 
 class InventoryService:
     @staticmethod
@@ -17,24 +18,25 @@ class InventoryService:
         """Get items that are below their minimum quantity."""
         low_stock_items = []
         supplies = MedicalSupply.objects.filter(tenant=tenant, is_active=True)
-        
+
         for supply in supplies:
-            total_quantity = InventoryItem.objects.filter(
-                supply=supply,
-                tenant=tenant,
-                is_quarantined=False
-            ).aggregate(
-                total=Sum('quantity')
-            )['total'] or 0
-            
+            total_quantity = (
+                InventoryItem.objects.filter(
+                    supply=supply, tenant=tenant, is_quarantined=False
+                ).aggregate(total=Sum("quantity"))["total"]
+                or 0
+            )
+
             if total_quantity < supply.minimum_quantity:
-                low_stock_items.append({
-                    'supply': supply,
-                    'current_quantity': total_quantity,
-                    'minimum_quantity': supply.minimum_quantity,
-                    'shortage': supply.minimum_quantity - total_quantity
-                })
-                
+                low_stock_items.append(
+                    {
+                        "supply": supply,
+                        "current_quantity": total_quantity,
+                        "minimum_quantity": supply.minimum_quantity,
+                        "shortage": supply.minimum_quantity - total_quantity,
+                    }
+                )
+
         return low_stock_items
 
     @staticmethod
@@ -45,17 +47,15 @@ class InventoryService:
             tenant=tenant,
             expiry_date__lte=expiry_date,
             expiry_date__gte=timezone.now().date(),
-            quantity__gt=0
-        ).order_by('expiry_date')
+            quantity__gt=0,
+        ).order_by("expiry_date")
 
     @staticmethod
     def get_expired_items(tenant):
         """Get expired items that still have quantity."""
         return InventoryItem.objects.filter(
-            tenant=tenant,
-            expiry_date__lt=timezone.now().date(),
-            quantity__gt=0
-        ).order_by('expiry_date')
+            tenant=tenant, expiry_date__lt=timezone.now().date(), quantity__gt=0
+        ).order_by("expiry_date")
 
     @staticmethod
     @transaction.atomic
@@ -71,7 +71,7 @@ class InventoryService:
         location_in_warehouse,
         performed_by,
         reference_number,
-        notes=''
+        notes="",
     ):
         """Receive new inventory into the warehouse."""
         # Create or update inventory item
@@ -81,14 +81,14 @@ class InventoryService:
             warehouse=warehouse,
             batch_number=batch_number,
             defaults={
-                'quantity': 0,
-                'unit_price': unit_price,
-                'manufacturing_date': manufacturing_date,
-                'expiry_date': expiry_date,
-                'location_in_warehouse': location_in_warehouse
-            }
+                "quantity": 0,
+                "unit_price": unit_price,
+                "manufacturing_date": manufacturing_date,
+                "expiry_date": expiry_date,
+                "location_in_warehouse": location_in_warehouse,
+            },
         )
-        
+
         if not created:
             inventory_item.quantity += quantity
             inventory_item.save()
@@ -100,12 +100,12 @@ class InventoryService:
         InventoryTransaction.objects.create(
             tenant=tenant,
             inventory_item=inventory_item,
-            transaction_type='RECEIVE',
+            transaction_type="RECEIVE",
             quantity=quantity,
             reference_number=reference_number,
             destination_location=warehouse,
             performed_by=performed_by,
-            notes=notes
+            notes=notes,
         )
 
         return inventory_item
@@ -113,12 +113,7 @@ class InventoryService:
     @staticmethod
     @transaction.atomic
     def dispense_inventory(
-        tenant,
-        inventory_item,
-        quantity,
-        performed_by,
-        reference_number,
-        notes=''
+        tenant, inventory_item, quantity, performed_by, reference_number, notes=""
     ):
         """Dispense inventory from the warehouse."""
         if inventory_item.quantity < quantity:
@@ -138,12 +133,12 @@ class InventoryService:
         transaction = InventoryTransaction.objects.create(
             tenant=tenant,
             inventory_item=inventory_item,
-            transaction_type='DISPENSE',
+            transaction_type="DISPENSE",
             quantity=quantity,
             reference_number=reference_number,
             source_location=inventory_item.warehouse,
             performed_by=performed_by,
-            notes=notes
+            notes=notes,
         )
 
         return transaction
@@ -158,7 +153,7 @@ class InventoryService:
         performed_by,
         reference_number,
         new_location_in_warehouse,
-        notes=''
+        notes="",
     ):
         """Transfer inventory between warehouses."""
         if inventory_item.quantity < quantity:
@@ -176,7 +171,7 @@ class InventoryService:
             expiry_date=inventory_item.expiry_date,
             location_in_warehouse=new_location_in_warehouse,
             is_quarantined=inventory_item.is_quarantined,
-            quarantine_reason=inventory_item.quarantine_reason
+            quarantine_reason=inventory_item.quarantine_reason,
         )
 
         # Update source inventory quantity
@@ -187,13 +182,13 @@ class InventoryService:
         transaction = InventoryTransaction.objects.create(
             tenant=tenant,
             inventory_item=inventory_item,
-            transaction_type='TRANSFER',
+            transaction_type="TRANSFER",
             quantity=quantity,
             reference_number=reference_number,
             source_location=inventory_item.warehouse,
             destination_location=destination_warehouse,
             performed_by=performed_by,
-            notes=notes
+            notes=notes,
         )
 
         return new_item, transaction
@@ -201,12 +196,7 @@ class InventoryService:
     @staticmethod
     @transaction.atomic
     def adjust_inventory(
-        tenant,
-        inventory_item,
-        new_quantity,
-        performed_by,
-        reference_number,
-        notes=''
+        tenant, inventory_item, new_quantity, performed_by, reference_number, notes=""
     ):
         """Adjust inventory quantity for reconciliation."""
         old_quantity = inventory_item.quantity
@@ -220,12 +210,12 @@ class InventoryService:
         transaction = InventoryTransaction.objects.create(
             tenant=tenant,
             inventory_item=inventory_item,
-            transaction_type='ADJUST',
+            transaction_type="ADJUST",
             quantity=quantity_difference,
             reference_number=reference_number,
             source_location=inventory_item.warehouse,
             performed_by=performed_by,
-            notes=notes
+            notes=notes,
         )
 
         return transaction
@@ -233,12 +223,7 @@ class InventoryService:
     @staticmethod
     @transaction.atomic
     def quarantine_inventory(
-        tenant,
-        inventory_item,
-        reason,
-        performed_by,
-        reference_number,
-        notes=''
+        tenant, inventory_item, reason, performed_by, reference_number, notes=""
     ):
         """Place inventory items in quarantine."""
         inventory_item.is_quarantined = True
@@ -249,12 +234,12 @@ class InventoryService:
         transaction = InventoryTransaction.objects.create(
             tenant=tenant,
             inventory_item=inventory_item,
-            transaction_type='ADJUST',
+            transaction_type="ADJUST",
             quantity=0,
             reference_number=reference_number,
             source_location=inventory_item.warehouse,
             performed_by=performed_by,
-            notes=f"Quarantined: {reason}\n{notes}"
+            notes=f"Quarantined: {reason}\n{notes}",
         )
 
         return transaction
@@ -265,12 +250,13 @@ class InventoryService:
         query = Q(tenant=tenant)
         if warehouse:
             query &= Q(warehouse=warehouse)
-            
-        return InventoryItem.objects.filter(
-            query
-        ).aggregate(
-            total_value=Sum(F('quantity') * F('unit_price'))
-        )['total_value'] or 0
+
+        return (
+            InventoryItem.objects.filter(query).aggregate(
+                total_value=Sum(F("quantity") * F("unit_price"))
+            )["total_value"]
+            or 0
+        )
 
     @staticmethod
     def get_inventory_summary(tenant, warehouse=None):
@@ -282,20 +268,17 @@ class InventoryService:
         total_items = InventoryItem.objects.filter(query).count()
         total_value = InventoryService.get_inventory_value(tenant, warehouse)
         expired_items = InventoryItem.objects.filter(
-            query,
-            expiry_date__lt=timezone.now().date(),
-            quantity__gt=0
+            query, expiry_date__lt=timezone.now().date(), quantity__gt=0
         ).count()
         quarantined_items = InventoryItem.objects.filter(
-            query,
-            is_quarantined=True
+            query, is_quarantined=True
         ).count()
-        
+
         return {
-            'total_items': total_items,
-            'total_value': total_value,
-            'expired_items': expired_items,
-            'quarantined_items': quarantined_items
+            "total_items": total_items,
+            "total_value": total_value,
+            "expired_items": expired_items,
+            "quarantined_items": quarantined_items,
         }
 
     @staticmethod
@@ -305,23 +288,17 @@ class InventoryService:
         if supply:
             query &= Q(inventory_item__supply=supply)
         if warehouse:
-            query &= Q(
-                Q(source_location=warehouse) |
-                Q(destination_location=warehouse)
-            )
+            query &= Q(Q(source_location=warehouse) | Q(destination_location=warehouse))
 
         cutoff_date = timezone.now() - timezone.timedelta(days=days)
         return InventoryTransaction.objects.filter(
-            query,
-            created_at__gte=cutoff_date
-        ).order_by('-created_at')
+            query, created_at__gte=cutoff_date
+        ).order_by("-created_at")
 
     @staticmethod
     def get_supply_transactions(tenant, supply, days=30):
         """Get transaction history for a specific supply."""
         cutoff_date = timezone.now() - timezone.timedelta(days=days)
         return InventoryTransaction.objects.filter(
-            tenant=tenant,
-            inventory_item__supply=supply,
-            created_at__gte=cutoff_date
-        ).order_by('-created_at')
+            tenant=tenant, inventory_item__supply=supply, created_at__gte=cutoff_date
+        ).order_by("-created_at")

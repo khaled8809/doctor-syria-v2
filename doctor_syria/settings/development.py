@@ -8,32 +8,32 @@ from .base import *
 DEBUG = True
 
 # السماح بجميع المضيفين في بيئة التطوير
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 # قاعدة البيانات
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'doctor_syria_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
-        'PORT': '5432',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "doctor_syria_db",
+        "USER": "postgres",
+        "PASSWORD": "postgres",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
 
 # إعدادات البريد الإلكتروني
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # تكوين الوسائط والملفات الثابتة
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # تكوين الوسائط الثابتة
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',
+    BASE_DIR / "static",
 ]
 
 # تكوين CORS
@@ -44,14 +44,14 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # الجلسات
-SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 # تكوين نموذج المستخدم المخصص
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = "accounts.User"
 
 # إعدادات اللغة
-LANGUAGE_CODE = 'ar'
-TIME_ZONE = 'Asia/Damascus'
+LANGUAGE_CODE = "ar"
+TIME_ZONE = "Asia/Damascus"
 USE_I18N = True
 USE_TZ = True
 

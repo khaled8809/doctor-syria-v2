@@ -15,18 +15,17 @@ from .models import (
     MedicalSupply,
     InventoryItem,
     Warehouse,
-    MedicalCompany
+    MedicalCompany,
 )
 
 User = get_user_model()
+
 
 class DatabaseOptimizationTest(TestCase):
     def setUp(self):
         """إعداد بيانات الاختبار"""
         self.tenant = Tenant.objects.create(
-            name="مستشفى الاختبار",
-            subdomain="test",
-            is_active=True
+            name="مستشفى الاختبار", subdomain="test", is_active=True
         )
         self.hospital = Hospital.objects.create(
             tenant=self.tenant,
@@ -36,23 +35,23 @@ class DatabaseOptimizationTest(TestCase):
             address="شارع الاختبار",
             phone="0911234567",
             bed_capacity=100,
-            available_beds=50
+            available_beds=50,
         )
         # إنشاء 10 أطباء
         self.doctors = []
         for i in range(10):
             user = User.objects.create_user(
-                username=f'doctor{i}',
-                password='testpass123',
-                first_name=f'طبيب{i}',
-                last_name='اختبار'
+                username=f"doctor{i}",
+                password="testpass123",
+                first_name=f"طبيب{i}",
+                last_name="اختبار",
             )
             doctor = Doctor.objects.create(
                 tenant=self.tenant,
                 user=user,
                 specialization="تخصص عام",
-                license_number=f'LIC{i}001',
-                phone=f'09{i}1234567'
+                license_number=f"LIC{i}001",
+                phone=f"09{i}1234567",
             )
             self.doctors.append(doctor)
 
@@ -66,8 +65,8 @@ class DatabaseOptimizationTest(TestCase):
                 head_doctor=self.doctors[i],
                 capacity=20,
                 available_beds=10,
-                floor=str(i+1),
-                phone_extension=f"1{i}01"
+                floor=str(i + 1),
+                phone_extension=f"1{i}01",
             )
             self.departments.append(department)
 
@@ -79,7 +78,7 @@ class DatabaseOptimizationTest(TestCase):
                 name=f"مريض{i} اختبار",
                 age=30 + i,
                 gender="ذكر" if i % 2 == 0 else "أنثى",
-                condition="حالة مستقرة"
+                condition="حالة مستقرة",
             )
             self.patients.append(patient)
 
@@ -92,9 +91,9 @@ class DatabaseOptimizationTest(TestCase):
             email="contact@med.com",
             phone="0921234567",
             address="دمشق",
-            registration_date=timezone.now().date()
+            registration_date=timezone.now().date(),
         )
-        
+
         self.warehouse = Warehouse.objects.create(
             tenant=self.tenant,
             name="المستودع الرئيسي",
@@ -103,7 +102,7 @@ class DatabaseOptimizationTest(TestCase):
             capacity=1000,
             temperature=20,
             humidity=50,
-            manager=self.doctors[0].user
+            manager=self.doctors[0].user,
         )
 
         # إنشاء 10 مستلزمات طبية
@@ -118,7 +117,7 @@ class DatabaseOptimizationTest(TestCase):
                 description=f"وصف المستلزم {i}",
                 unit="قطعة",
                 minimum_quantity=10,
-                storage_condition="NORMAL"
+                storage_condition="NORMAL",
             )
             self.supplies.append(supply)
 
@@ -135,8 +134,7 @@ class DatabaseOptimizationTest(TestCase):
         with CaptureQueriesContext(connection) as context:
             # استعلام محسن باستخدام select_related
             departments = Department.objects.select_related(
-                'head_doctor',
-                'head_doctor__user'
+                "head_doctor", "head_doctor__user"
             ).filter(hospital=self.hospital)
             for dept in departments:
                 _ = dept.head_doctor.user.username
@@ -146,7 +144,7 @@ class DatabaseOptimizationTest(TestCase):
         self.assertLess(
             optimized_query_count,
             unoptimized_query_count,
-            "الاستعلام المحسن يجب أن يستخدم عدد أقل من الاستعلامات"
+            "الاستعلام المحسن يجب أن يستخدم عدد أقل من الاستعلامات",
         )
 
     def test_patient_admissions_query_count(self):
@@ -164,7 +162,7 @@ class DatabaseOptimizationTest(TestCase):
                 treatment_plan="متابعة",
                 room_number=f"R{i}01",
                 bed_number=f"B{i}01",
-                status="ADMITTED"
+                status="ADMITTED",
             )
 
         with CaptureQueriesContext(connection) as context:
@@ -180,9 +178,7 @@ class DatabaseOptimizationTest(TestCase):
         with CaptureQueriesContext(connection) as context:
             # استعلام محسن باستخدام select_related
             admissions = Admission.objects.select_related(
-                'patient',
-                'doctor',
-                'department'
+                "patient", "doctor", "department"
             ).filter(hospital=self.hospital)
             for admission in admissions:
                 _ = admission.patient.name
@@ -194,7 +190,7 @@ class DatabaseOptimizationTest(TestCase):
         self.assertLess(
             optimized_query_count,
             unoptimized_query_count,
-            "الاستعلام المحسن يجب أن يستخدم عدد أقل من الاستعلامات"
+            "الاستعلام المحسن يجب أن يستخدم عدد أقل من الاستعلامات",
         )
 
     def test_inventory_items_query_count(self):
@@ -210,7 +206,7 @@ class DatabaseOptimizationTest(TestCase):
                 unit_price=10.0,
                 manufacturing_date=timezone.now().date(),
                 expiry_date=timezone.now().date() + timezone.timedelta(days=365),
-                location_in_warehouse=f"A{i}-B{i}-C{i}"
+                location_in_warehouse=f"A{i}-B{i}-C{i}",
             )
 
         with CaptureQueriesContext(connection) as context:
@@ -224,10 +220,9 @@ class DatabaseOptimizationTest(TestCase):
 
         with CaptureQueriesContext(connection) as context:
             # استعلام محسن باستخدام select_related
-            items = InventoryItem.objects.select_related(
-                'supply',
-                'warehouse'
-            ).filter(warehouse=self.warehouse)
+            items = InventoryItem.objects.select_related("supply", "warehouse").filter(
+                warehouse=self.warehouse
+            )
             for item in items:
                 _ = item.supply.name
                 _ = item.warehouse.name
@@ -237,5 +232,5 @@ class DatabaseOptimizationTest(TestCase):
         self.assertLess(
             optimized_query_count,
             unoptimized_query_count,
-            "الاستعلام المحسن يجب أن يستخدم عدد أقل من الاستعلامات"
+            "الاستعلام المحسن يجب أن يستخدم عدد أقل من الاستعلامات",
         )

@@ -7,23 +7,23 @@ export const getImageUrl = (path: string, options?: {
   format?: 'webp' | 'jpeg' | 'png';
 }) => {
   const url = new URL(`${CDN_URL}${path}`);
-  
+
   if (options?.width) {
     url.searchParams.set('width', options.width.toString());
   }
-  
+
   if (options?.height) {
     url.searchParams.set('height', options.height.toString());
   }
-  
+
   if (options?.quality) {
     url.searchParams.set('quality', options.quality.toString());
   }
-  
+
   if (options?.format) {
     url.searchParams.set('format', options.format);
   }
-  
+
   return url.toString();
 };
 
@@ -42,6 +42,6 @@ export const preloadCriticalImages = () => {
     '/icons/patients.svg',
     '/icons/appointments.svg',
   ];
-  
+
   criticalImages.forEach(preloadImage);
 };

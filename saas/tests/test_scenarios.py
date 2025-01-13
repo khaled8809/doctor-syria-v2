@@ -13,41 +13,28 @@ from ..models import (
     MedicalSupply,
     Inventory,
     PurchaseOrder,
-    PurchaseOrderItem
+    PurchaseOrderItem,
 )
 
 User = get_user_model()
 
+
 class EmergencyAdmissionScenarioTest(TestCase):
     def setUp(self):
         # إعداد البيانات الأساسية
-        self.tenant = Tenant.objects.create(
-            name="مستشفى الاختبار",
-            subdomain="test"
-        )
+        self.tenant = Tenant.objects.create(name="مستشفى الاختبار", subdomain="test")
         self.hospital = Hospital.objects.create(
-            tenant=self.tenant,
-            name="مستشفى الاختبار"
+            tenant=self.tenant, name="مستشفى الاختبار"
         )
-        self.user = User.objects.create_user(
-            username="doctor",
-            password="testpass123"
-        )
+        self.user = User.objects.create_user(username="doctor", password="testpass123")
         self.doctor = Doctor.objects.create(
-            user=self.user,
-            tenant=self.tenant,
-            specialty="طوارئ"
+            user=self.user, tenant=self.tenant, specialty="طوارئ"
         )
         self.department = Department.objects.create(
-            hospital=self.hospital,
-            name="قسم الطوارئ",
-            head_doctor=self.doctor
+            hospital=self.hospital, name="قسم الطوارئ", head_doctor=self.doctor
         )
         self.patient = Patient.objects.create(
-            tenant=self.tenant,
-            first_name="أحمد",
-            last_name="محمد",
-            phone="0911234567"
+            tenant=self.tenant, first_name="أحمد", last_name="محمد", phone="0911234567"
         )
 
     def test_emergency_admission_flow(self):
@@ -58,7 +45,7 @@ class EmergencyAdmissionScenarioTest(TestCase):
             patient=self.patient,
             hospital=self.hospital,
             condition="إصابة خطيرة",
-            priority="عالية"
+            priority="عالية",
         )
         self.assertEqual(emergency.status, "جديد")
 
@@ -70,7 +57,7 @@ class EmergencyAdmissionScenarioTest(TestCase):
             department=self.department,
             doctor=self.doctor,
             admission_type="طوارئ",
-            emergency_case=emergency
+            emergency_case=emergency,
         )
         self.assertEqual(admission.status, "نشط")
 
@@ -90,50 +77,33 @@ class EmergencyAdmissionScenarioTest(TestCase):
         self.assertEqual(admission.status, "مغادر")
         self.assertIsNotNone(admission.discharge_date)
 
+
 class InventoryManagementScenarioTest(TestCase):
     def setUp(self):
-        self.tenant = Tenant.objects.create(
-            name="مستشفى الاختبار",
-            subdomain="test"
-        )
+        self.tenant = Tenant.objects.create(name="مستشفى الاختبار", subdomain="test")
         self.hospital = Hospital.objects.create(
-            tenant=self.tenant,
-            name="مستشفى الاختبار"
+            tenant=self.tenant, name="مستشفى الاختبار"
         )
         # إنشاء مستلزمات طبية
         self.supply1 = MedicalSupply.objects.create(
-            tenant=self.tenant,
-            name="قفازات طبية",
-            code="GLV001",
-            unit="علبة"
+            tenant=self.tenant, name="قفازات طبية", code="GLV001", unit="علبة"
         )
         self.supply2 = MedicalSupply.objects.create(
-            tenant=self.tenant,
-            name="محاقن",
-            code="SYR001",
-            unit="علبة"
+            tenant=self.tenant, name="محاقن", code="SYR001", unit="علبة"
         )
         # إنشاء مخزون
         self.inventory1 = Inventory.objects.create(
-            tenant=self.tenant,
-            supply=self.supply1,
-            quantity=100,
-            minimum_quantity=20
+            tenant=self.tenant, supply=self.supply1, quantity=100, minimum_quantity=20
         )
         self.inventory2 = Inventory.objects.create(
-            tenant=self.tenant,
-            supply=self.supply2,
-            quantity=50,
-            minimum_quantity=10
+            tenant=self.tenant, supply=self.supply2, quantity=50, minimum_quantity=10
         )
 
     def test_purchase_order_flow(self):
         """اختبار سيناريو طلب شراء وتحديث المخزون"""
         # 1. إنشاء طلب شراء
         purchase_order = PurchaseOrder.objects.create(
-            tenant=self.tenant,
-            order_number="PO001",
-            status="جديد"
+            tenant=self.tenant, order_number="PO001", status="جديد"
         )
 
         # 2. إضافة عناصر لطلب الشراء
@@ -141,13 +111,13 @@ class InventoryManagementScenarioTest(TestCase):
             purchase_order=purchase_order,
             supply=self.supply1,
             quantity=50,
-            unit_price=10.0
+            unit_price=10.0,
         )
         item2 = PurchaseOrderItem.objects.create(
             purchase_order=purchase_order,
             supply=self.supply2,
             quantity=30,
-            unit_price=5.0
+            unit_price=5.0,
         )
 
         # 3. تحديث حالة الطلب إلى مكتمل
@@ -163,7 +133,7 @@ class InventoryManagementScenarioTest(TestCase):
         # 5. التحقق من صحة التحديثات
         self.assertEqual(purchase_order.status, "مكتمل")
         self.assertEqual(self.inventory1.quantity, 150)  # 100 + 50
-        self.assertEqual(self.inventory2.quantity, 80)   # 50 + 30
+        self.assertEqual(self.inventory2.quantity, 80)  # 50 + 30
 
     def test_low_stock_alert(self):
         """اختبار تنبيهات المخزون المنخفض"""

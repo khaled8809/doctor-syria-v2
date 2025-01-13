@@ -4,6 +4,7 @@ from datetime import timedelta
 import hashlib
 import json
 
+
 class CacheManager:
     """مدير التخزين المؤقت للتطبيق"""
 
@@ -14,7 +15,7 @@ class CacheManager:
         key_parts.extend([str(arg) for arg in args])
         if kwargs:
             key_parts.append(json.dumps(kwargs, sort_keys=True))
-        key_string = ':'.join(key_parts)
+        key_string = ":".join(key_parts)
         return f"doctor_syria:{hashlib.md5(key_string.encode()).hexdigest()}"
 
     @staticmethod
@@ -34,44 +35,44 @@ class CacheManager:
     @staticmethod
     def invalidate_pattern(pattern):
         """إزالة كل القيم التي تطابق نمطاً معيناً"""
-        if hasattr(cache, 'delete_pattern'):
+        if hasattr(cache, "delete_pattern"):
             cache.delete_pattern(f"*{pattern}*")
 
     # مدة التخزين المؤقت الافتراضية للأنواع المختلفة من البيانات
     CACHE_TIMES = {
-        'medical_record': timedelta(hours=1),
-        'appointment': timedelta(minutes=15),
-        'user_profile': timedelta(hours=24),
-        'hospital_info': timedelta(days=1),
-        'analytics': timedelta(hours=6),
+        "medical_record": timedelta(hours=1),
+        "appointment": timedelta(minutes=15),
+        "user_profile": timedelta(hours=24),
+        "hospital_info": timedelta(days=1),
+        "analytics": timedelta(hours=6),
     }
 
     @classmethod
     def cache_medical_record(cls, record_id):
         """تخزين مؤقت للسجل الطبي"""
-        key = cls.generate_key('medical_record', record_id)
-        return key, cls.CACHE_TIMES['medical_record']
+        key = cls.generate_key("medical_record", record_id)
+        return key, cls.CACHE_TIMES["medical_record"]
 
     @classmethod
     def cache_appointment(cls, appointment_id):
         """تخزين مؤقت للموعد"""
-        key = cls.generate_key('appointment', appointment_id)
-        return key, cls.CACHE_TIMES['appointment']
+        key = cls.generate_key("appointment", appointment_id)
+        return key, cls.CACHE_TIMES["appointment"]
 
     @classmethod
     def cache_user_profile(cls, user_id):
         """تخزين مؤقت لملف المستخدم"""
-        key = cls.generate_key('user_profile', user_id)
-        return key, cls.CACHE_TIMES['user_profile']
+        key = cls.generate_key("user_profile", user_id)
+        return key, cls.CACHE_TIMES["user_profile"]
 
     @classmethod
     def cache_hospital_info(cls, hospital_id):
         """تخزين مؤقت لمعلومات المستشفى"""
-        key = cls.generate_key('hospital_info', hospital_id)
-        return key, cls.CACHE_TIMES['hospital_info']
+        key = cls.generate_key("hospital_info", hospital_id)
+        return key, cls.CACHE_TIMES["hospital_info"]
 
     @classmethod
     def cache_analytics(cls, report_type, **params):
         """تخزين مؤقت للتحليلات"""
-        key = cls.generate_key('analytics', report_type, **params)
-        return key, cls.CACHE_TIMES['analytics']
+        key = cls.generate_key("analytics", report_type, **params)
+        return key, cls.CACHE_TIMES["analytics"]

@@ -7,6 +7,7 @@ from asgiref.sync import async_to_sync
 from ..models import Notification, NotificationPreference
 import json
 
+
 class NotificationService:
     @staticmethod
     def create_notification(
@@ -14,14 +15,16 @@ class NotificationService:
         title,
         message,
         notification_type,
-        priority='MEDIUM',
+        priority="MEDIUM",
         related_object=None,
-        scheduled_for=None
+        scheduled_for=None,
     ):
         """Create a new notification."""
         try:
             # Check user preferences
-            preferences = NotificationPreference.objects.get_or_create(user=recipient)[0]
+            preferences = NotificationPreference.objects.get_or_create(user=recipient)[
+                0
+            ]
             if not preferences.can_send_notification(notification_type):
                 return None
 
@@ -32,7 +35,7 @@ class NotificationService:
                 message=message,
                 notification_type=notification_type,
                 priority=priority,
-                scheduled_for=scheduled_for
+                scheduled_for=scheduled_for,
             )
 
             # Add related object if provided
@@ -53,7 +56,7 @@ class NotificationService:
                 NotificationService.send_push_notification(notification)
 
             # Send SMS if enabled and urgent
-            if preferences.sms_notifications and priority == 'URGENT':
+            if preferences.sms_notifications and priority == "URGENT":
                 NotificationService.send_sms_notification(notification)
 
             return notification
@@ -89,13 +92,13 @@ class NotificationService:
         """Send email notification."""
         try:
             context = {
-                'notification': notification,
-                'recipient': notification.recipient,
+                "notification": notification,
+                "recipient": notification.recipient,
             }
-            
-            html_message = render_to_string('notifications/email.html', context)
-            plain_message = render_to_string('notifications/email.txt', context)
-            
+
+            html_message = render_to_string("notifications/email.html", context)
+            plain_message = render_to_string("notifications/email.txt", context)
+
             send_mail(
                 subject=notification.title,
                 message=plain_message,
@@ -131,10 +134,10 @@ class NotificationService:
             recipient=appointment.patient.user,
             title="Appointment Reminder",
             message=f"You have an appointment scheduled for {appointment.start_time.strftime('%B %d, %Y at %I:%M %p')}",
-            notification_type='APPOINTMENT',
-            priority='MEDIUM',
+            notification_type="APPOINTMENT",
+            priority="MEDIUM",
             related_object=appointment,
-            scheduled_for=appointment.start_time - timezone.timedelta(hours=24)
+            scheduled_for=appointment.start_time - timezone.timedelta(hours=24),
         )
         return notification
 
@@ -145,10 +148,10 @@ class NotificationService:
             recipient=device.assigned_technician,
             title="Maintenance Required",
             message=f"Maintenance is due for {device.name}",
-            notification_type='MAINTENANCE',
-            priority='HIGH',
+            notification_type="MAINTENANCE",
+            priority="HIGH",
             related_object=device,
-            scheduled_for=device.next_maintenance - timezone.timedelta(days=3)
+            scheduled_for=device.next_maintenance - timezone.timedelta(days=3),
         )
         return notification
 
@@ -159,9 +162,9 @@ class NotificationService:
             recipient=task.assigned_to,
             title="New Task Assigned",
             message=f"You have been assigned a new task: {task.title}",
-            notification_type='TASK',
-            priority='MEDIUM',
-            related_object=task
+            notification_type="TASK",
+            priority="MEDIUM",
+            related_object=task,
         )
         return notification
 
@@ -172,9 +175,9 @@ class NotificationService:
             recipient=report.created_by,
             title="Report Generated",
             message=f"Your report '{report.title}' has been generated",
-            notification_type='REPORT',
-            priority='LOW',
-            related_object=report
+            notification_type="REPORT",
+            priority="LOW",
+            related_object=report,
         )
         return notification
 
@@ -185,9 +188,9 @@ class NotificationService:
             recipient=prediction.requested_by,
             title="AI Prediction Result",
             message=f"New AI prediction result available for {prediction.model_name}",
-            notification_type='AI_PREDICTION',
-            priority='HIGH',
-            related_object=prediction
+            notification_type="AI_PREDICTION",
+            priority="HIGH",
+            related_object=prediction,
         )
         return notification
 
@@ -195,24 +198,18 @@ class NotificationService:
     def get_unread_notifications(user):
         """Get unread notifications for a user."""
         return Notification.objects.filter(
-            recipient=user,
-            is_read=False,
-            is_archived=False
-        ).order_by('-created_at')
+            recipient=user, is_read=False, is_archived=False
+        ).order_by("-created_at")
 
     @staticmethod
     def mark_all_as_read(user):
         """Mark all notifications as read for a user."""
-        Notification.objects.filter(
-            recipient=user,
-            is_read=False
-        ).update(is_read=True)
+        Notification.objects.filter(recipient=user, is_read=False).update(is_read=True)
 
     @staticmethod
     def clear_old_notifications(days=30):
         """Archive notifications older than specified days."""
         cutoff_date = timezone.now() - timezone.timedelta(days=days)
         Notification.objects.filter(
-            created_at__lt=cutoff_date,
-            is_archived=False
+            created_at__lt=cutoff_date, is_archived=False
         ).update(is_archived=True)

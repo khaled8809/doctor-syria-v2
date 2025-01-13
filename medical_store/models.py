@@ -3,16 +3,18 @@ from django.contrib.auth.models import User
 from doctor.models import Doctor
 from patient_records.models import Patient
 
+
 class Category(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
 
 class Manufacturer(models.Model):
     name = models.CharField(max_length=100)
@@ -25,6 +27,7 @@ class Manufacturer(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Medicine(models.Model):
     name = models.CharField(max_length=100)
@@ -45,6 +48,7 @@ class Medicine(models.Model):
     def __str__(self):
         return f"{self.name} - {self.strength}"
 
+
 class Batch(models.Model):
     medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
     batch_number = models.CharField(max_length=50)
@@ -57,6 +61,7 @@ class Batch(models.Model):
     def __str__(self):
         return f"{self.medicine.name} - {self.batch_number}"
 
+
 class Supplier(models.Model):
     name = models.CharField(max_length=100)
     contact_person = models.CharField(max_length=100)
@@ -68,6 +73,7 @@ class Supplier(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Purchase(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
@@ -82,6 +88,7 @@ class Purchase(models.Model):
     def __str__(self):
         return f"{self.supplier.name} - {self.purchase_date}"
 
+
 class PurchaseItem(models.Model):
     purchase = models.ForeignKey(Purchase, on_delete=models.CASCADE)
     medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
@@ -94,9 +101,12 @@ class PurchaseItem(models.Model):
     def __str__(self):
         return f"{self.purchase} - {self.medicine.name}"
 
+
 class Sale(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
-    prescription = models.ForeignKey('doctor.Prescription', on_delete=models.SET_NULL, null=True, blank=True)
+    prescription = models.ForeignKey(
+        "doctor.Prescription", on_delete=models.SET_NULL, null=True, blank=True
+    )
     sale_date = models.DateTimeField()
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -109,6 +119,7 @@ class Sale(models.Model):
     def __str__(self):
         return f"{self.patient} - {self.sale_date}"
 
+
 class SaleItem(models.Model):
     sale = models.ForeignKey(Sale, on_delete=models.CASCADE)
     medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
@@ -120,6 +131,7 @@ class SaleItem(models.Model):
     def __str__(self):
         return f"{self.sale} - {self.medicine.name}"
 
+
 class Inventory(models.Model):
     medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
     batch = models.ForeignKey(Batch, on_delete=models.CASCADE)
@@ -130,6 +142,7 @@ class Inventory(models.Model):
 
     def __str__(self):
         return f"{self.medicine.name} - {self.batch.batch_number}"
+
 
 class InventoryAdjustment(models.Model):
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)

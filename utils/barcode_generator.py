@@ -1,6 +1,7 @@
 """
 نظام توليد وقراءة الباركود
 """
+
 import qrcode
 from barcode import Code128
 from barcode.writer import ImageWriter
@@ -11,11 +12,12 @@ import numpy as np
 from django.conf import settings
 import os
 
+
 class BarcodeGenerator:
     """مولد الباركود والQR"""
-    
+
     @staticmethod
-    def generate_barcode(data, barcode_type='code128', filename=None):
+    def generate_barcode(data, barcode_type="code128", filename=None):
         """
         توليد باركود
         :param data: البيانات المراد تحويلها لباركود
@@ -25,21 +27,21 @@ class BarcodeGenerator:
         """
         try:
             # إنشاء مسار حفظ الباركود
-            barcode_dir = os.path.join(settings.MEDIA_ROOT, 'barcodes')
+            barcode_dir = os.path.join(settings.MEDIA_ROOT, "barcodes")
             os.makedirs(barcode_dir, exist_ok=True)
-            
+
             # تحديد اسم الملف
             if filename is None:
-                filename = f'barcode_{data}'
-            
-            output_path = os.path.join(barcode_dir, f'{filename}.png')
-            
-            if barcode_type == 'code128':
+                filename = f"barcode_{data}"
+
+            output_path = os.path.join(barcode_dir, f"{filename}.png")
+
+            if barcode_type == "code128":
                 # توليد باركود Code128
                 code128 = Code128(str(data), writer=ImageWriter())
                 code128.save(output_path)
-                
-            elif barcode_type == 'qr':
+
+            elif barcode_type == "qr":
                 # توليد QR code
                 qr = qrcode.QRCode(
                     version=1,
@@ -49,15 +51,15 @@ class BarcodeGenerator:
                 )
                 qr.add_data(data)
                 qr.make(fit=True)
-                
+
                 qr_image = qr.make_image(fill_color="black", back_color="white")
                 qr_image.save(output_path)
-                
+
             else:
                 raise ValueError(f"نوع الباركود غير مدعوم: {barcode_type}")
-            
-            return f'barcodes/{filename}.png'
-                
+
+            return f"barcodes/{filename}.png"
+
         except Exception as e:
             raise Exception(f"خطأ في توليد الباركود: {str(e)}")
 
@@ -73,26 +75,28 @@ class BarcodeGenerator:
             image = cv2.imread(image_path)
             if image is None:
                 raise ValueError("لم يتم العثور على الصورة")
-            
+
             # تحويل الصورة إلى تدرج رمادي
             gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            
+
             # قراءة الباركود
             barcodes = cv2.barcode.BarcodeDetector()
             retval, decoded_info, decoded_type, points = barcodes.detectAndDecode(gray)
-            
+
             if retval:
                 return decoded_info[0]
-            
+
             # محاولة قراءة QR code
             qr_decoder = cv2.QRCodeDetector()
-            retval, decoded_info, points, straight_qrcode = qr_decoder.detectAndDecodeMulti(gray)
-            
+            retval, decoded_info, points, straight_qrcode = (
+                qr_decoder.detectAndDecodeMulti(gray)
+            )
+
             if retval:
                 return decoded_info[0]
-            
+
             return None
-            
+
         except Exception as e:
             raise Exception(f"خطأ في قراءة الباركود: {str(e)}")
 
@@ -106,18 +110,18 @@ class BarcodeGenerator:
         try:
             # تجهيز البيانات
             data = {
-                'id': user.id,
-                'username': user.username,
-                'role': user.role,
-                'created_at': user.created_at.isoformat()
+                "id": user.id,
+                "username": user.username,
+                "role": user.role,
+                "created_at": user.created_at.isoformat(),
             }
-            
+
             # توليد اسم ملف آمن
             filename = f"user_{user.id}"
-            
+
             # توليد باركود QR (يدعم بيانات أكثر)
-            return BarcodeGenerator.generate_barcode(str(data), 'qr', filename)
-            
+            return BarcodeGenerator.generate_barcode(str(data), "qr", filename)
+
         except Exception as e:
             raise Exception(f"خطأ في توليد باركود المستخدم: {str(e)}")
 
@@ -130,25 +134,25 @@ class BarcodeGenerator:
         """
         try:
             # إنشاء صورة البطاقة
-            card = Image.new('RGB', (600, 400), 'white')
-            
+            card = Image.new("RGB", (600, 400), "white")
+
             # إضافة بيانات المريض
             # TODO: إضافة النص والتصميم للبطاقة
-            
+
             # إضافة الباركود
             barcode_path = BarcodeGenerator.generate_user_id_barcode(patient)
             barcode_image = Image.open(os.path.join(settings.MEDIA_ROOT, barcode_path))
-            
+
             # دمج الباركود مع البطاقة
             card.paste(barcode_image, (400, 250))
-            
+
             # حفظ البطاقة
-            card_dir = os.path.join(settings.MEDIA_ROOT, 'id_cards')
+            card_dir = os.path.join(settings.MEDIA_ROOT, "id_cards")
             os.makedirs(card_dir, exist_ok=True)
-            card_path = os.path.join(card_dir, f'patient_card_{patient.id}.png')
+            card_path = os.path.join(card_dir, f"patient_card_{patient.id}.png")
             card.save(card_path)
-            
-            return f'id_cards/patient_card_{patient.id}.png'
-            
+
+            return f"id_cards/patient_card_{patient.id}.png"
+
         except Exception as e:
             raise Exception(f"خطأ في توليد بطاقة المريض: {str(e)}")

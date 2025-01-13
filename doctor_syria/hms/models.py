@@ -2,18 +2,20 @@ from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from accounts.models import Doctor, Patient, Hospital, Nurse, Staff
 
+
 class Department(models.Model):
     """الأقسام"""
+
     DEPARTMENT_TYPES = [
-        ('medical', 'طبي'),
-        ('surgical', 'جراحي'),
-        ('emergency', 'طوارئ'),
-        ('icu', 'عناية مركزة'),
-        ('radiology', 'أشعة'),
-        ('laboratory', 'مختبر'),
-        ('pharmacy', 'صيدلية'),
-        ('physiotherapy', 'علاج طبيعي'),
-        ('administrative', 'إداري'),
+        ("medical", "طبي"),
+        ("surgical", "جراحي"),
+        ("emergency", "طوارئ"),
+        ("icu", "عناية مركزة"),
+        ("radiology", "أشعة"),
+        ("laboratory", "مختبر"),
+        ("pharmacy", "صيدلية"),
+        ("physiotherapy", "علاج طبيعي"),
+        ("administrative", "إداري"),
     ]
 
     hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE)
@@ -30,15 +32,17 @@ class Department(models.Model):
     def __str__(self):
         return f"{self.name} - {self.hospital.name}"
 
+
 class Ward(models.Model):
     """الأجنحة"""
+
     WARD_TYPES = [
-        ('general', 'عام'),
-        ('private', 'خاص'),
-        ('isolation', 'عزل'),
-        ('pediatric', 'أطفال'),
-        ('maternity', 'ولادة'),
-        ('psychiatric', 'نفسي'),
+        ("general", "عام"),
+        ("private", "خاص"),
+        ("isolation", "عزل"),
+        ("pediatric", "أطفال"),
+        ("maternity", "ولادة"),
+        ("psychiatric", "نفسي"),
     ]
 
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
@@ -53,14 +57,16 @@ class Ward(models.Model):
     def __str__(self):
         return f"{self.name} - {self.department.name}"
 
+
 class Room(models.Model):
     """الغرف"""
+
     ROOM_TYPES = [
-        ('standard', 'عادية'),
-        ('private', 'خاصة'),
-        ('suite', 'جناح'),
-        ('isolation', 'عزل'),
-        ('icu', 'عناية مركزة'),
+        ("standard", "عادية"),
+        ("private", "خاصة"),
+        ("suite", "جناح"),
+        ("isolation", "عزل"),
+        ("icu", "عناية مركزة"),
     ]
 
     ward = models.ForeignKey(Ward, on_delete=models.CASCADE)
@@ -75,18 +81,22 @@ class Room(models.Model):
     def __str__(self):
         return f"غرفة {self.room_number} - {self.ward.name}"
 
+
 class Bed(models.Model):
     """الأسرّة"""
+
     STATUS_CHOICES = [
-        ('available', 'متاح'),
-        ('occupied', 'مشغول'),
-        ('reserved', 'محجوز'),
-        ('maintenance', 'صيانة'),
+        ("available", "متاح"),
+        ("occupied", "مشغول"),
+        ("reserved", "محجوز"),
+        ("maintenance", "صيانة"),
     ]
 
     room = models.ForeignKey(Room, on_delete=models.CASCADE)
     bed_number = models.CharField(max_length=50)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="available"
+    )
     is_electric = models.BooleanField(default=False)
     last_maintenance = models.DateField(null=True, blank=True)
     notes = models.TextField(blank=True)
@@ -94,19 +104,21 @@ class Bed(models.Model):
     def __str__(self):
         return f"سرير {self.bed_number} - غرفة {self.room.room_number}"
 
+
 class Admission(models.Model):
     """الإدخال للمستشفى"""
+
     STATUS_CHOICES = [
-        ('pending', 'قيد الانتظار'),
-        ('admitted', 'تم الإدخال'),
-        ('discharged', 'تم الخروج'),
-        ('transferred', 'تم النقل'),
+        ("pending", "قيد الانتظار"),
+        ("admitted", "تم الإدخال"),
+        ("discharged", "تم الخروج"),
+        ("transferred", "تم النقل"),
     ]
 
     ADMISSION_TYPES = [
-        ('emergency', 'طوارئ'),
-        ('planned', 'مخطط'),
-        ('transfer', 'تحويل'),
+        ("emergency", "طوارئ"),
+        ("planned", "مخطط"),
+        ("transfer", "تحويل"),
     ]
 
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
@@ -123,11 +135,17 @@ class Admission(models.Model):
     def __str__(self):
         return f"إدخال {self.patient.user.get_full_name()} - {self.admission_date}"
 
+
 class Transfer(models.Model):
     """التحويلات"""
+
     admission = models.ForeignKey(Admission, on_delete=models.CASCADE)
-    from_bed = models.ForeignKey(Bed, on_delete=models.CASCADE, related_name='transfers_from')
-    to_bed = models.ForeignKey(Bed, on_delete=models.CASCADE, related_name='transfers_to')
+    from_bed = models.ForeignKey(
+        Bed, on_delete=models.CASCADE, related_name="transfers_from"
+    )
+    to_bed = models.ForeignKey(
+        Bed, on_delete=models.CASCADE, related_name="transfers_to"
+    )
     transfer_date = models.DateTimeField()
     reason = models.TextField()
     authorized_by = models.ForeignKey(Doctor, on_delete=models.CASCADE)
@@ -136,8 +154,10 @@ class Transfer(models.Model):
     def __str__(self):
         return f"تحويل {self.admission.patient.user.get_full_name()} - {self.transfer_date}"
 
+
 class NursingRound(models.Model):
     """جولات التمريض"""
+
     admission = models.ForeignKey(Admission, on_delete=models.CASCADE)
     nurse = models.ForeignKey(Nurse, on_delete=models.CASCADE)
     round_time = models.DateTimeField()
@@ -149,8 +169,10 @@ class NursingRound(models.Model):
     def __str__(self):
         return f"جولة {self.nurse.user.get_full_name()} - {self.round_time}"
 
+
 class DoctorRound(models.Model):
     """جولات الأطباء"""
+
     admission = models.ForeignKey(Admission, on_delete=models.CASCADE)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     round_time = models.DateTimeField()
@@ -162,13 +184,15 @@ class DoctorRound(models.Model):
     def __str__(self):
         return f"جولة د.{self.doctor.user.get_full_name()} - {self.round_time}"
 
+
 class Discharge(models.Model):
     """الخروج من المستشفى"""
+
     DISCHARGE_TYPES = [
-        ('regular', 'عادي'),
-        ('against_advice', 'ضد النصيحة الطبية'),
-        ('transfer', 'تحويل'),
-        ('death', 'وفاة'),
+        ("regular", "عادي"),
+        ("against_advice", "ضد النصيحة الطبية"),
+        ("transfer", "تحويل"),
+        ("death", "وفاة"),
     ]
 
     admission = models.OneToOneField(Admission, on_delete=models.CASCADE)
@@ -184,14 +208,16 @@ class Discharge(models.Model):
     def __str__(self):
         return f"خروج {self.admission.patient.user.get_full_name()} - {self.discharge_date}"
 
+
 class Equipment(models.Model):
     """المعدات الطبية"""
+
     EQUIPMENT_TYPES = [
-        ('diagnostic', 'تشخيصي'),
-        ('therapeutic', 'علاجي'),
-        ('monitoring', 'مراقبة'),
-        ('life_support', 'دعم حياة'),
-        ('surgical', 'جراحي'),
+        ("diagnostic", "تشخيصي"),
+        ("therapeutic", "علاجي"),
+        ("monitoring", "مراقبة"),
+        ("life_support", "دعم حياة"),
+        ("surgical", "جراحي"),
     ]
 
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
@@ -210,8 +236,10 @@ class Equipment(models.Model):
     def __str__(self):
         return f"{self.name} - {self.serial_number}"
 
+
 class MaintenanceRecord(models.Model):
     """سجلات الصيانة"""
+
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     maintenance_date = models.DateField()
     maintenance_type = models.CharField(max_length=100)
@@ -225,8 +253,10 @@ class MaintenanceRecord(models.Model):
     def __str__(self):
         return f"صيانة {self.equipment.name} - {self.maintenance_date}"
 
+
 class InventoryItem(models.Model):
     """المخزون"""
+
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
     description = models.TextField()

@@ -7,23 +7,19 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+
 class AlertManager:
     """مدير التنبيهات للنظام"""
 
-    SEVERITY_LEVELS = {
-        'critical': 1,
-        'high': 2,
-        'medium': 3,
-        'low': 4
-    }
+    SEVERITY_LEVELS = {"critical": 1, "high": 2, "medium": 3, "low": 4}
 
     def __init__(self):
         self.channel_layer = get_channel_layer()
 
-    def send_alert(self, message, severity='medium', users=None, send_email=False):
+    def send_alert(self, message, severity="medium", users=None, send_email=False):
         """
         إرسال تنبيه للمستخدمين
-        
+
         :param message: نص التنبيه
         :param severity: مستوى الأهمية (critical, high, medium, low)
         :param users: قائمة المستخدمين المستهدفين (None لإرسال للجميع)
@@ -31,23 +27,21 @@ class AlertManager:
         """
         try:
             alert_data = {
-                'type': 'system_alert',
-                'message': message,
-                'severity': severity,
-                'timestamp': datetime.now().isoformat(),
+                "type": "system_alert",
+                "message": message,
+                "severity": severity,
+                "timestamp": datetime.now().isoformat(),
             }
 
             # إرسال التنبيه عبر WebSocket
             if users:
                 for user in users:
                     async_to_sync(self.channel_layer.group_send)(
-                        f"user_{user.id}",
-                        alert_data
+                        f"user_{user.id}", alert_data
                     )
             else:
                 async_to_sync(self.channel_layer.group_send)(
-                    "system_alerts",
-                    alert_data
+                    "system_alerts", alert_data
                 )
 
             # إرسال بريد إلكتروني إذا كان مطلوباً
@@ -82,7 +76,7 @@ class AlertManager:
                     message=email_message,
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=recipient_list,
-                    fail_silently=True
+                    fail_silently=True,
                 )
         except Exception as e:
             logger.error(f"Error sending email alert: {str(e)}")
@@ -93,10 +87,10 @@ class AlertManager:
             async_to_sync(self.channel_layer.group_send)(
                 "system_status",
                 {
-                    'type': 'system_status_update',
-                    'data': status_data,
-                    'timestamp': datetime.now().isoformat()
-                }
+                    "type": "system_status_update",
+                    "data": status_data,
+                    "timestamp": datetime.now().isoformat(),
+                },
             )
             return True
         except Exception as e:

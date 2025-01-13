@@ -7,92 +7,142 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0001_initial'),
+        ("accounts", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Area',
+            name="Area",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('city', models.CharField(max_length=100)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("city", models.CharField(max_length=100)),
             ],
         ),
         migrations.AddField(
-            model_name='doctor',
-            name='bio',
+            model_name="doctor",
+            name="bio",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='doctor',
-            name='certifications',
+            model_name="doctor",
+            name="certifications",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='doctor',
-            name='education',
-            field=models.TextField(blank=True, default=''),
+            model_name="doctor",
+            name="education",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='user',
-            name='avatar',
-            field=models.ImageField(blank=True, null=True, upload_to='avatars/'),
+            model_name="user",
+            name="avatar",
+            field=models.ImageField(blank=True, null=True, upload_to="avatars/"),
         ),
         migrations.AddField(
-            model_name='user',
-            name='phone',
+            model_name="user",
+            name="phone",
             field=models.CharField(blank=True, max_length=20),
         ),
         migrations.AlterField(
-            model_name='doctor',
-            name='experience_years',
+            model_name="doctor",
+            name="experience_years",
             field=models.IntegerField(default=0),
         ),
         migrations.AlterField(
-            model_name='patient',
-            name='blood_type',
+            model_name="patient",
+            name="blood_type",
             field=models.CharField(blank=True, max_length=5),
         ),
         migrations.AlterField(
-            model_name='patient',
-            name='date_of_birth',
+            model_name="patient",
+            name="date_of_birth",
             field=models.DateField(blank=True, null=True),
         ),
         migrations.CreateModel(
-            name='Hospital',
+            name="Hospital",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.TextField()),
-                ('address', models.TextField()),
-                ('phone', models.CharField(max_length=20)),
-                ('image', models.ImageField(blank=True, null=True, upload_to='hospitals/')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('area', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.area')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("description", models.TextField()),
+                ("address", models.TextField()),
+                ("phone", models.CharField(max_length=20)),
+                (
+                    "image",
+                    models.ImageField(blank=True, null=True, upload_to="hospitals/"),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "area",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="accounts.area"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Clinic',
+            name="Clinic",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200)),
-                ('description', models.TextField()),
-                ('address', models.TextField()),
-                ('phone', models.CharField(max_length=20)),
-                ('image', models.ImageField(blank=True, null=True, upload_to='clinics/')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('area', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='accounts.area')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                ("description", models.TextField()),
+                ("address", models.TextField()),
+                ("phone", models.CharField(max_length=20)),
+                (
+                    "image",
+                    models.ImageField(blank=True, null=True, upload_to="clinics/"),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "area",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="accounts.area"
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='doctor',
-            name='clinic',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='accounts.clinic'),
+            model_name="doctor",
+            name="clinic",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="accounts.clinic",
+            ),
         ),
         migrations.AddField(
-            model_name='doctor',
-            name='hospital',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='accounts.hospital'),
+            model_name="doctor",
+            name="hospital",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="accounts.hospital",
+            ),
         ),
     ]

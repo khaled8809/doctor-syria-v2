@@ -8,10 +8,21 @@ from .hospital_service import HospitalService
 from .ecommerce_service import ECommerceService
 from .barcode_service import BarcodeService
 from ..models import (
-    Hospital, Department, Doctor, Patient, Admission,
-    Transfer, EmergencyCase, Product, Order, CartItem,
-    Supply, Warehouse, PurchaseOrder
+    Hospital,
+    Department,
+    Doctor,
+    Patient,
+    Admission,
+    Transfer,
+    EmergencyCase,
+    Product,
+    Order,
+    CartItem,
+    Supply,
+    Warehouse,
+    PurchaseOrder,
 )
+
 
 class CentralService:
     def __init__(self):
@@ -26,7 +37,7 @@ class CentralService:
         hospital_id: int,
         department_id: int,
         doctor_id: int,
-        required_supplies: List[Dict[str, Any]]
+        required_supplies: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
         """
         Register a patient and manage required medical supplies in one transaction.
@@ -38,13 +49,13 @@ class CentralService:
 
         # Check hospital capacity
         hospital_stats = self.hospital_service.get_hospital_capacity(hospital_id)
-        if hospital_stats['available_beds'] <= 0:
+        if hospital_stats["available_beds"] <= 0:
             raise ValidationError("No available beds in the hospital")
 
         # Check supplies availability
         for supply in required_supplies:
-            product = self.ecommerce_service.get_product(supply['product_id'])
-            if not product or product.quantity < supply['quantity']:
+            product = self.ecommerce_service.get_product(supply["product_id"])
+            if not product or product.quantity < supply["quantity"]:
                 raise ValidationError(f"Insufficient quantity for {product.name}")
 
         # Admit patient
@@ -54,9 +65,9 @@ class CentralService:
             department_id=department_id,
             doctor_id=doctor_id,
             admission_date=datetime.now(),
-            reason=supply.get('reason', ''),
-            diagnosis=supply.get('diagnosis', ''),
-            treatment_plan=supply.get('treatment_plan', '')
+            reason=supply.get("reason", ""),
+            diagnosis=supply.get("diagnosis", ""),
+            treatment_plan=supply.get("treatment_plan", ""),
         )
 
         # Create order for supplies
@@ -64,14 +75,10 @@ class CentralService:
             patient_id=patient.id,
             items=required_supplies,
             is_hospital_order=True,
-            admission_id=admission.id
+            admission_id=admission.id,
         )
 
-        return {
-            'patient': patient,
-            'admission': admission,
-            'order': order
-        }
+        return {"patient": patient, "admission": admission, "order": order}
 
     @transaction.atomic
     def handle_emergency_with_supplies(
@@ -79,24 +86,22 @@ class CentralService:
         patient_data: Dict[str, Any],
         hospital_id: int,
         emergency_data: Dict[str, Any],
-        required_supplies: List[Dict[str, Any]]
+        required_supplies: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
         """
         Handle emergency case and manage required supplies.
         """
         # Register or get patient
-        if 'barcode_data' in patient_data:
+        if "barcode_data" in patient_data:
             patient = self.barcode_service.register_patient_from_barcode(
-                patient_data['barcode_data']
+                patient_data["barcode_data"]
             )
         else:
             patient = Patient.objects.create(**patient_data)
 
         # Register emergency case
         emergency = self.hospital_service.register_emergency(
-            patient_id=patient.id,
-            hospital_id=hospital_id,
-            **emergency_data
+            patient_id=patient.id, hospital_id=hospital_id, **emergency_data
         )
 
         # Handle urgent supplies
@@ -104,14 +109,10 @@ class CentralService:
             patient_id=patient.id,
             items=required_supplies,
             is_emergency=True,
-            emergency_case_id=emergency.id
+            emergency_case_id=emergency.id,
         )
 
-        return {
-            'patient': patient,
-            'emergency': emergency,
-            'order': order
-        }
+        return {"patient": patient, "emergency": emergency, "order": order}
 
     def transfer_patient_with_supplies(
         self,
@@ -119,7 +120,7 @@ class CentralService:
         to_hospital_id: int,
         to_department_id: int,
         transfer_data: Dict[str, Any],
-        transfer_supplies: List[Dict[str, Any]]
+        transfer_supplies: List[Dict[str, Any]],
     ) -> Dict[str, Any]:
         """
         Transfer patient and manage supplies transfer between hospitals.
@@ -129,7 +130,7 @@ class CentralService:
             admission_id=admission_id,
             to_hospital_id=to_hospital_id,
             to_department_id=to_department_id,
-            **transfer_data
+            **transfer_data,
         )
 
         # Transfer supplies
@@ -137,28 +138,20 @@ class CentralService:
             from_hospital_id=transfer.from_hospital.id,
             to_hospital_id=transfer.to_hospital.id,
             supplies=transfer_supplies,
-            transfer_id=transfer.id
+            transfer_id=transfer.id,
         )
 
-        return {
-            'transfer': transfer,
-            'supply_transfer': supply_transfer
-        }
+        return {"transfer": transfer, "supply_transfer": supply_transfer}
 
-    def get_hospital_inventory_status(
-        self,
-        hospital_id: int
-    ) -> Dict[str, Any]:
+    def get_hospital_inventory_status(self, hospital_id: int) -> Dict[str, Any]:
         """
         Get comprehensive inventory status for a hospital.
         """
         hospital = Hospital.objects.get(id=hospital_id)
-        
+
         # Get hospital statistics
         hospital_stats = self.hospital_service.get_hospital_statistics(
-            hospital_id,
-            datetime.now().replace(hour=0, minute=0),
-            datetime.now()
+            hospital_id, datetime.now().replace(hour=0, minute=0), datetime.now()
         )
 
         # Get inventory status
@@ -169,20 +162,21 @@ class CentralService:
 
         # Get pending orders
         pending_orders = Order.objects.filter(
-            hospital_id=hospital_id,
-            status='PENDING'
+            hospital_id=hospital_id, status="PENDING"
         ).count()
 
         return {
-            'hospital_stats': hospital_stats,
-            'inventory': inventory,
-            'critical_supplies': critical_supplies,
-            'pending_orders': pending_orders,
-            'bed_capacity': {
-                'total': hospital.bed_capacity,
-                'available': hospital.available_beds,
-                'utilization': (hospital.bed_capacity - hospital.available_beds) / hospital.bed_capacity * 100
-            }
+            "hospital_stats": hospital_stats,
+            "inventory": inventory,
+            "critical_supplies": critical_supplies,
+            "pending_orders": pending_orders,
+            "bed_capacity": {
+                "total": hospital.bed_capacity,
+                "available": hospital.available_beds,
+                "utilization": (hospital.bed_capacity - hospital.available_beds)
+                / hospital.bed_capacity
+                * 100,
+            },
         }
 
     def sync_hospital_data(self, hospital_id: int) -> Dict[str, Any]:
@@ -207,9 +201,9 @@ class CentralService:
         self._update_emergency_status(hospital_id)
 
         return {
-            'status': 'success',
-            'last_sync': datetime.now(),
-            'hospital': hospital.name
+            "status": "success",
+            "last_sync": datetime.now(),
+            "hospital": hospital.name,
         }
 
     def _update_bed_availability(self, hospital_id: int):
@@ -221,10 +215,9 @@ class CentralService:
 
         for dept in departments:
             current_admissions = Admission.objects.filter(
-                department=dept,
-                status='ADMITTED'
+                department=dept, status="ADMITTED"
             ).count()
-            
+
             dept.available_beds = dept.capacity - current_admissions
             dept.save()
 
@@ -236,25 +229,18 @@ class CentralService:
         Update doctor schedules based on current assignments and emergencies.
         """
         doctors = Doctor.objects.filter(hospital_id=hospital_id, is_active=True)
-        
+
         for doctor in doctors:
             # Get current assignments
-            assignments = Admission.objects.filter(
-                doctor=doctor,
-                status='ADMITTED'
-            )
-            
+            assignments = Admission.objects.filter(doctor=doctor, status="ADMITTED")
+
             # Get emergency assignments
             emergencies = EmergencyCase.objects.filter(
-                attending_doctor=doctor,
-                outcome='ADMITTED'
+                attending_doctor=doctor, outcome="ADMITTED"
             )
-            
+
             # Update schedule
-            doctor.schedule = self._generate_doctor_schedule(
-                assignments,
-                emergencies
-            )
+            doctor.schedule = self._generate_doctor_schedule(assignments, emergencies)
             doctor.save()
 
     def _process_pending_transfers(self, hospital_id: int):
@@ -263,14 +249,14 @@ class CentralService:
         """
         pending_transfers = Transfer.objects.filter(
             Q(from_hospital_id=hospital_id) | Q(to_hospital_id=hospital_id),
-            status='PENDING'
+            status="PENDING",
         )
 
         for transfer in pending_transfers:
             if self._can_process_transfer(transfer):
-                transfer.status = 'APPROVED'
+                transfer.status = "APPROVED"
                 transfer.save()
-                
+
                 # Update bed availability
                 self._update_bed_availability(transfer.from_hospital_id)
                 self._update_bed_availability(transfer.to_hospital_id)
@@ -280,52 +266,53 @@ class CentralService:
         Update emergency status and required resources.
         """
         emergency_cases = EmergencyCase.objects.filter(
-            hospital_id=hospital_id,
-            outcome='ADMITTED'
+            hospital_id=hospital_id, outcome="ADMITTED"
         )
 
         required_resources = self._calculate_required_resources(emergency_cases)
-        
+
         # Update hospital emergency status
         Hospital.objects.filter(id=hospital_id).update(
             emergency_unit_status=required_resources
         )
 
     def _generate_doctor_schedule(
-        self,
-        assignments: List[Admission],
-        emergencies: List[EmergencyCase]
+        self, assignments: List[Admission], emergencies: List[EmergencyCase]
     ) -> Dict[str, Any]:
         """
         Generate a doctor's schedule based on assignments and emergencies.
         """
         schedule = {
-            'regular_hours': {},
-            'emergency_hours': {},
-            'total_patients': len(assignments) + len(emergencies)
+            "regular_hours": {},
+            "emergency_hours": {},
+            "total_patients": len(assignments) + len(emergencies),
         }
 
         # Process regular assignments
         for assignment in assignments:
-            day = assignment.admission_date.strftime('%A').lower()
-            if day not in schedule['regular_hours']:
-                schedule['regular_hours'][day] = []
-            schedule['regular_hours'][day].append({
-                'patient_id': assignment.patient_id,
-                'time': assignment.admission_date.strftime('%H:%M'),
-                'department': assignment.department.name
-            })
+            day = assignment.admission_date.strftime("%A").lower()
+            if day not in schedule["regular_hours"]:
+                schedule["regular_hours"][day] = []
+            schedule["regular_hours"][day].append(
+                {
+                    "patient_id": assignment.patient_id,
+                    "time": assignment.admission_date.strftime("%H:%M"),
+                    "department": assignment.department.name,
+                }
+            )
 
         # Process emergency assignments
         for emergency in emergencies:
-            day = emergency.arrival_date.strftime('%A').lower()
-            if day not in schedule['emergency_hours']:
-                schedule['emergency_hours'][day] = []
-            schedule['emergency_hours'][day].append({
-                'patient_id': emergency.patient_id,
-                'time': emergency.arrival_date.strftime('%H:%M'),
-                'priority': emergency.priority
-            })
+            day = emergency.arrival_date.strftime("%A").lower()
+            if day not in schedule["emergency_hours"]:
+                schedule["emergency_hours"][day] = []
+            schedule["emergency_hours"][day].append(
+                {
+                    "patient_id": emergency.patient_id,
+                    "time": emergency.arrival_date.strftime("%H:%M"),
+                    "priority": emergency.priority,
+                }
+            )
 
         return schedule
 
@@ -342,14 +329,11 @@ class CentralService:
             return False
 
         # Check if required supplies are available
-        required_supplies = PurchaseOrder.objects.filter(
-            transfer=transfer
-        ).exists()
-        
+        required_supplies = PurchaseOrder.objects.filter(transfer=transfer).exists()
+
         if required_supplies:
             supplies_available = self.ecommerce_service.check_supplies_availability(
-                transfer.to_hospital_id,
-                transfer.id
+                transfer.to_hospital_id, transfer.id
             )
             if not supplies_available:
                 return False
@@ -357,33 +341,31 @@ class CentralService:
         return True
 
     def _calculate_required_resources(
-        self,
-        emergency_cases: List[EmergencyCase]
+        self, emergency_cases: List[EmergencyCase]
     ) -> Dict[str, Any]:
         """
         Calculate required resources for emergency cases.
         """
         resources = {
-            'critical_care_beds': 0,
-            'regular_beds': 0,
-            'doctors_needed': 0,
-            'urgent_supplies': []
+            "critical_care_beds": 0,
+            "regular_beds": 0,
+            "doctors_needed": 0,
+            "urgent_supplies": [],
         }
 
         for case in emergency_cases:
-            if case.priority == 'CRITICAL':
-                resources['critical_care_beds'] += 1
-                resources['doctors_needed'] += 2
-            elif case.priority == 'URGENT':
-                resources['regular_beds'] += 1
-                resources['doctors_needed'] += 1
+            if case.priority == "CRITICAL":
+                resources["critical_care_beds"] += 1
+                resources["doctors_needed"] += 2
+            elif case.priority == "URGENT":
+                resources["regular_beds"] += 1
+                resources["doctors_needed"] += 1
 
             # Check for urgent supplies
             urgent_supplies = Order.objects.filter(
-                emergency_case=case,
-                is_urgent=True
-            ).values_list('items__product_id', flat=True)
-            
-            resources['urgent_supplies'].extend(urgent_supplies)
+                emergency_case=case, is_urgent=True
+            ).values_list("items__product_id", flat=True)
+
+            resources["urgent_supplies"].extend(urgent_supplies)
 
         return resources

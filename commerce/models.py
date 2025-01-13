@@ -4,18 +4,20 @@ from medical_store.models import Medicine, Batch
 
 # Create your models here.
 
+
 class Product(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     medicine = models.ForeignKey(Medicine, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='products/')
+    image = models.ImageField(upload_to="products/")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
 
 class Cart(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -25,6 +27,7 @@ class Cart(models.Model):
     def __str__(self):
         return f"{self.user.username}'s Cart"
 
+
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -33,6 +36,7 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.cart} - {self.product.name}"
+
 
 class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -49,6 +53,7 @@ class Order(models.Model):
     def __str__(self):
         return f"Order #{self.id} - {self.user.username}"
 
+
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
@@ -58,6 +63,7 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.order} - {self.product.name}"
+
 
 class Shipment(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
@@ -72,6 +78,7 @@ class Shipment(models.Model):
     def __str__(self):
         return f"Shipment for {self.order}"
 
+
 class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -81,10 +88,11 @@ class Review(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ['product', 'user']
+        unique_together = ["product", "user"]
 
     def __str__(self):
         return f"{self.product.name} - {self.user.username}"
+
 
 class Wishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -92,10 +100,11 @@ class Wishlist(models.Model):
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['user', 'product']
+        unique_together = ["user", "product"]
 
     def __str__(self):
         return f"{self.user.username}'s wishlist - {self.product.name}"
+
 
 class Coupon(models.Model):
     code = models.CharField(max_length=50, unique=True)
@@ -111,6 +120,7 @@ class Coupon(models.Model):
 
     def __str__(self):
         return self.code
+
 
 class PaymentTransaction(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)

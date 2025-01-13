@@ -7,10 +7,11 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class ImageProcessor:
     """معالج الصور"""
-    
-    def __init__(self, max_size=(800, 800), quality=85, format='JPEG'):
+
+    def __init__(self, max_size=(800, 800), quality=85, format="JPEG"):
         self.max_size = max_size
         self.quality = quality
         self.format = format
@@ -23,29 +24,29 @@ class ImageProcessor:
         try:
             # فتح الصورة
             image = Image.open(image_field)
-            
+
             # تحويل الصورة إلى RGB إذا كانت RGBA
-            if image.mode == 'RGBA':
-                image = image.convert('RGB')
-            
+            if image.mode == "RGBA":
+                image = image.convert("RGB")
+
             # تدوير الصورة حسب بيانات EXIF
             image = ImageOps.exif_transpose(image)
-            
+
             # تغيير حجم الصورة
             image.thumbnail(self.max_size, Image.LANCZOS)
-            
+
             # حفظ الصورة
             output = BytesIO()
             image.save(output, format=self.format, quality=self.quality, optimize=True)
             output.seek(0)
-            
+
             # إنشاء اسم الملف الجديد
             filename = os.path.splitext(os.path.basename(image_field.name))[0]
             new_filename = f"{filename}_processed.{self.format.lower()}"
-            
+
             # حفظ الصورة المعالجة
             return ContentFile(output.getvalue(), new_filename)
-            
+
         except Exception as e:
             logger.error(f"خطأ في معالجة الصورة: {str(e)}")
             return None
@@ -58,25 +59,25 @@ class ImageProcessor:
         try:
             # فتح الصورة
             image = Image.open(image_field)
-            
+
             # تحويل الصورة إلى RGB إذا كانت RGBA
-            if image.mode == 'RGBA':
-                image = image.convert('RGB')
-            
+            if image.mode == "RGBA":
+                image = image.convert("RGB")
+
             # إنشاء الصورة المصغرة
             thumbnail = ImageOps.fit(image, size, Image.LANCZOS)
-            
+
             # حفظ الصورة المصغرة
             output = BytesIO()
             thumbnail.save(output, format=self.format, quality=self.quality)
             output.seek(0)
-            
+
             # إنشاء اسم الملف الجديد
             filename = os.path.splitext(os.path.basename(image_field.name))[0]
             new_filename = f"{filename}_thumb.{self.format.lower()}"
-            
+
             return ContentFile(output.getvalue(), new_filename)
-            
+
         except Exception as e:
             logger.error(f"خطأ في إنشاء الصورة المصغرة: {str(e)}")
             return None
@@ -125,24 +126,26 @@ class ImageProcessor:
         try:
             # فتح الصورة
             image = Image.open(image_field)
-            
+
             # تحسين التباين
             image = ImageOps.autocontrast(image)
-            
+
             # تحسين السطوع
             image = ImageOps.equalize(image)
-            
+
             # حفظ الصورة
             output = BytesIO()
-            image.save(output, format=self.format, quality=100)  # جودة عالية للصور الطبية
+            image.save(
+                output, format=self.format, quality=100
+            )  # جودة عالية للصور الطبية
             output.seek(0)
-            
+
             # إنشاء اسم الملف الجديد
             filename = os.path.splitext(os.path.basename(image_field.name))[0]
             new_filename = f"{filename}_medical.{self.format.lower()}"
-            
+
             return ContentFile(output.getvalue(), new_filename)
-            
+
         except Exception as e:
             logger.error(f"خطأ في معالجة الصورة الطبية: {str(e)}")
             return None

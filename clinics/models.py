@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from doctor.models import Doctor
 from patient_records.models import Patient
 
+
 class Clinic(models.Model):
     name = models.CharField(max_length=100)
     address = models.TextField()
@@ -19,15 +20,19 @@ class Clinic(models.Model):
     def __str__(self):
         return self.name
 
+
 class Department(models.Model):
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
     description = models.TextField()
-    head_doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, related_name='headed_departments')
+    head_doctor = models.ForeignKey(
+        Doctor, on_delete=models.SET_NULL, null=True, related_name="headed_departments"
+    )
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.clinic.name} - {self.name}"
+
 
 class ClinicStaff(models.Model):
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
@@ -39,6 +44,7 @@ class ClinicStaff(models.Model):
 
     def __str__(self):
         return f"{self.clinic.name} - {self.user.get_full_name()}"
+
 
 class Room(models.Model):
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
@@ -52,9 +58,12 @@ class Room(models.Model):
     def __str__(self):
         return f"{self.clinic.name} - Room {self.number}"
 
+
 class Equipment(models.Model):
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='room_equipment')
+    room = models.ForeignKey(
+        Room, on_delete=models.CASCADE, related_name="room_equipment"
+    )
     name = models.CharField(max_length=100)
     model = models.CharField(max_length=100)
     serial_number = models.CharField(max_length=100)
@@ -66,6 +75,7 @@ class Equipment(models.Model):
 
     def __str__(self):
         return f"{self.clinic.name} - {self.name}"
+
 
 class Visit(models.Model):
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
@@ -82,6 +92,7 @@ class Visit(models.Model):
     def __str__(self):
         return f"{self.clinic.name} - {self.patient} - {self.visit_date}"
 
+
 class ClinicService(models.Model):
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
@@ -92,6 +103,7 @@ class ClinicService(models.Model):
 
     def __str__(self):
         return f"{self.clinic.name} - {self.name}"
+
 
 class ServiceBooking(models.Model):
     clinic = models.ForeignKey(Clinic, on_delete=models.CASCADE)

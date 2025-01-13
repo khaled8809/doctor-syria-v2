@@ -11,17 +11,16 @@ from ..models import (
     EmergencyCase,
     MedicalSupply,
     Inventory,
-    PurchaseOrder
+    PurchaseOrder,
 )
 
 User = get_user_model()
 
+
 class HospitalModelTest(TestCase):
     def setUp(self):
         self.tenant = Tenant.objects.create(
-            name="مستشفى الأمل",
-            subdomain="amal",
-            is_active=True
+            name="مستشفى الأمل", subdomain="amal", is_active=True
         )
         self.hospital = Hospital.objects.create(
             tenant=self.tenant,
@@ -29,7 +28,7 @@ class HospitalModelTest(TestCase):
             address="دمشق، سوريا",
             phone="0911234567",
             email="info@amal-hospital.com",
-            license_number="12345"
+            license_number="12345",
         )
 
     def test_hospital_creation(self):
@@ -42,29 +41,17 @@ class HospitalModelTest(TestCase):
         """اختبار تمثيل المستشفى كنص"""
         self.assertEqual(str(self.hospital), "مستشفى الأمل")
 
+
 class DepartmentModelTest(TestCase):
     def setUp(self):
-        self.tenant = Tenant.objects.create(
-            name="مستشفى الأمل",
-            subdomain="amal"
-        )
-        self.hospital = Hospital.objects.create(
-            tenant=self.tenant,
-            name="مستشفى الأمل"
-        )
-        self.user = User.objects.create_user(
-            username="doctor",
-            password="testpass123"
-        )
+        self.tenant = Tenant.objects.create(name="مستشفى الأمل", subdomain="amal")
+        self.hospital = Hospital.objects.create(tenant=self.tenant, name="مستشفى الأمل")
+        self.user = User.objects.create_user(username="doctor", password="testpass123")
         self.doctor = Doctor.objects.create(
-            user=self.user,
-            tenant=self.tenant,
-            specialty="جراحة عامة"
+            user=self.user, tenant=self.tenant, specialty="جراحة عامة"
         )
         self.department = Department.objects.create(
-            hospital=self.hospital,
-            name="قسم الجراحة",
-            head_doctor=self.doctor
+            hospital=self.hospital, name="قسم الجراحة", head_doctor=self.doctor
         )
 
     def test_department_creation(self):
@@ -73,28 +60,20 @@ class DepartmentModelTest(TestCase):
         self.assertEqual(self.department.hospital, self.hospital)
         self.assertEqual(self.department.head_doctor, self.doctor)
 
+
 class EmergencyCaseModelTest(TestCase):
     def setUp(self):
-        self.tenant = Tenant.objects.create(
-            name="مستشفى الأمل",
-            subdomain="amal"
-        )
-        self.hospital = Hospital.objects.create(
-            tenant=self.tenant,
-            name="مستشفى الأمل"
-        )
+        self.tenant = Tenant.objects.create(name="مستشفى الأمل", subdomain="amal")
+        self.hospital = Hospital.objects.create(tenant=self.tenant, name="مستشفى الأمل")
         self.patient = Patient.objects.create(
-            tenant=self.tenant,
-            first_name="أحمد",
-            last_name="محمد",
-            phone="0911234567"
+            tenant=self.tenant, first_name="أحمد", last_name="محمد", phone="0911234567"
         )
         self.emergency = EmergencyCase.objects.create(
             tenant=self.tenant,
             patient=self.patient,
             hospital=self.hospital,
             condition="حالة طارئة",
-            priority="عالية"
+            priority="عالية",
         )
 
     def test_emergency_case_creation(self):
@@ -110,23 +89,15 @@ class EmergencyCaseModelTest(TestCase):
         self.emergency.save()
         self.assertEqual(self.emergency.status, "معالجة")
 
+
 class InventoryModelTest(TestCase):
     def setUp(self):
-        self.tenant = Tenant.objects.create(
-            name="مستشفى الأمل",
-            subdomain="amal"
-        )
+        self.tenant = Tenant.objects.create(name="مستشفى الأمل", subdomain="amal")
         self.supply = MedicalSupply.objects.create(
-            tenant=self.tenant,
-            name="قفازات طبية",
-            code="GLV001",
-            unit="علبة"
+            tenant=self.tenant, name="قفازات طبية", code="GLV001", unit="علبة"
         )
         self.inventory = Inventory.objects.create(
-            tenant=self.tenant,
-            supply=self.supply,
-            quantity=100,
-            minimum_quantity=20
+            tenant=self.tenant, supply=self.supply, quantity=100, minimum_quantity=20
         )
 
     def test_inventory_creation(self):
@@ -141,21 +112,15 @@ class InventoryModelTest(TestCase):
         self.inventory.save()
         self.assertTrue(self.inventory.is_low_stock())
 
+
 class PurchaseOrderModelTest(TestCase):
     def setUp(self):
-        self.tenant = Tenant.objects.create(
-            name="مستشفى الأمل",
-            subdomain="amal"
-        )
+        self.tenant = Tenant.objects.create(name="مستشفى الأمل", subdomain="amal")
         self.supply = MedicalSupply.objects.create(
-            tenant=self.tenant,
-            name="قفازات طبية",
-            code="GLV001"
+            tenant=self.tenant, name="قفازات طبية", code="GLV001"
         )
         self.purchase_order = PurchaseOrder.objects.create(
-            tenant=self.tenant,
-            order_number="PO001",
-            status="جديد"
+            tenant=self.tenant, order_number="PO001", status="جديد"
         )
 
     def test_purchase_order_creation(self):
