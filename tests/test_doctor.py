@@ -1,15 +1,17 @@
+from datetime import time
+
 import pytest
-from django.test import Client
 from django.contrib.auth import get_user_model
+from django.test import Client
+
 from doctor.models import (
     Doctor,
+    DoctorReview,
     DoctorSchedule,
     Prescription,
-    DoctorReview,
     Specialization,
 )
 from patient_records.models import Patient
-from datetime import time
 
 User = get_user_model()
 

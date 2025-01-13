@@ -1,7 +1,9 @@
+from datetime import date
+
 import pytest
 from django.test import Client
-from medical_store.models import Medicine, MedicalEquipment, Inventory
-from datetime import date
+
+from medical_store.models import Inventory, MedicalEquipment, Medicine
 
 
 @pytest.mark.django_db

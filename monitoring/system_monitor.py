@@ -1,14 +1,16 @@
-import psutil
 import logging
 from datetime import datetime, timedelta
-from django.core.cache import cache
-from django.db import connection
+
+import psutil
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
+from django.db import connection
 from django.db.models import Count
 from medical_records.models import MedicalRecord
-from appointments.models import Appointment
+
 from accounts.models import User
+from appointments.models import Appointment
 
 logger = logging.getLogger(__name__)
 

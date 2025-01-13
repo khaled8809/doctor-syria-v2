@@ -1,7 +1,8 @@
-from django.views.generic import ListView, CreateView, UpdateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import MedicalEquipment, OperatingRoom, BedManagement
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
+
+from .models import BedManagement, MedicalEquipment, OperatingRoom
 
 
 class ResourceListView(LoginRequiredMixin, ListView):

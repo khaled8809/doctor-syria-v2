@@ -3,11 +3,12 @@ WebSocket routing configuration for doctor_syria project.
 """
 
 from django.urls import re_path
+
 from core.consumers import (
-    NotificationConsumer,
-    ChatConsumer,
     AppointmentStatusConsumer,
+    ChatConsumer,
     LiveDashboardConsumer,
+    NotificationConsumer,
 )
 
 websocket_urlpatterns = [

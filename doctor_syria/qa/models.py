@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.text import slugify
-from accounts.models import User, Doctor, Patient
+
+from accounts.models import Doctor, Patient, User
 
 
 class Category(models.Model):

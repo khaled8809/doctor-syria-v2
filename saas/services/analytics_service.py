@@ -1,20 +1,22 @@
-from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
-from django.db.models import Count, Avg, F, Q
-from django.db import models
-import pandas as pd
+from typing import Any, Dict, List, Optional
+
 import numpy as np
+import pandas as pd
+from django.db import models
+from django.db.models import Avg, Count, F, Q
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import StandardScaler
+
 from ..models import (
-    Hospital,
+    Admission,
     Department,
     Doctor,
-    Patient,
-    Admission,
     EmergencyCase,
-    Product,
+    Hospital,
     Order,
+    Patient,
+    Product,
 )
 
 

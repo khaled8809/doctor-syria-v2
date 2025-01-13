@@ -3,8 +3,8 @@ Django settings for doctor_syria project.
 """
 
 import os
-from pathlib import Path
 from datetime import timedelta
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -269,9 +269,9 @@ STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 # Sentry
 if not DEBUG:
     import sentry_sdk
+    from sentry_sdk.integrations.celery import CeleryIntegration
     from sentry_sdk.integrations.django import DjangoIntegration
     from sentry_sdk.integrations.redis import RedisIntegration
-    from sentry_sdk.integrations.celery import CeleryIntegration
 
     sentry_sdk.init(
         dsn=os.getenv("SENTRY_DSN"),

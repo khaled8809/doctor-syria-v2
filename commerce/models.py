@@ -1,6 +1,7 @@
-from django.db import models
 from django.contrib.auth.models import User
-from medical_store.models import Medicine, Batch
+from django.db import models
+
+from medical_store.models import Batch, Medicine
 
 # Create your models here.
 

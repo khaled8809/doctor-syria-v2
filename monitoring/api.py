@@ -2,17 +2,19 @@
 واجهات برمجة التطبيقات للمراقبة
 """
 
-from rest_framework import viewsets, permissions
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from datetime import timedelta
+
 from django.db.models import Avg, Count
 from django.utils import timezone
-from datetime import timedelta
-from .models import SystemMetric, ErrorLog, PerformanceLog
+from rest_framework import permissions, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from .models import ErrorLog, PerformanceLog, SystemMetric
 from .serializers import (
-    SystemMetricSerializer,
     ErrorLogSerializer,
     PerformanceLogSerializer,
+    SystemMetricSerializer,
 )
 
 

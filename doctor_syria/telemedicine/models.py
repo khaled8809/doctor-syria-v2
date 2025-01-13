@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils import timezone
-from accounts.models import Doctor, Patient
 from medical_records.models import VitalSigns
+
+from accounts.models import Doctor, Patient
 
 
 class VirtualClinic(models.Model):

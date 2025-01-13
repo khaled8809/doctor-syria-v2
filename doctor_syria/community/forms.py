@@ -1,5 +1,6 @@
 from django import forms
-from .models import Group, Post, Event, HealthTip, Story, Comment
+
+from .models import Comment, Event, Group, HealthTip, Post, Story
 
 
 class GroupForm(forms.ModelForm):

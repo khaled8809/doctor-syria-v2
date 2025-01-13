@@ -9,12 +9,14 @@ This module defines the data models for doctors, including:
 - Qualifications
 """
 
-from typing import List, Dict, Any, Optional
-from django.db import models
+from typing import Any, Dict, List, Optional
+
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+
 from patient_records.models import Patient
 
 

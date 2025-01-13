@@ -9,18 +9,19 @@ This module handles 2FA functionality including:
 - Backup codes
 """
 
-from typing import List, Dict, Any, Optional, Tuple
+import base64
+import logging
+from io import BytesIO
+from typing import Any, Dict, List, Optional, Tuple
+
+import pyotp
+import qrcode
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
-import pyotp
-import qrcode
-import base64
-from io import BytesIO
-import logging
 
 User = get_user_model()
 logger = logging.getLogger("auth.mfa")

@@ -2,12 +2,14 @@
 نظام توليد البطاقات التعريفية
 """
 
-from PIL import Image, ImageDraw, ImageFont
-import qrcode
-from io import BytesIO
 import os
-from django.conf import settings
 from datetime import datetime
+from io import BytesIO
+
+import qrcode
+from django.conf import settings
+from PIL import Image, ImageDraw, ImageFont
+
 from utils.barcode_generator import BarcodeGenerator
 
 

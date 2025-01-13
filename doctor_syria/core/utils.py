@@ -1,8 +1,9 @@
-import uuid
-from django.utils import timezone
-from django.conf import settings
 import os
+import uuid
 from datetime import datetime
+
+from django.conf import settings
+from django.utils import timezone
 
 
 def generate_unique_id():

@@ -1,7 +1,8 @@
-from django.views.generic import ListView, CreateView, DetailView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import PreventiveCheckup, Vaccination, HealthTip
+from django.views.generic import CreateView, DetailView, ListView, TemplateView
+
+from .models import HealthTip, PreventiveCheckup, Vaccination
 
 
 class PreventiveCareHomeView(LoginRequiredMixin, TemplateView):

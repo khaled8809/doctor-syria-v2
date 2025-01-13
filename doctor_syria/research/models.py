@@ -1,6 +1,7 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
-from accounts.models import Doctor, Patient, Hospital
+
+from accounts.models import Doctor, Hospital, Patient
 
 
 class ResearchProject(models.Model):

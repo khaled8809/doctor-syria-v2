@@ -1,8 +1,9 @@
-from functools import wraps
-from django.core.cache import cache
-from django.conf import settings
 import hashlib
 import json
+from functools import wraps
+
+from django.conf import settings
+from django.core.cache import cache
 
 
 def cache_key_generator(*args, **kwargs):

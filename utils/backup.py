@@ -1,11 +1,12 @@
+import logging
 import os
-import boto3
+import subprocess
 from datetime import datetime
+
+import boto3
+from botocore.exceptions import ClientError
 from django.conf import settings
 from django.core.management import call_command
-import subprocess
-import logging
-from botocore.exceptions import ClientError
 from django.core.management.base import CommandError
 from django.db import DatabaseError
 

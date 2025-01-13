@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
-from accounts.models import Patient, Doctor
+
+from accounts.models import Doctor, Patient
 
 
 class Consultation(models.Model):

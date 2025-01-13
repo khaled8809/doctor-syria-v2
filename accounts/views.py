@@ -2,28 +2,30 @@
 Views for the accounts app
 """
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login, authenticate, logout
-from django.utils import timezone
-from django.contrib import messages
-from django.core.mail import send_mail
-from django.template.loader import render_to_string
-from django.utils.crypto import get_random_string
-from django.conf import settings
-from django.views.decorators.http import require_http_methods
-from django.core.exceptions import ValidationError
-import pyotp
 import logging
-from .models import User, MedicalInformation
+
+import pyotp
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
+from django.utils import timezone
+from django.utils.crypto import get_random_string
+from django.views.decorators.http import require_http_methods
+
 from .forms import (
+    EmailVerificationForm,
     LoginForm,
+    MedicalInformationForm,
+    ProfileUpdateForm,
     TwoFactorSetupForm,
     TwoFactorVerifyForm,
-    EmailVerificationForm,
-    ProfileUpdateForm,
-    MedicalInformationForm,
 )
+from .models import MedicalInformation, User
 
 logger = logging.getLogger(__name__)
 
@@ -358,12 +360,14 @@ def logout_view(request):
     return redirect("accounts:login")
 
 
-from django.shortcuts import render, get_object_or_404
+import os
+
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, render
+
 from .utils.id_card_generator import IDCardGenerator
-from django.conf import settings
-import os
 
 
 @login_required
@@ -390,9 +394,9 @@ def download_id_card(request, user_id):
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
             response = HttpResponse(f.read(), content_type="image/png")
-            response["Content-Disposition"] = (
-                f"attachment; filename=id_card_{user.id}.png"
-            )
+            response[
+                "Content-Disposition"
+            ] = f"attachment; filename=id_card_{user.id}.png"
             return response
 
     return HttpResponse("البطاقة غير موجودة", status=404)

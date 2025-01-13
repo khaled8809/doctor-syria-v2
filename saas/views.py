@@ -1,8 +1,9 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Tenant, TenantUser, SubscriptionPlan
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect, render
+
 from .forms import TenantRegistrationForm
+from .models import SubscriptionPlan, Tenant, TenantUser
 
 
 @login_required

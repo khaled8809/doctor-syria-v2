@@ -1,8 +1,10 @@
-from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
-from doctor.models import Doctor, Specialty, Schedule
 from datetime import time, timedelta
+
+from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
 from django.utils import timezone
+
+from doctor.models import Doctor, Schedule, Specialty
 
 
 class Command(BaseCommand):

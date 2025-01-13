@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-from .models import Appointment, Prescription, MedicalRecord
+
+from .models import Appointment, MedicalRecord, Prescription
 from .serializers import (
     AppointmentSerializer,
-    PrescriptionSerializer,
     MedicalRecordSerializer,
+    PrescriptionSerializer,
 )
 
 

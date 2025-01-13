@@ -1,10 +1,12 @@
-from rest_framework import serializers
-from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
-from accounts.serializers import UserSerializer
+from django.utils.translation import gettext_lazy as _
 from medical_records.models import Prescription
 from medical_records.serializers import PrescriptionSerializer
-from .models import Medicine, Inventory, Order, OrderItem, StockAlert, ExpiryAlert
+from rest_framework import serializers
+
+from accounts.serializers import UserSerializer
+
+from .models import ExpiryAlert, Inventory, Medicine, Order, OrderItem, StockAlert
 
 User = get_user_model()
 

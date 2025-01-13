@@ -1,16 +1,18 @@
 from rest_framework import serializers
-from .models import (
-    TestCategory,
-    LabTest,
-    TestRequest,
-    TestResult,
-    SampleCollection,
-    ReferenceRange,
-)
+
 from accounts.serializers import (
+    DoctorSerializer,
     LaboratorySerializer,
     PatientSerializer,
-    DoctorSerializer,
+)
+
+from .models import (
+    LabTest,
+    ReferenceRange,
+    SampleCollection,
+    TestCategory,
+    TestRequest,
+    TestResult,
 )
 
 

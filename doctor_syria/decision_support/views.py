@@ -1,7 +1,8 @@
-from django.views.generic import ListView, CreateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from .models import ClinicalDecision, TreatmentProtocol, LabResultAnalysis
+from django.views.generic import CreateView, DetailView, ListView
+
+from .models import ClinicalDecision, LabResultAnalysis, TreatmentProtocol
 
 
 class ClinicalDecisionListView(LoginRequiredMixin, ListView):

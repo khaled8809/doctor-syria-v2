@@ -1,9 +1,11 @@
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-from django.contrib.auth import get_user_model
+from rest_framework.test import APIClient, APITestCase
+
 from saas_core.models import Tenant, TenantUser
-from ..models import Hospital, Department, Doctor, Patient, EmergencyCase, MedicalSupply
+
+from ..models import Department, Doctor, EmergencyCase, Hospital, MedicalSupply, Patient
 
 User = get_user_model()
 

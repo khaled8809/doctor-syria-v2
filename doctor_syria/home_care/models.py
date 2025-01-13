@@ -1,7 +1,8 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.core.validators import MinValueValidator, MaxValueValidator
-from accounts.models import Patient, Doctor, Nurse
 from medical_records.models import MedicalRecord
+
+from accounts.models import Doctor, Nurse, Patient
 
 
 class CareProvider(models.Model):

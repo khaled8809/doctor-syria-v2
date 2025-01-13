@@ -2,7 +2,7 @@
 URLs for the API
 """
 
-from django.urls import path, include
+from django.urls import include, path
 
 urlpatterns = [
     path("accounts/", include("accounts.api.urls")),

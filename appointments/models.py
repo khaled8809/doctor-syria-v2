@@ -1,10 +1,10 @@
-from django.db import models
 from django.conf import settings
-from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
-from django.utils import timezone
+from django.db import models
 from django.db.models import ExpressionWrapper, F, FloatField
 from django.db.models.functions import Now
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class Appointment(models.Model):

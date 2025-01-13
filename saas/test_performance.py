@@ -1,21 +1,23 @@
-from django.test import TestCase, Client
+from django.contrib.auth import get_user_model
 from django.db import connection, reset_queries
+from django.test import Client, TestCase
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
-from django.contrib.auth import get_user_model
 from django.utils import timezone
+
 from saas_core.models import Tenant, TenantUser
+
 from .models import (
-    Hospital,
+    Admission,
     Department,
     Doctor,
-    Patient,
-    Admission,
     EmergencyCase,
-    MedicalSupply,
+    Hospital,
     InventoryItem,
-    Warehouse,
     MedicalCompany,
+    MedicalSupply,
+    Patient,
+    Warehouse,
 )
 
 User = get_user_model()

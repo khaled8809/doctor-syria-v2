@@ -1,33 +1,34 @@
-from django.views.generic import (
-    ListView,
-    CreateView,
-    DetailView,
-    UpdateView,
-    DeleteView,
-    TemplateView,
-)
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.urls import reverse_lazy
-from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
-from django.db.models import Q, F, Sum
-from django.utils import timezone
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.db.models import F, Q, Sum
 from django.http import JsonResponse
-from .models import (
-    Medicine,
-    Inventory,
-    Prescription,
-    PrescriptionItem,
-    InventoryTransaction,
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.utils import timezone
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    TemplateView,
+    UpdateView,
 )
+
 from .forms import (
-    MedicineForm,
     InventoryForm,
+    InventorySearchForm,
+    InventoryTransactionForm,
+    MedicineForm,
     PrescriptionForm,
     PrescriptionItemForm,
-    InventoryTransactionForm,
-    InventorySearchForm,
     PrescriptionSearchForm,
+)
+from .models import (
+    Inventory,
+    InventoryTransaction,
+    Medicine,
+    Prescription,
+    PrescriptionItem,
 )
 
 

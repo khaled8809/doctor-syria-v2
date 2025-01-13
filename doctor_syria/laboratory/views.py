@@ -1,21 +1,22 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+
 from .models import (
-    TestCategory,
     LabTest,
+    ReferenceRange,
+    SampleCollection,
+    TestCategory,
     TestRequest,
     TestResult,
-    SampleCollection,
-    ReferenceRange,
 )
 from .serializers import (
-    TestCategorySerializer,
     LabTestSerializer,
+    ReferenceRangeSerializer,
+    SampleCollectionSerializer,
+    TestCategorySerializer,
     TestRequestSerializer,
     TestResultSerializer,
-    SampleCollectionSerializer,
-    ReferenceRangeSerializer,
 )
 
 

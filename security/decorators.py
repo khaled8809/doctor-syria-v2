@@ -1,4 +1,5 @@
 from functools import wraps
+
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseForbidden
 from django.utils.translation import gettext as _

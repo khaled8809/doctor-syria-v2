@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Dict, List
 
-from django.db.models import Count, Avg
+from django.db.models import Avg, Count
 from django.utils import timezone
 
 
@@ -16,9 +16,10 @@ class AnalyticsService:
         if not end_date:
             end_date = timezone.now()
 
-        from appointments.models import Appointment
         from medical_records.models import PatientVisit
+
         from accounts.models import User
+        from appointments.models import Appointment
 
         return {
             "total_patients": User.objects.filter(role="patient").count(),

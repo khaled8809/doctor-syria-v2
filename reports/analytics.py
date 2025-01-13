@@ -2,16 +2,18 @@
 خدمات التحليلات المتقدمة
 """
 
+from datetime import datetime, timedelta
+
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from django.db.models import Avg, Count, Max, Min
+from django.utils import timezone
+from scipy import stats
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
-from scipy import stats
-from datetime import datetime, timedelta
-from django.db.models import Count, Avg, Max, Min
-from django.utils import timezone
-from .models import MedicalReport, TreatmentProgress, HealthMetric
+from sklearn.preprocessing import StandardScaler
+
+from .models import HealthMetric, MedicalReport, TreatmentProgress
 
 
 class AdvancedAnalytics:

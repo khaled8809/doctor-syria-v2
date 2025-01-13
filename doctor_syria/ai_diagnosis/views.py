@@ -1,11 +1,13 @@
-from django.views.generic import CreateView, DetailView, View
+import io
+
+import numpy as np
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.urls import reverse_lazy
-from .models import AIAnalysis, ImageAnalysis, DrugInteraction
+from django.views.generic import CreateView, DetailView, View
 from PIL import Image
-import io
-import numpy as np
+
+from .models import AIAnalysis, DrugInteraction, ImageAnalysis
 
 
 class AIAnalysisCreateView(LoginRequiredMixin, CreateView):

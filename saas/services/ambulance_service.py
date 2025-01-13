@@ -1,9 +1,11 @@
-from typing import List, Dict, Any, Optional
 from datetime import datetime
-from django.db import models, transaction
+from typing import Any, Dict, List, Optional
+
 from django.core.exceptions import ValidationError
+from django.db import models, transaction
 from geopy.distance import geodesic
-from ..models import Hospital, EmergencyCase
+
+from ..models import EmergencyCase, Hospital
 
 
 class AmbulanceService:

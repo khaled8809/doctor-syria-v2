@@ -1,7 +1,8 @@
 from django.db import models
-from django.utils.text import slugify
-from accounts.models import User, Doctor, Patient
 from django.urls import reverse
+from django.utils.text import slugify
+
+from accounts.models import Doctor, Patient, User
 
 
 class Group(models.Model):

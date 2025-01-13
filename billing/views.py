@@ -1,33 +1,34 @@
-from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404, render
-from django.utils import timezone
-from django.db import transaction
-from django.http import HttpResponse
-from django.template.loader import render_to_string
-from weasyprint import HTML
 import tempfile
 
+from django.conf import settings
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
+from django.utils import timezone
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from weasyprint import HTML
+
 from .models import (
+    FaturaPayment,
+    InsuranceClaim,
+    InsuranceProvider,
     Invoice,
     InvoiceItem,
     Payment,
-    InsuranceClaim,
-    InsuranceProvider,
-    FaturaPayment,
 )
 from .serializers import (
-    InvoiceSerializer,
-    InvoiceItemSerializer,
-    PaymentSerializer,
     InsuranceClaimSerializer,
     InsuranceProviderSerializer,
+    InvoiceItemSerializer,
     InvoicePDFSerializer,
+    InvoiceSerializer,
+    PaymentSerializer,
 )
-from .services import StripeService, FaturaService
-from django.conf import settings
-from django.core.exceptions import PermissionDenied
+from .services import FaturaService, StripeService
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):
@@ -105,9 +106,9 @@ class InvoiceViewSet(viewsets.ModelViewSet):
 
         # إرجاع الملف
         response = HttpResponse(content_type="application/pdf")
-        response["Content-Disposition"] = (
-            f"attachment; filename=invoice_{invoice.invoice_number}.pdf"
-        )
+        response[
+            "Content-Disposition"
+        ] = f"attachment; filename=invoice_{invoice.invoice_number}.pdf"
         response.write(result)
 
         return response
@@ -350,10 +351,10 @@ class FaturaWebhookView(views.APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
-from django.db.models import Sum, Count, Avg
-from django.db.models.functions import TruncDate
-from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
+from django.db.models import Avg, Count, Sum
+from django.db.models.functions import TruncDate
 
 
 @login_required

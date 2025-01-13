@@ -1,6 +1,7 @@
+from base64 import b64decode, b64encode
+
 from cryptography.fernet import Fernet
 from django.conf import settings
-from base64 import b64encode, b64decode
 
 
 class DataEncryption:

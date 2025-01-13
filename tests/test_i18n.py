@@ -3,17 +3,19 @@
 Internationalization Tests
 """
 
-import pytest
-from django.test import Client, RequestFactory
-from django.contrib.auth import get_user_model
 from datetime import datetime
+
+import pytest
+from django.contrib.auth import get_user_model
+from django.test import Client, RequestFactory
+
 from doctor_syria.i18n import (
-    get_user_language,
-    get_translation,
-    get_language_urls,
-    format_number,
-    format_date,
     LocaleMiddleware,
+    format_date,
+    format_number,
+    get_language_urls,
+    get_translation,
+    get_user_language,
 )
 
 User = get_user_model()

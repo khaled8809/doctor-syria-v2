@@ -1,26 +1,27 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.utils.translation import gettext_lazy as _
-from phonenumber_field.modelfields import PhoneNumberField
-from django.db.models import Avg
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import EmailValidator
-from core.mixins import TimestampMixin, SoftDeleteMixin, AuditMixin
+from django.db import models
+from django.db.models import Avg
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from phonenumber_field.modelfields import PhoneNumberField
+
+from core.mixins import AuditMixin, SoftDeleteMixin, TimestampMixin
+
+from .choices import (
+    BloodType,
+    GenderType,
+    IdentificationType,
+    MaritalStatus,
+    SpecialtyType,
+    UserType,
+)
 from .managers import CustomUserManager
 from .validators import (
+    validate_medical_license,
     validate_phone_number,
     validate_syrian_id,
-    validate_medical_license,
 )
-from .choices import (
-    UserType,
-    GenderType,
-    MaritalStatus,
-    BloodType,
-    SpecialtyType,
-    IdentificationType,
-)
-from django.utils import timezone
 
 
 class User(AbstractUser, TimestampMixin, SoftDeleteMixin, AuditMixin):

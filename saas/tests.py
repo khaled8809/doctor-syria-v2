@@ -1,19 +1,21 @@
-from django.test import TestCase, Client
+from django.contrib.auth import get_user_model
+from django.test import Client, TestCase
 from django.urls import reverse
 from django.utils import timezone
-from django.contrib.auth import get_user_model
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APIClient, APITestCase
+
 from saas_core.models import Tenant, TenantUser
+
 from .models import (
-    Hospital,
+    Admission,
     Department,
     Doctor,
-    Patient,
-    Admission,
     EmergencyCase,
-    MedicalSupply,
+    Hospital,
     Inventory,
+    MedicalSupply,
+    Patient,
     PurchaseOrder,
     PurchaseOrderItem,
 )

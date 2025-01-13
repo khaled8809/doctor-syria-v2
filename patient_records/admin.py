@@ -1,24 +1,25 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
+
 from .models import (
-    MedicalRecord,
-    MedicalVisit,
-    Prescription,
-    LabTest,
-    Radiology,
-    Vaccination,
-    Medication,
-    Inventory,
-    InventoryTransaction,
-    MedicalReport,
     FollowUp,
-    Treatment,
-    Progress,
-    Invoice,
-    InvoiceItem,
-    Payment,
     Insurance,
     InsuranceClaim,
+    Inventory,
+    InventoryTransaction,
+    Invoice,
+    InvoiceItem,
+    LabTest,
+    MedicalRecord,
+    MedicalReport,
+    MedicalVisit,
+    Medication,
+    Payment,
+    Prescription,
+    Progress,
+    Radiology,
+    Treatment,
+    Vaccination,
 )
 
 

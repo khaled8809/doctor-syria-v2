@@ -1,10 +1,12 @@
-from django.shortcuts import render, get_object_or_404
-from django.views.generic import TemplateView, ListView, DetailView
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_protect
-from django.utils.decorators import method_decorator
 from django.db.models import Q
-from accounts.models import Clinic, Hospital, Doctor, Area
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
+from django.views.generic import DetailView, ListView, TemplateView
+
+from accounts.models import Area, Clinic, Doctor, Hospital
+
 from .models import Article, Review
 
 

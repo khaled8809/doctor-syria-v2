@@ -3,13 +3,15 @@
 Biometric Authentication Tests
 """
 
-import pytest
-from django.test import Client
-from django.contrib.auth import get_user_model
-from doctor_syria.auth.biometric import BiometricManager
 import json
-import numpy as np
 from datetime import datetime
+
+import numpy as np
+import pytest
+from django.contrib.auth import get_user_model
+from django.test import Client
+
+from doctor_syria.auth.biometric import BiometricManager
 
 User = get_user_model()
 

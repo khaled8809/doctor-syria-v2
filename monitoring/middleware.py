@@ -2,11 +2,13 @@
 Middleware للمراقبة وتتبع الأداء
 """
 
-import time
 import logging
+import time
+
 import psutil
 from django.db import connection
-from .models import SystemMetric, PerformanceLog
+
+from .models import PerformanceLog, SystemMetric
 
 logger = logging.getLogger(__name__)
 

@@ -2,16 +2,18 @@
 API endpoints للتعامل مع الباركود والبطاقات التعريفية
 """
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
-from accounts.models import User
-from accounts.utils.id_card_generator import IDCardGenerator, IDCardGenerationError
 import json
 import logging
+
+from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from accounts.models import User
+from accounts.utils.id_card_generator import IDCardGenerationError, IDCardGenerator
 
 logger = logging.getLogger(__name__)
 

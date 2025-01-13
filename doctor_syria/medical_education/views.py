@@ -1,6 +1,7 @@
-from django.views.generic import ListView, DetailView, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Course, VirtualSimulation, MedicalLibrary
+from django.views.generic import CreateView, DetailView, ListView
+
+from .models import Course, MedicalLibrary, VirtualSimulation
 
 
 class CourseListView(LoginRequiredMixin, ListView):

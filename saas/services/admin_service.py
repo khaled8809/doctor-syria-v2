@@ -1,7 +1,8 @@
-from django.utils import timezone
-from django.db.models import Avg, Count
 from django.contrib.contenttypes.models import ContentType
-from ..models import AuditLog, SystemMetric, AdminSetting, UserActivity, FeatureFlag
+from django.db.models import Avg, Count
+from django.utils import timezone
+
+from ..models import AdminSetting, AuditLog, FeatureFlag, SystemMetric, UserActivity
 
 
 class AdminService:

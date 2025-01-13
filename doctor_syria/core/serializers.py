@@ -1,15 +1,16 @@
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
+
+from pharmacy.choices import MedicineCategory, MedicineForm, StorageCondition
 from pharmacy.models import (
+    ExpiryAlert,
+    Inventory,
     Medicine,
     Order,
     OrderItem,
-    Inventory,
     StockAlert,
-    ExpiryAlert,
 )
-from pharmacy.choices import MedicineCategory, MedicineForm, StorageCondition
 
 User = get_user_model()
 

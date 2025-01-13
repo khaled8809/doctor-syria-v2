@@ -1,8 +1,9 @@
-import requests
-from django.conf import settings
-from datetime import datetime
 import hashlib
 import json
+from datetime import datetime
+
+import requests
+from django.conf import settings
 
 
 class FaturaService:

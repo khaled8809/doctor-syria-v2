@@ -1,19 +1,20 @@
-from django.views.generic import (
-    ListView,
-    CreateView,
-    DetailView,
-    UpdateView,
-    DeleteView,
-)
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
-from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
+from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from .models import LabTest, LabResult
-from .forms import LabTestForm, LabResultForm
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
+
+from .forms import LabResultForm, LabTestForm
+from .models import LabResult, LabTest
 
 
 class LabTestListView(LoginRequiredMixin, ListView):

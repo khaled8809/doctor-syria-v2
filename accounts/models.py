@@ -3,18 +3,20 @@
 يحتوي على نموذج المستخدم المخصص والنماذج المرتبطة به
 """
 
+import os
+import re
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
-from django.utils import timezone
-from datetime import timedelta
-import re
-import os
-from django.conf import settings
-from core.utils import optimize_image, get_cached_image_url
+
 from core.image_config import IMAGE_SETTINGS, LAZY_LOADING_SETTINGS
+from core.utils import get_cached_image_url, optimize_image
 
 
 def validate_phone_number(value):

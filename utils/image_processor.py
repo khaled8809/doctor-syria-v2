@@ -1,9 +1,10 @@
-from PIL import Image, ImageOps
+import logging
 import os
 from io import BytesIO
+
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-import logging
+from PIL import Image, ImageOps
 
 logger = logging.getLogger(__name__)
 

@@ -2,14 +2,16 @@
 خدمات تصدير التقارير
 """
 
-import os
-import json
 import csv
-import xlsxwriter
+import json
+import os
 from datetime import datetime
-from weasyprint import HTML
-from django.template.loader import render_to_string
+
+import xlsxwriter
 from django.conf import settings
+from django.template.loader import render_to_string
+from weasyprint import HTML
+
 from .models import MedicalReport, StatisticalReport
 
 

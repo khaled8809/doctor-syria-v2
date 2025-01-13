@@ -5,12 +5,13 @@ Internationalization Settings
 This module contains settings and utilities for multilingual support.
 """
 
-from typing import Dict, List, Any
-from django.utils.translation import gettext_lazy as _
+import logging
+from typing import Any, Dict, List
+
 from django.conf import settings
 from django.http import HttpRequest
 from django.urls import reverse
-import logging
+from django.utils.translation import gettext_lazy as _
 
 # تكوين التسجيل | Configure logging
 logger = logging.getLogger("i18n")

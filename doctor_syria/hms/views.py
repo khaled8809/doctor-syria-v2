@@ -1,40 +1,41 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.http import JsonResponse
-from django.core.paginator import Paginator
-from .models import (
-    Department,
-    Ward,
-    Room,
-    Bed,
-    Admission,
-    Transfer,
-    NursingRound,
-    DoctorRound,
-    Discharge,
-    Equipment,
-    MaintenanceRecord,
-    InventoryItem,
-)
+from django.shortcuts import get_object_or_404, redirect, render
+
 from .forms import (
-    DepartmentForm,
-    WardForm,
-    RoomForm,
-    BedForm,
     AdmissionForm,
-    TransferForm,
-    NursingRoundForm,
-    DoctorRoundForm,
-    DischargeForm,
-    EquipmentForm,
-    MaintenanceRecordForm,
-    InventoryItemForm,
     AdmissionSearchForm,
-    EquipmentSearchForm,
-    InventorySearchForm,
+    BedForm,
     DateRangeForm,
+    DepartmentForm,
+    DischargeForm,
+    DoctorRoundForm,
+    EquipmentForm,
+    EquipmentSearchForm,
+    InventoryItemForm,
+    InventorySearchForm,
+    MaintenanceRecordForm,
+    NursingRoundForm,
+    RoomForm,
+    TransferForm,
+    WardForm,
+)
+from .models import (
+    Admission,
+    Bed,
+    Department,
+    Discharge,
+    DoctorRound,
+    Equipment,
+    InventoryItem,
+    MaintenanceRecord,
+    NursingRound,
+    Room,
+    Transfer,
+    Ward,
 )
 
 

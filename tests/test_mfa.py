@@ -3,15 +3,17 @@
 Multi-Factor Authentication Tests
 """
 
+import base64
+from unittest.mock import MagicMock, patch
+
+import pyotp
 import pytest
-from django.test import Client, RequestFactory
 from django.contrib.auth import get_user_model
 from django.core import mail
 from django.core.cache import cache
+from django.test import Client, RequestFactory
+
 from doctor_syria.auth.mfa import MFAManager
-import pyotp
-import base64
-from unittest.mock import patch, MagicMock
 
 User = get_user_model()
 

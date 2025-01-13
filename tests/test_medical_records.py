@@ -1,8 +1,9 @@
 import pytest
-from django.utils import timezone
-from medical_records.models import MedicalRecord, VitalSigns, Prescription
-from accounts.models import User
 from django.core.exceptions import ValidationError
+from django.utils import timezone
+from medical_records.models import MedicalRecord, Prescription, VitalSigns
+
+from accounts.models import User
 
 
 @pytest.mark.django_db

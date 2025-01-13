@@ -1,12 +1,13 @@
 from rest_framework import serializers
+
 from .models import (
-    Symptom,
-    Disease,
-    DiagnosisSession,
-    DiagnosisResult,
     AIModel,
+    DiagnosisResult,
+    DiagnosisSession,
+    Disease,
     PredictionModel,
     SessionSymptom,
+    Symptom,
 )
 
 

@@ -2,11 +2,12 @@
 واجهة برمجة التطبيقات للتقارير والإحصائيات
 """
 
-from rest_framework import viewsets, permissions, status
+from django.utils import timezone
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django.utils import timezone
-from .models import MedicalReport, TreatmentProgress, HealthMetric, StatisticalReport
+
+from .models import HealthMetric, MedicalReport, StatisticalReport, TreatmentProgress
 from .services import ReportingService
 
 

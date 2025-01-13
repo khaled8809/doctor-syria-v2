@@ -1,13 +1,15 @@
+from typing import Any, Dict, List
+
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from typing import List, Dict, Any
+
 from .models import (
-    Symptom,
-    Disease,
-    DiagnosisSession,
-    DiagnosisResult,
     AIModel,
+    DiagnosisResult,
+    DiagnosisSession,
+    Disease,
     PredictionModel,
+    Symptom,
 )
 
 

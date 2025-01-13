@@ -1,17 +1,18 @@
 from django import forms
+
 from .models import (
-    Department,
-    Ward,
-    Room,
-    Bed,
     Admission,
-    Transfer,
-    NursingRound,
-    DoctorRound,
+    Bed,
+    Department,
     Discharge,
+    DoctorRound,
     Equipment,
-    MaintenanceRecord,
     InventoryItem,
+    MaintenanceRecord,
+    NursingRound,
+    Room,
+    Transfer,
+    Ward,
 )
 
 

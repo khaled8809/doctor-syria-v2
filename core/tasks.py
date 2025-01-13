@@ -2,10 +2,11 @@
 مهام Celery لتحديث البيانات المخزنة مؤقتاً وتحسين الأداء
 """
 
+from datetime import timedelta
+
 from celery import shared_task
 from django.core.cache import cache
 from django.db import connection
-from datetime import timedelta
 from django.utils import timezone
 
 
@@ -28,7 +29,7 @@ def cleanup_old_sessions():
 @shared_task
 def cache_common_queries():
     """تخزين نتائج الاستعلامات الشائعة مؤقتاً"""
-    from core.models import Patient, Appointment
+    from core.models import Appointment, Patient
     from reports.models import MedicalReport
 
     # إحصائيات المرضى

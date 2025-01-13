@@ -1,20 +1,21 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import (
-    ListView,
-    DetailView,
     CreateView,
-    UpdateView,
     DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
 )
-from django.contrib import messages
-from django.http import JsonResponse
-from django.urls import reverse_lazy
-from django.db.models import Q
-from django.utils import timezone
-from .models import Group, Post, Event, HealthTip, Story, Comment, Notification
-from .forms import GroupForm, PostForm, EventForm, HealthTipForm, StoryForm, CommentForm
+
+from .forms import CommentForm, EventForm, GroupForm, HealthTipForm, PostForm, StoryForm
+from .models import Comment, Event, Group, HealthTip, Notification, Post, Story
 
 
 class GroupListView(ListView):

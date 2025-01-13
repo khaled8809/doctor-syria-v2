@@ -1,13 +1,14 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count, Q
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
-from django.db.models import Q, Count
-from .models import Category, Question, Answer, Comment, QuestionBookmark
-from .forms import QuestionForm, AnswerForm, CommentForm
+from django.utils.decorators import method_decorator
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
+
+from .forms import AnswerForm, CommentForm, QuestionForm
+from .models import Answer, Category, Comment, Question, QuestionBookmark
 
 
 class CategoryListView(ListView):

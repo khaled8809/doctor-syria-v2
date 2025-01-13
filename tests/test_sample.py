@@ -1,8 +1,10 @@
 import unittest
+
 import pytest
+from django.contrib.auth import get_user_model
 from django.test import Client
 from django.urls import reverse
-from django.contrib.auth import get_user_model
+
 from appointments.models import Appointment
 from clinics.models import Clinic
 from doctor.models import Doctor

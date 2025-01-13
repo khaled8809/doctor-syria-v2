@@ -1,13 +1,14 @@
-from rest_framework import viewsets, permissions
-from rest_framework.decorators import action
-from rest_framework.response import Response
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.cache import cache
-from .system_monitor import SystemMonitor
-from .alert_manager import AlertManager
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.generic import TemplateView
-from django.contrib.admin.views.decorators import staff_member_required
+from rest_framework import permissions, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
+from .alert_manager import AlertManager
+from .system_monitor import SystemMonitor
 
 
 class MonitoringViewSet(viewsets.ViewSet):

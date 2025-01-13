@@ -1,6 +1,7 @@
+from django.conf import settings
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.conf import settings
+
 from .models import Tenant
 from .services.saas_service import SaaSService
 

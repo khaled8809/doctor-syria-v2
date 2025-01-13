@@ -2,10 +2,11 @@
 Utility functions for optimizing image and file loading
 """
 
-from django.core.cache import cache
-from django.conf import settings
-from PIL import Image
 import os
+
+from django.conf import settings
+from django.core.cache import cache
+from PIL import Image
 
 
 def optimize_image(image_path, quality=85):

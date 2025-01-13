@@ -9,19 +9,22 @@ This module handles all appointment-related views, including:
 - Handling appointment notifications
 """
 
-from typing import List, Dict, Any, Optional
-from django.shortcuts import render, get_object_or_404
+from typing import Any, Dict, List, Optional
+
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Appointment
-from .forms import AppointmentForm
+from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from rest_framework import permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from doctor.models import Doctor
 from notifications.utils import send_notification
-from rest_framework import viewsets, permissions, status
-from rest_framework.response import Response
-from rest_framework.decorators import action
+
+from .forms import AppointmentForm
+from .models import Appointment
 from .serializers import AppointmentSerializer
 
 

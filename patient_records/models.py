@@ -1,13 +1,15 @@
-from django.db import models
-from django.conf import settings
-from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator, MaxValueValidator
-from django.core.exceptions import ValidationError
-from django.utils import timezone
+import re
 from decimal import Decimal
+
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+
 from core.cache_decorators import cache_method, invalidate_cache_on_save
 from core.cache_manager import CacheManager
-import re
 
 
 class Patient(models.Model):

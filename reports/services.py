@@ -2,11 +2,13 @@
 خدمات نظام التقارير والإحصائيات
 """
 
-import pandas as pd
 from datetime import datetime, timedelta
-from django.db.models import Count, Avg, Max, Min
+
+import pandas as pd
+from django.db.models import Avg, Count, Max, Min
 from django.utils import timezone
-from .models import MedicalReport, TreatmentProgress, HealthMetric, StatisticalReport
+
+from .models import HealthMetric, MedicalReport, StatisticalReport, TreatmentProgress
 
 
 class ReportingService:

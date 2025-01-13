@@ -2,15 +2,16 @@
 نظام توليد وقراءة الباركود
 """
 
+import os
+from io import BytesIO
+
+import cv2
+import numpy as np
 import qrcode
 from barcode import Code128
 from barcode.writer import ImageWriter
-from io import BytesIO
-from PIL import Image
-import cv2
-import numpy as np
 from django.conf import settings
-import os
+from PIL import Image
 
 
 class BarcodeGenerator:
@@ -88,9 +89,12 @@ class BarcodeGenerator:
 
             # محاولة قراءة QR code
             qr_decoder = cv2.QRCodeDetector()
-            retval, decoded_info, points, straight_qrcode = (
-                qr_decoder.detectAndDecodeMulti(gray)
-            )
+            (
+                retval,
+                decoded_info,
+                points,
+                straight_qrcode,
+            ) = qr_decoder.detectAndDecodeMulti(gray)
 
             if retval:
                 return decoded_info[0]

@@ -1,9 +1,11 @@
-import pytest
-from django.test import Client
 from decimal import Decimal
-from billing.models import Invoice, Payment, InsuranceClaim
-from patient_records.models import Patient
+
+import pytest
 from django.contrib.auth import get_user_model
+from django.test import Client
+
+from billing.models import InsuranceClaim, Invoice, Payment
+from patient_records.models import Patient
 
 User = get_user_model()
 

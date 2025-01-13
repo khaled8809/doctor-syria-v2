@@ -1,7 +1,7 @@
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django_otp import devices
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from django.core.exceptions import ObjectDoesNotExist
 
 
 class TwoFactorAuth:

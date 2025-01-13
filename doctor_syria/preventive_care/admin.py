@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import PreventiveCheckup, Vaccination, HealthTip
+
+from .models import HealthTip, PreventiveCheckup, Vaccination
 
 
 @admin.register(PreventiveCheckup)

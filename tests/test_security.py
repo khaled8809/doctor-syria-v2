@@ -4,16 +4,17 @@ Security Module Tests
 """
 
 import pytest
-from django.test import Client, RequestFactory
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
+from django.test import Client, RequestFactory
+
 from doctor_syria.security import (
-    check_user_permissions,
-    check_rate_limit,
-    sanitize_input,
-    encrypt_sensitive_data,
-    decrypt_sensitive_data,
     SecurityMiddleware,
+    check_rate_limit,
+    check_user_permissions,
+    decrypt_sensitive_data,
+    encrypt_sensitive_data,
+    sanitize_input,
 )
 
 User = get_user_model()

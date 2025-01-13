@@ -1,7 +1,8 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
+
+from patient_records.models import MedicalRecord, Patient
 from saas_core.models import Tenant
-from patient_records.models import Patient, MedicalRecord
 
 
 class Symptom(models.Model):

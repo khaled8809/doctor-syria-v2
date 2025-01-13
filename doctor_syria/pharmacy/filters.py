@@ -1,6 +1,7 @@
 import django_filters
 from django.utils.translation import gettext_lazy as _
-from .models import Medicine, Inventory, Order, OrderItem, StockAlert, ExpiryAlert
+
+from .models import ExpiryAlert, Inventory, Medicine, Order, OrderItem, StockAlert
 
 
 class MedicineFilter(django_filters.FilterSet):

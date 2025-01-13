@@ -1,6 +1,8 @@
 from functools import wraps
-from .cache_manager import CacheManager
+
 from django.core.cache import cache
+
+from .cache_manager import CacheManager
 
 
 def cache_response(timeout=None, key_prefix="view"):

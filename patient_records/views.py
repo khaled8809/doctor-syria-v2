@@ -2,24 +2,26 @@
 Views for the medical records app
 """
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
+from django.urls import reverse_lazy
+from django.utils import timezone
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
 from rest_framework import viewsets
-from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from core.cache_decorators import cache_response
 from core.cache_manager import CacheManager
-from django.views.generic import (
-    ListView,
-    CreateView,
-    DetailView,
-    UpdateView,
-    DeleteView,
-)
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
-from .models import MedicalRecord, MedicalVisit
+
 from .forms import MedicalRecordForm, MedicalVisitForm
-from django.utils import timezone
+from .models import MedicalRecord, MedicalVisit
 
 # سيتم إضافة المزيد من الـ views لاحقاً
 

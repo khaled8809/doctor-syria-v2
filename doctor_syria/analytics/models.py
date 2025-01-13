@@ -1,9 +1,10 @@
-from django.db import models
+from consultations.models import Consultation
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-from accounts.models import Doctor, Patient, Hospital, Clinic
+from django.db import models
 from medical_records.models import MedicalRecord
-from consultations.models import Consultation
+
+from accounts.models import Clinic, Doctor, Hospital, Patient
 
 
 class HealthMetric(models.Model):

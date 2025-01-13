@@ -1,16 +1,18 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
-from django.core.validators import MinValueValidator, MaxValueValidator
-from accounts.models import Patient, Doctor
 from django.utils.translation import gettext_lazy as _
-from core.models import TimestampMixin, SoftDeleteMixin, AuditMixin
+
+from accounts.models import Doctor, Patient
+from core.models import AuditMixin, SoftDeleteMixin, TimestampMixin
+
 from .choices import (
+    AllergyReaction,
+    AllergyType,
     AppointmentStatus,
     AppointmentType,
     RecordType,
     Severity,
-    AllergyType,
-    AllergyReaction,
     VaccinationType,
 )
 

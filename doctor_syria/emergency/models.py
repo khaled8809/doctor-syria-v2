@@ -1,7 +1,8 @@
-from django.db import models
 from django.contrib.gis.db import models as gis_models
-from django.core.validators import MinValueValidator, MaxValueValidator
-from accounts.models import Patient, Doctor, Hospital, Ambulance
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+
+from accounts.models import Ambulance, Doctor, Hospital, Patient
 
 
 class EmergencyCenter(models.Model):

@@ -1,34 +1,33 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import (
-    ListView,
-    DetailView,
-    CreateView,
-    UpdateView,
-    DeleteView,
-)
 from django.urls import reverse_lazy
-from .models import MedicalRecord
-from .forms import MedicalRecordForm
-
-from rest_framework import viewsets, permissions, filters
+from django.utils import timezone
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    ListView,
+    UpdateView,
+)
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
-from django.utils import timezone
-from .models import MedicalRecord, Appointment, Prescription, Allergy, Vaccination
-from .serializers import (
-    MedicalRecordSerializer,
-    AppointmentSerializer,
-    PrescriptionSerializer,
-    AllergySerializer,
-    VaccinationSerializer,
-)
+
 from .filters import (
-    MedicalRecordFilter,
-    AppointmentFilter,
-    PrescriptionFilter,
     AllergyFilter,
+    AppointmentFilter,
+    MedicalRecordFilter,
+    PrescriptionFilter,
     VaccinationFilter,
+)
+from .forms import MedicalRecordForm
+from .models import Allergy, Appointment, MedicalRecord, Prescription, Vaccination
+from .serializers import (
+    AllergySerializer,
+    AppointmentSerializer,
+    MedicalRecordSerializer,
+    PrescriptionSerializer,
+    VaccinationSerializer,
 )
 
 

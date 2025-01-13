@@ -1,8 +1,9 @@
 import pytest
-from django.test import Client
 from django.contrib.auth import get_user_model
-from patient_records.models import Patient, MedicalRecord, Prescription
+from django.test import Client
+
 from doctor.models import Doctor
+from patient_records.models import MedicalRecord, Patient, Prescription
 
 User = get_user_model()
 

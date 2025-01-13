@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import MedicalRecord, Appointment, Prescription, Allergy, Vaccination
+
+from .models import Allergy, Appointment, MedicalRecord, Prescription, Vaccination
 
 
 @admin.register(MedicalRecord)

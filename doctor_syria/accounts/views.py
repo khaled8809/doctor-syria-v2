@@ -1,14 +1,15 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import render
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-from django.contrib.auth import get_user_model
-from .models import Doctor, Patient, Pharmacy, Laboratory
+
+from .models import Doctor, Laboratory, Patient, Pharmacy
 from .serializers import (
-    UserSerializer,
     DoctorSerializer,
+    LaboratorySerializer,
     PatientSerializer,
     PharmacySerializer,
-    LaboratorySerializer,
+    UserSerializer,
 )
 
 User = get_user_model()

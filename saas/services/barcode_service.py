@@ -1,9 +1,11 @@
-import barcode
-from barcode.writer import ImageWriter
 from io import BytesIO
-import qrcode
 from typing import Optional, Tuple
+
+import barcode
+import qrcode
+from barcode.writer import ImageWriter
 from django.core.files.base import ContentFile
+
 from ..models import Patient
 
 

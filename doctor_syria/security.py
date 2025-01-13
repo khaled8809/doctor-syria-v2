@@ -5,11 +5,12 @@ Security Settings
 This module contains security-related settings and utilities for the Doctor Syria project.
 """
 
-from typing import List, Dict, Any
-from django.conf import settings
-from django.http import HttpRequest
-from django.core.exceptions import PermissionDenied
 import logging
+from typing import Any, Dict, List
+
+from django.conf import settings
+from django.core.exceptions import PermissionDenied
+from django.http import HttpRequest
 
 # تكوين التسجيل | Configure logging
 logger = logging.getLogger("security")

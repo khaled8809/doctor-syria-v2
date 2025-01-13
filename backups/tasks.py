@@ -4,6 +4,7 @@
 
 from celery import shared_task
 from django.conf import settings
+
 from .backup_manager import BackupManager
 
 
@@ -31,6 +32,7 @@ def cleanup_old_backups():
 
 # جدولة المهام
 from celery.schedules import crontab
+
 from doctor_syria.celery import app
 
 # نسخة احتياطية كاملة كل أسبوع

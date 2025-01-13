@@ -1,6 +1,8 @@
 from rest_framework import serializers
+
 from accounts.serializers import UserSerializer
-from .models import MedicalRecord, Appointment, Prescription, Allergy, Vaccination
+
+from .models import Allergy, Appointment, MedicalRecord, Prescription, Vaccination
 
 
 class MedicalRecordSerializer(serializers.ModelSerializer):

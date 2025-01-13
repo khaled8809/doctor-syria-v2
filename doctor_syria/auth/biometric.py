@@ -8,15 +8,16 @@ This module handles biometric authentication including:
 - Voice recognition
 """
 
-from typing import Dict, Any, Optional
-from django.conf import settings
-from django.contrib.auth import get_user_model
 import base64
 import hashlib
 import hmac
 import json
 import logging
 from datetime import datetime, timedelta
+from typing import Any, Dict, Optional
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 logger = logging.getLogger("auth.biometric")
