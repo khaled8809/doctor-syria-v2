@@ -47,6 +47,52 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+## النشر
+
+### المتطلبات
+- Docker و Docker Compose
+- Nginx
+- Let's Encrypt Certbot
+- Prometheus و Grafana للمراقبة
+
+### خطوات النشر السريع
+1. نسخ `.env.example` إلى `.env.production` وتحديث القيم
+2. تشغيل سكريبت الإعداد:
+   ```bash
+   ./scripts/setup_production.sh
+   ```
+3. بدء الخدمات:
+   ```bash
+   docker-compose up -d
+   ```
+
+### المراقبة
+- Grafana: https://monitor.doctor-syria.com
+- Prometheus: https://metrics.doctor-syria.com
+- التنبيهات عبر Slack في قناة #monitoring
+
+### النسخ الاحتياطي
+- يتم إجراء نسخ احتياطي تلقائي يومياً في الساعة 3 صباحاً
+- موقع النسخ الاحتياطي: `/var/backups/doctor_syria`
+- لاستعادة نسخة احتياطية:
+  ```bash
+  ./scripts/restore.sh YYYYMMDD_HHMMSS
+  ```
+
+### الأمان
+- تشغيل فحص الأمان:
+  ```bash
+  ./scripts/security_check.sh
+  ```
+- مراجعة `docs/SECURITY.md` للمزيد من المعلومات
+
+### الصيانة
+راجع `docs/MAINTENANCE.md` للحصول على:
+- إجراءات الصيانة الدورية
+- استكشاف الأخطاء وإصلاحها
+- دليل التحديث
+- جهات الاتصال المهمة
+
 ## الوثائق
 
 - [دليل التثبيت](https://khaled8809.github.io/doctor-syria-v2/installation.html)
