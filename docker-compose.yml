@@ -3,7 +3,16 @@ version: '3.8'
 services:
   web:
     build: .
-    command: gunicorn doctor_syria.wsgi:application --bind unix:/run/gunicorn.sock --workers 4 --threads 4 --worker-class=gthread --worker-tmp-dir /dev/shm
+    command: >
+      gunicorn doctor_syria.wsgi:application 
+      --bind unix:/run/gunicorn.sock 
+      --workers $$(( 2 * $(nproc) )) 
+      --threads 4 
+      --worker-class=gthread 
+      --worker-tmp-dir /dev/shm 
+      --max-requests 1000 
+      --max-requests-jitter 50 
+      --keepalive 65
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
@@ -26,11 +35,35 @@ services:
       - POSTGRES_DB=${DB_NAME}
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_SHARED_BUFFERS=256MB
+      - POSTGRES_EFFECTIVE_CACHE_SIZE=768MB
+      - POSTGRES_WORK_MEM=16MB
+      - POSTGRES_MAINTENANCE_WORK_MEM=128MB
+      - POSTGRES_MAX_CONNECTIONS=100
+    command: >
+      postgres
+      -c shared_buffers=256MB
+      -c effective_cache_size=768MB
+      -c work_mem=16MB
+      -c maintenance_work_mem=128MB
+      -c max_connections=100
+      -c synchronous_commit=off
+      -c checkpoint_timeout=1h
+      -c max_wal_size=1GB
     restart: unless-stopped
 
   redis:
     image: redis:7-alpine
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+      --appendfsync everysec
+      --save 900 1
+      --save 300 10
+      --save 60 10000
     volumes:
       - redis_data:/data
     restart: unless-stopped

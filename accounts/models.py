@@ -13,6 +13,8 @@ from datetime import timedelta
 import re
 import os
 from django.conf import settings
+from core.utils import optimize_image, get_cached_image_url
+from core.image_config import IMAGE_SETTINGS, LAZY_LOADING_SETTINGS
 
 def validate_phone_number(value):
     """التحقق من صحة رقم الهاتف"""
@@ -86,6 +88,9 @@ class MedicalInformation(models.Model):
     def __str__(self):
         return f"المعلومات الطبية لـ {self.user.get_full_name()}"
 
+def user_directory_path(instance, filename):
+    return f'users/{instance.id}/{filename}'
+
 class User(AbstractUser):
     """نموذج المستخدم المخصص
     يوفر وظائف إضافية للمستخدمين مثل الأدوار والمصادقة الثنائية
@@ -127,11 +132,23 @@ class User(AbstractUser):
     )
 
     profile_picture = models.ImageField(
-        upload_to='profile_pictures/',
+        upload_to=user_directory_path,
         null=True,
         blank=True,
         verbose_name=_('الصورة الشخصية')
     )
+    
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        if self.profile_picture and (is_new or 'profile_picture' in self.get_dirty_fields()):
+            optimize_image(self.profile_picture.path)
+            
+    def get_profile_picture_url(self, size='medium'):
+        if not self.profile_picture:
+            return None
+        return get_cached_image_url(self.profile_picture, size)
 
     specialization = models.CharField(
         max_length=100,
@@ -235,19 +252,6 @@ class User(AbstractUser):
             raise ValidationError({
                 'license_number': _('رقم الترخيص مطلوب للأطباء')
             })
-
-    def save(self, *args, **kwargs):
-        """حفظ المستخدم مع التحقق من صحة البيانات"""
-        self.clean()
-        super().save(*args, **kwargs)
-
-    def get_barcode_url(self):
-        """الحصول على رابط الباركود"""
-        return self.barcode
-
-    def get_id_card_url(self):
-        """الحصول على رابط البطاقة التعريفية"""
-        return self.id_card
 
     def get_role(self):
         """الحصول على الدور بالصيغة المعروضة"""

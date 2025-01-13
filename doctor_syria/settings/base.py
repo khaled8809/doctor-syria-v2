@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'analytics',
     'api',
     'core',
+    'notifications.apps.NotificationsConfig',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +64,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'monitoring.middleware.PerformanceMonitoringMiddleware',
+    'monitoring.middleware.DatabaseQueryMonitoringMiddleware',
 ]
 
 ROOT_URLCONF = 'doctor_syria.urls'
@@ -97,20 +100,52 @@ DATABASES = {
         'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
         'HOST': os.getenv('DB_HOST', 'localhost'),
         'PORT': os.getenv('DB_PORT', '5432'),
+        'OPTIONS': {
+            'autocommit': True,
+            'connect_timeout': 5,
+        },
+        'CONN_MAX_AGE': 600,  # 10 دقائق
     }
 }
 
-# Cache
+# إعدادات التخزين المؤقت
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': f"redis://{os.getenv('REDIS_HOST', 'localhost')}:"
-                   f"{os.getenv('REDIS_PORT', '6379')}/1",
+        'LOCATION': 'redis://127.0.0.1:6379/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'PARSER_CLASS': 'redis.connection.HiredisParser',
+            'SOCKET_CONNECT_TIMEOUT': 5,
+            'SOCKET_TIMEOUT': 5,
+            'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+            'IGNORE_EXCEPTIONS': True,
         }
     }
 }
+
+# استخدام Redis للجلسات
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+
+# إعدادات ضغط الصور تلقائياً
+IMAGEKIT_CACHEFILE_DIR = 'CACHE/images'
+IMAGEKIT_SPEC_CACHEFILE_NAMER = 'imagekit.cachefiles.namers.hash'
+IMAGEKIT_CACHE_BACKEND = 'default'
+
+# إعدادات تحسين الأداء
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# إعدادات Celery مع Redis
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Damascus'
 
 # Internationalization
 LANGUAGE_CODE = 'ar'
@@ -218,13 +253,10 @@ CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if not D
 
 # Channel Layers
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [(
-                os.getenv('REDIS_HOST', 'localhost'),
-                int(os.getenv('REDIS_PORT', 6379))
-            )],
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
         },
     },
 }
@@ -242,6 +274,36 @@ APPOINTMENT_SETTINGS = {
         'start': '13:00',
         'end': '14:00',
     },
+}
+
+# إعدادات نظام الإشعارات
+NOTIFICATION_SETTINGS = {
+    'EMAIL': {
+        'ENABLED': True,
+        'TEMPLATE_DIR': 'notifications/email/',
+        'FROM_EMAIL': 'notifications@doctor-syria.com',
+    },
+    'SMS': {
+        'ENABLED': True,
+        'PROVIDER': 'twilio',  # يمكن تغييره حسب مزود الخدمة
+        'ACCOUNT_SID': os.getenv('SMS_ACCOUNT_SID', ''),
+        'AUTH_TOKEN': os.getenv('SMS_AUTH_TOKEN', ''),
+        'FROM_NUMBER': os.getenv('SMS_FROM_NUMBER', ''),
+    },
+    'WEBSOCKET': {
+        'ENABLED': True,
+        'RECONNECT_INTERVAL': 3000,  # بالميلي ثانية
+        'MAX_RECONNECT_ATTEMPTS': 5,
+    },
+    'QUIET_HOURS': {
+        'ENABLED': True,
+        'DEFAULT_START': '22:00',
+        'DEFAULT_END': '07:00',
+    },
+    'RETENTION': {
+        'DAYS': 30,  # عدد الأيام للاحتفاظ بالإشعارات القديمة
+        'MAX_PER_USER': 1000,  # الحد الأقصى للإشعارات لكل مستخدم
+    }
 }
 
 # Notification settings
@@ -289,4 +351,92 @@ MEDICAL_RECORDS_SETTINGS = {
         'ALLOWED_EXTENSIONS': ['pdf', 'jpg', 'jpeg', 'png', 'dcm'],
         'STORAGE_BACKEND': 'django.core.files.storage.FileSystemStorage',
     }
+}
+
+# إعدادات المراقبة
+MONITORING_SETTINGS = {
+    'ENABLED': True,
+    'LOG_PERFORMANCE': True,
+    'LOG_DATABASE_QUERIES': True,
+    'METRIC_COLLECTION_INTERVAL': 60,  # ثواني
+    'RETENTION_PERIOD': 30,  # أيام
+    'ALERT_THRESHOLDS': {
+        'cpu_usage': 80,  # نسبة مئوية
+        'memory_usage': 80,  # نسبة مئوية
+        'response_time': 2.0,  # ثواني
+        'error_rate': 0.1,  # أخطاء في الثانية
+    }
+}
+
+# إعدادات النسخ الاحتياطي
+BACKUP_SETTINGS = {
+    'BACKUP_DIR': os.path.join(BASE_DIR, 'backups', 'files'),
+    'BACKUP_RETENTION_DAYS': 30,
+    'COMPRESSION_ENABLED': True,
+    'COMPRESSION_LEVEL': 6,
+    'BACKUP_TYPES': {
+        'full': {
+            'schedule': 'weekly',
+            'day': 'sunday',
+            'time': '00:00',
+        },
+        'incremental': {
+            'schedule': 'daily',
+            'time': '00:30',
+        },
+    },
+    'NOTIFICATIONS': {
+        'SUCCESS': True,
+        'FAILURE': True,
+        'EMAIL_ON_FAILURE': True,
+    },
+    'STORAGE_OPTIONS': {
+        'LOCAL_PATH': os.path.join(BASE_DIR, 'backups', 'files'),
+        'REMOTE_ENABLED': False,
+        'REMOTE_PATH': os.getenv('BACKUP_REMOTE_PATH', ''),
+        'REMOTE_ACCESS_KEY': os.getenv('BACKUP_REMOTE_ACCESS_KEY', ''),
+        'REMOTE_SECRET_KEY': os.getenv('BACKUP_REMOTE_SECRET_KEY', ''),
+    }
+}
+
+# إنشاء مجلد النسخ الاحتياطي
+os.makedirs(BACKUP_SETTINGS['BACKUP_DIR'], exist_ok=True)
+
+# إعدادات التسجيل
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'doctor_syria.log'),
+            'maxBytes': 1024 * 1024 * 5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'doctor_syria': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }

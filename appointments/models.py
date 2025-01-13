@@ -26,18 +26,21 @@ class Appointment(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='patient_appointments',
-        verbose_name=_('Patient')
+        verbose_name=_('Patient'),
+        db_index=True
     )
     
     doctor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='doctor_appointments',
-        verbose_name=_('Doctor')
+        verbose_name=_('Doctor'),
+        db_index=True
     )
     
     appointment_date = models.DateTimeField(
-        verbose_name=_('Appointment Date')
+        verbose_name=_('Appointment Date'),
+        db_index=True
     )
     
     reason = models.TextField(
@@ -48,7 +51,8 @@ class Appointment(models.Model):
         max_length=20,
         choices=STATUS_CHOICES,
         default='pending',
-        verbose_name=_('Status')
+        verbose_name=_('Status'),
+        db_index=True
     )
     
     priority = models.CharField(
@@ -65,7 +69,8 @@ class Appointment(models.Model):
     
     created_at = models.DateTimeField(
         auto_now_add=True,
-        verbose_name=_('Created At')
+        verbose_name=_('Created At'),
+        db_index=True
     )
     
     updated_at = models.DateTimeField(
@@ -82,6 +87,11 @@ class Appointment(models.Model):
         verbose_name = _('Appointment')
         verbose_name_plural = _('Appointments')
         ordering = ['-appointment_date']
+        indexes = [
+            models.Index(fields=['appointment_date', 'status']),
+            models.Index(fields=['doctor', 'appointment_date']),
+            models.Index(fields=['patient', 'appointment_date']),
+        ]
 
     def __str__(self):
         return f"{self.patient} - {self.doctor} - {self.appointment_date}"

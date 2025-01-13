@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ report.report_info.title }}</title>
+    <style>
+        @font-face {
+            font-family: 'Cairo';
+            src: url('static/fonts/Cairo-Regular.ttf') format('truetype');
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 20px;
+        }
+
+        .logo {
+            max-width: 150px;
+            margin-bottom: 10px;
+        }
+
+        .report-title {
+            color: #2E7D32;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        .report-meta {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        .section-title {
+            color: #1B5E20;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .patient-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #1B5E20;
+        }
+
+        .medical-content {
+            line-height: 1.8;
+        }
+
+        .medications-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .medication-item {
+            padding: 5px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .qr-code {
+            text-align: left;
+            margin-top: 20px;
+        }
+
+        .signature {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .signature-line {
+            width: 200px;
+            border-top: 1px solid #333;
+            margin-top: 50px;
+        }
+
+        @page {
+            size: A4;
+            margin: 2cm;
+            @top-right {
+                content: "{{ report.report_info.title }}";
+                font-size: 10px;
+                color: #666;
+            }
+            @bottom-center {
+                content: "صفحة " counter(page) " من " counter(pages);
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ logo_url }}" alt="شعار العيادة" class="logo">
+        <h1 class="report-title">{{ report.report_info.title }}</h1>
+        <div class="report-meta">
+            تاريخ التقرير: {{ report.report_info.created_at|date:"Y/m/d" }}
+            &bull;
+            نوع التقرير: {{ report.report_info.type }}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">معلومات المريض</h2>
+        <div class="patient-info">
+            <div class="info-item">
+                <span class="info-label">الاسم:</span>
+                {{ report.patient_info.name }}
+            </div>
+            <div class="info-item">
+                <span class="info-label">العمر:</span>
+                {{ report.patient_info.age }} سنة
+            </div>
+            <div class="info-item">
+                <span class="info-label">الجنس:</span>
+                {{ report.patient_info.gender }}
+            </div>
+            <div class="info-item">
+                <span class="info-label">رقم الملف:</span>
+                {{ report.patient_info.id }}
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">التشخيص والعلاج</h2>
+        <div class="medical-content">
+            <h3>التشخيص:</h3>
+            <p>{{ report.medical_info.diagnosis }}</p>
+
+            <h3>خطة العلاج:</h3>
+            <p>{{ report.medical_info.treatment_plan }}</p>
+
+            <h3>الأدوية:</h3>
+            <ul class="medications-list">
+                {% for medication in report.medical_info.medications %}
+                <li class="medication-item">{{ medication }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">ملاحظات إضافية</h2>
+        <div class="medical-content">
+            {{ report.content|linebreaks }}
+        </div>
+    </div>
+
+    {% if report.attachments %}
+    <div class="section">
+        <h2 class="section-title">المرفقات</h2>
+        <ul>
+            {% for attachment in report.attachments %}
+            <li>{{ attachment.name }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="signature">
+        <div class="signature-line"></div>
+        <p>توقيع الطبيب</p>
+        <p>د. {{ report.doctor_name }}</p>
+    </div>
+
+    <div class="qr-code">
+        <img src="{{ qr_code_url }}" alt="رمز QR للتحقق">
+    </div>
+
+    <div class="footer">
+        <p>هذا التقرير تم إنشاؤه بواسطة نظام Doctor Syria - {{ report.report_info.created_at|date:"Y/m/d H:i" }}</p>
+        <p>جميع الحقوق محفوظة &copy; {{ current_year }} Doctor Syria</p>
+    </div>
+</body>
+</html>
