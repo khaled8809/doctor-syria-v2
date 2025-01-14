@@ -29,101 +29,12 @@ jobs:
           npm ci
           rm -rf dist
 
-      - name: Create Vite config
-        working-directory: ./frontend
-        run: |
-          cat > vite.config.ts << 'EOL'
-          import { defineConfig } from "vite";
-          import react from "@vitejs/plugin-react";
-
-          export default defineConfig({
-            plugins: [react()],
-            base: "/doctor-syria-v2/",
-            build: {
-              outDir: "dist",
-              assetsDir: "assets",
-              sourcemap: true,
-              rollupOptions: {
-                output: {
-                  manualChunks: {
-                    vendor: [
-                      "react",
-                      "react-dom",
-                      "react-router-dom",
-                      "@mui/material",
-                      "@mui/icons-material",
-                      "@reduxjs/toolkit",
-                      "react-redux"
-                    ]
-                  }
-                }
-              }
-            }
-          });
-          EOL
-
-      - name: Create tsconfig
-        working-directory: ./frontend
-        run: |
-          cat > tsconfig.json << 'EOL'
-          {
-            "compilerOptions": {
-              "target": "ESNext",
-              "lib": ["DOM", "DOM.Iterable", "ESNext"],
-              "allowJs": true,
-              "skipLibCheck": true,
-              "esModuleInterop": true,
-              "allowSyntheticDefaultImports": true,
-              "strict": true,
-              "forceConsistentCasingInFileNames": true,
-              "module": "ESNext",
-              "moduleResolution": "Node",
-              "resolveJsonModule": true,
-              "isolatedModules": true,
-              "noEmit": true,
-              "jsx": "react-jsx",
-              "baseUrl": ".",
-              "paths": {
-                "@/*": ["src/*"]
-              }
-            },
-            "include": ["src"],
-            "references": [{ "path": "./tsconfig.node.json" }]
-          }
-          EOL
-
-      - name: Create tsconfig.node
-        working-directory: ./frontend
-        run: |
-          cat > tsconfig.node.json << 'EOL'
-          {
-            "compilerOptions": {
-              "composite": true,
-              "module": "ESNext",
-              "moduleResolution": "Node",
-              "allowSyntheticDefaultImports": true
-            },
-            "include": ["vite.config.ts"]
-          }
-          EOL
-
       - name: Build
         working-directory: ./frontend
-        env:
-          VITE_API_URL: 'https://api.doctor-syria.com'
-          VITE_SOCKET_URL: 'wss://api.doctor-syria.com'
-        run: |
-          npm run build
-          cp dist/index.html dist/404.html
+        run: npm run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./frontend/dist
-          publish_branch: gh-pages
-          force_orphan: true
-          enable_jekyll: false
-          user_name: 'github-actions[bot]'
-          user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'Deploy to GitHub Pages'
