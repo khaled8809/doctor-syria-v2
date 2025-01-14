@@ -53,13 +53,13 @@ reportlab>=4.0.0
 # Additional Dependencies
 fastapi>=0.100.0,<1.0.0
 uvicorn>=0.23.0,<1.0.0
-pydantic>=2.0.0,<5.0.0
+pydantic>=2.6.0,<2.10.0
 aiohttp-retry>=2.8.3
 Flask>=3.0.0,<4.0.0
 Flask-Cors>=4.0.0
 nltk>=3.8.1
 openai>=1.0.0
-qrcode>=7.4.2
+qrcode>=4.0.0,<7.99
 
 # Monitoring and Error Tracking
 sentry-sdk>=1.39.1,<2.0.0
@@ -83,6 +83,8 @@ django-secure>=1.0.2
 django-csp>=3.7
 django-ratelimit>=3.0.1
 django-honeypot>=1.0.1
+safety>=3.2.14
+safety-schemas>=0.0.10
 
 # Monitoring
 sentry-sdk>=1.39.1
