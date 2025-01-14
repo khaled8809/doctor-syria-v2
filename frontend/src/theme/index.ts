@@ -1,12 +1,17 @@
-import { createTheme, PaletteColor, PaletteOptions, Theme } from '@mui/material';
-import { TypographyOptions } from '@mui/material/styles/createTypography';
+import { createTheme, PaletteOptions } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
   interface Palette {
-    neutral: PaletteColor;
+    neutral: {
+      main: string;
+      contrastText: string;
+    };
   }
   interface PaletteOptions {
-    neutral?: PaletteColor;
+    neutral?: {
+      main: string;
+      contrastText: string;
+    };
   }
 }
 
@@ -14,21 +19,19 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#2563eb',
-      light: '#60a5fa',
-      dark: '#1d4ed8',
+      main: '#1976d2',
+      light: '#42a5f5',
+      dark: '#1565c0',
       contrastText: '#ffffff'
     },
     secondary: {
-      main: '#f43f5e',
-      light: '#fb7185',
-      dark: '#e11d48',
+      main: '#dc004e',
+      light: '#ff4081',
+      dark: '#c51162',
       contrastText: '#ffffff'
     },
     neutral: {
-      main: '#64748b',
-      light: '#94a3b8',
-      dark: '#475569',
+      main: '#64748B',
       contrastText: '#ffffff'
     },
     background: {
@@ -37,7 +40,7 @@ const theme = createTheme({
     }
   },
   typography: {
-    fontFamily: 'Inter, system-ui, Avenir, Helvetica, Arial, sans-serif',
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
     h1: {
       fontSize: '2.5rem',
       fontWeight: 600,

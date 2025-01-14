@@ -6,6 +6,17 @@ export interface User {
   department?: string;
   permissions: string[];
   avatar?: string;
+  settings?: UserSettings;
+}
+
+export interface UserSettings {
+  notifications: {
+    email: boolean;
+    push: boolean;
+    sms: boolean;
+  };
+  theme: 'light' | 'dark';
+  language: string;
 }
 
 export interface AuthResponse {

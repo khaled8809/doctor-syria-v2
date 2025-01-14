@@ -138,3 +138,6 @@ const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
 });
 
 export const getTheme = (mode: PaletteMode): Theme => createTheme(getDesignTokens(mode), arEG);
+
+const theme = getTheme('light');
+export default theme;

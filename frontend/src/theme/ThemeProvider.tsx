@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { createAppTheme } from './theme';
+import theme from './theme';
 import { useColorMode } from '../hooks/useColorMode';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
@@ -20,7 +20,6 @@ const cacheRtl = createCache({
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const { mode } = useColorMode();
-  const theme = createAppTheme(mode);
 
   return (
     <CacheProvider value={cacheRtl}>

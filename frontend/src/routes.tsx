@@ -1,5 +1,5 @@
+import React, { lazy } from 'react';
 import { Navigate, useRoutes } from 'react-router-dom';
-import { lazy } from 'react';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import LoadingScreen from './components/common/LoadingScreen';

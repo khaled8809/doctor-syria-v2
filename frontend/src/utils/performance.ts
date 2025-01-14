@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // قياس وقت التحميل للمكونات
 export const useComponentLoadTime = (componentName: string) => {
