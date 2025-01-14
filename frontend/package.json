@@ -2,6 +2,7 @@
   "name": "doctor-syria-frontend",
   "version": "1.0.0",
   "private": true,
+  "homepage": "https://khaled8809.github.io/doctor-syria-v2",
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
@@ -38,7 +39,9 @@
     "test:coverage": "vitest run --coverage",
     "build:css": "tailwindcss -i ./src/styles/tailwind.css -o ./dist/styles.css --watch",
     "generate-pwa-assets": "pwa-assets-generator",
-    "analyze": "vite build && vite preview dist/stats.html"
+    "analyze": "vite build && vite preview dist/stats.html",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
