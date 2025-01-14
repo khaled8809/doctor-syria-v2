@@ -1,61 +1,43 @@
-import { createTheme, PaletteMode } from '@mui/material';
+import { createTheme, Theme, PaletteOptions, ThemeOptions } from '@mui/material/styles';
+import { PaletteMode } from '@mui/material';
 import { arEG } from '@mui/material/locale';
 
 declare module '@mui/material/styles' {
   interface Palette {
-    neutral: Palette['primary'];
+    neutral: {
+      main: string;
+      contrastText: string;
+    };
   }
   interface PaletteOptions {
-    neutral: PaletteOptions['primary'];
+    neutral?: {
+      main: string;
+      contrastText: string;
+    };
   }
 }
 
-const getDesignTokens = (mode: PaletteMode) => ({
+const getDesignTokens = (mode: PaletteMode): ThemeOptions => ({
   palette: {
     mode,
-    ...(mode === 'light'
-      ? {
-          // Light mode
-          primary: {
-            main: '#2196f3',
-            light: '#64b5f6',
-            dark: '#1976d2',
-          },
-          secondary: {
-            main: '#f50057',
-            light: '#ff4081',
-            dark: '#c51162',
-          },
-          neutral: {
-            main: '#64748B',
-            contrastText: '#fff',
-          },
-          background: {
-            default: '#f5f5f5',
-            paper: '#ffffff',
-          },
-        }
-      : {
-          // Dark mode
-          primary: {
-            main: '#90caf9',
-            light: '#e3f2fd',
-            dark: '#42a5f5',
-          },
-          secondary: {
-            main: '#f48fb1',
-            light: '#fce4ec',
-            dark: '#f06292',
-          },
-          neutral: {
-            main: '#64748B',
-            contrastText: '#fff',
-          },
-          background: {
-            default: '#121212',
-            paper: '#1e1e1e',
-          },
-        }),
+    primary: {
+      main: '#2196F3',
+      light: '#64B5F6',
+      dark: '#1976D2'
+    },
+    secondary: {
+      main: '#FF4081',
+      light: '#FF80AB',
+      dark: '#F50057'
+    },
+    neutral: {
+      main: '#64748B',
+      contrastText: '#fff'
+    },
+    background: {
+      default: mode === 'light' ? '#F4F6F8' : '#121212',
+      paper: mode === 'light' ? '#FFFFFF' : '#1E1E1E'
+    }
   },
   direction: 'rtl',
   typography: {
@@ -64,8 +46,40 @@ const getDesignTokens = (mode: PaletteMode) => ({
       'Roboto',
       '"Helvetica Neue"',
       'Arial',
-      'sans-serif',
+      'sans-serif'
     ].join(','),
+    h1: {
+      fontSize: '2.5rem',
+      fontWeight: 600
+    },
+    h2: {
+      fontSize: '2rem',
+      fontWeight: 600
+    },
+    h3: {
+      fontSize: '1.75rem',
+      fontWeight: 600
+    },
+    h4: {
+      fontSize: '1.5rem',
+      fontWeight: 500
+    },
+    h5: {
+      fontSize: '1.25rem',
+      fontWeight: 500
+    },
+    h6: {
+      fontSize: '1rem',
+      fontWeight: 500
+    },
+    body1: {
+      fontSize: '1rem',
+      lineHeight: 1.5
+    },
+    body2: {
+      fontSize: '0.875rem',
+      lineHeight: 1.43
+    }
   },
   components: {
     MuiCssBaseline: {
@@ -88,9 +102,9 @@ const getDesignTokens = (mode: PaletteMode) => ({
       styleOverrides: {
         root: {
           textTransform: 'none',
-          borderRadius: 8,
-        },
-      },
+          borderRadius: 8
+        }
+      }
     },
     MuiPaper: {
       styleOverrides: {
@@ -99,10 +113,28 @@ const getDesignTokens = (mode: PaletteMode) => ({
         },
       },
     },
-  },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)'
+        }
+      }
+    },
+    MuiTextField: {
+      defaultProps: {
+        variant: 'outlined',
+        size: 'small'
+      },
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 8
+          }
+        }
+      }
+    }
+  }
 });
 
-export const createAppTheme = (mode: PaletteMode) => {
-  const themeOptions = getDesignTokens(mode);
-  return createTheme(themeOptions, arEG);
-};
+export const getTheme = (mode: PaletteMode): Theme => createTheme(getDesignTokens(mode), arEG);

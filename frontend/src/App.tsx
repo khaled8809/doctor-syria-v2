@@ -1,15 +1,30 @@
 import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
-import { store } from './store';
-import { lightTheme } from './theme';
-import Layout from './components/Layout/Layout';
 import { CssBaseline } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { SnackbarProvider } from 'notistack';
+import { store } from './store';
+import theme from './theme';
+import Layout from './components/Layout/Layout';
 import Router from './router';
+import AppRoutes from './routes';
+import { AuthProvider } from './contexts/AuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { SettingsProvider } from './contexts/SettingsContext';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+      staleTime: 30000
+    }
+  }
+});
 
 function App() {
   useEffect(() => {
@@ -22,18 +37,26 @@ function App() {
 
   return (
     <Provider store={store}>
-      <BrowserRouter basename="/doctor-syria-v2">
-        <ThemeProvider theme={lightTheme}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider theme={theme}>
           <LocalizationProvider dateAdapter={AdapterDateFns}>
             <SnackbarProvider maxSnack={3}>
-              <CssBaseline />
-              <Layout>
-                <Router />
-              </Layout>
+              <BrowserRouter basename="/doctor-syria-v2">
+                <SettingsProvider>
+                  <AuthProvider>
+                    <NotificationProvider>
+                      <CssBaseline />
+                      <Layout>
+                        <Router />
+                      </Layout>
+                    </NotificationProvider>
+                  </AuthProvider>
+                </SettingsProvider>
+              </BrowserRouter>
             </SnackbarProvider>
           </LocalizationProvider>
         </ThemeProvider>
-      </BrowserRouter>
+      </QueryClientProvider>
     </Provider>
   );
 }

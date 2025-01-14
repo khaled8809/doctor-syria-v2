@@ -8,7 +8,13 @@ import { visualizer } from 'rollup-plugin-visualizer';
 export default defineConfig({
   base: '/doctor-syria-v2/',
   plugins: [
-    react(),
+    react({
+      babel: {
+        plugins: [
+          ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+        ]
+      }
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
@@ -39,24 +45,16 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src')
     }
   },
-  server: {
-    port: 3000,
-    host: true
-  },
-  preview: {
-    port: 3000,
-    host: true
-  },
   build: {
     outDir: 'dist',
+    assetsDir: 'assets',
     sourcemap: true,
+    minify: 'terser',
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', '@mui/material'],
-          utils: ['axios', 'date-fns'],
-          router: ['react-router-dom'],
-          redux: ['@reduxjs/toolkit', 'react-redux']
+          vendor: ['react', 'react-dom', '@mui/material']
         }
       }
     }

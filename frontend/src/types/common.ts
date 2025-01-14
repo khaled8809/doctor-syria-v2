@@ -5,6 +5,7 @@ export interface User {
   role: string;
   department?: string;
   permissions: string[];
+  avatar?: string;
 }
 
 export interface Notification {
@@ -29,6 +30,10 @@ export interface Patient {
   lastUpdate: Date;
 }
 
+export interface PatientVital extends Patient {
+  status: 'normal' | 'warning' | 'critical';
+}
+
 export interface Resource {
   id: string;
   name: string;
@@ -48,6 +53,7 @@ export interface Task {
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'in_progress' | 'completed';
   dueDate: Date;
+  time: string;
   notes?: string;
 }
 
@@ -63,6 +69,7 @@ export interface Medication {
   nextDose: Date;
   instructions?: string;
   notes?: string;
+  medicationName: string;
 }
 
 export interface NurseStats {
@@ -112,6 +119,94 @@ export interface Analytics {
     responseTime: number;
     patientSatisfaction: number;
   };
+  predictions: {
+    id: string;
+    type: string;
+    prediction: string;
+    confidence: number;
+    actions: string[];
+  }[];
+  departmentPerformance: {
+    department: string;
+    metrics: {
+      efficiency: number;
+      satisfaction: number;
+      utilization: number;
+    };
+  }[];
+  resourceUtilization: {
+    resource: string;
+    usage: number;
+    trend: 'increasing' | 'stable' | 'decreasing';
+  }[];
+  financialMetrics: {
+    revenue: number;
+    expenses: number;
+    profit: number;
+    trend: 'up' | 'down' | 'stable';
+  };
   nurseMetrics: NurseStats;
   doctorStats: DoctorStats;
+}
+
+export interface AIModel {
+  id: string;
+  name: string;
+  version: string;
+  type: string;
+  status: 'active' | 'inactive' | 'training';
+  accuracy: number;
+  lastUpdated: Date;
+  description: string;
+  metrics: {
+    precision: number;
+    recall: number;
+    f1Score: number;
+  };
+}
+
+export interface DiagnosisResult {
+  id: string;
+  patientId: string;
+  symptoms: string[];
+  diagnosis: string;
+  confidence: number;
+  recommendations: string[];
+  timestamp: Date;
+}
+
+export interface ResourcePrediction {
+  resourceId: string;
+  resourceName: string;
+  predictedDemand: number;
+  confidence: number;
+  timeframe: string;
+}
+
+export interface ResourceNeed {
+  resourceId: string;
+  resourceName: string;
+  currentStock: number;
+  minimumRequired: number;
+  recommendedAction: string;
+}
+
+export interface Reminder {
+  id: string;
+  medicationName: string;
+  dosage: string;
+  time: Date;
+  active: boolean;
+  taken: boolean;
+}
+
+export interface ScheduleEvent {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  resourceId?: string;
+  color?: string;
+  type: 'appointment' | 'surgery' | 'meeting' | 'break';
+  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
 }

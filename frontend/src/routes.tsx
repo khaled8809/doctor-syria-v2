@@ -1,167 +1,127 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth';
-import { Suspense, lazy } from 'react';
+import { Navigate, useRoutes } from 'react-router-dom';
+import { lazy } from 'react';
+import MainLayout from './layouts/MainLayout';
+import AuthLayout from './layouts/AuthLayout';
 import LoadingScreen from './components/common/LoadingScreen';
 
-// Lazy loaded components
-const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Login = lazy(() => import('./pages/auth/Login'));
-const Register = lazy(() => import('./pages/auth/Register'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Appointments = lazy(() => import('./pages/Appointments'));
-const Patients = lazy(() => import('./pages/Patients'));
-const Prescriptions = lazy(() => import('./pages/Prescriptions'));
-const MedicalRecords = lazy(() => import('./pages/MedicalRecords'));
-const Messages = lazy(() => import('./pages/Messages'));
-const Settings = lazy(() => import('./pages/Settings'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-const Devices = lazy(() => import('./pages/Devices'));
-const Reports = lazy(() => import('./pages/Reports'));
-const Resources = lazy(() => import('./pages/Resources'));
-const AIModels = lazy(() => import('./pages/AIModels'));
-const Schedule = lazy(() => import('./pages/Schedule'));
-const Communication = lazy(() => import('./pages/Communication'));
-
-const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
-  return user ? <>{children}</> : <Navigate to="/login" />;
-};
-
-const AppRoutes = () => {
+const Loadable = (Component: React.ComponentType) => (props: any) => {
   return (
-    <Suspense fallback={<LoadingScreen />}>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        {/* Protected Routes */}
-        <Route
-          path="/"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <PrivateRoute>
-              <Dashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute>
-              <Profile />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/appointments"
-          element={
-            <PrivateRoute>
-              <Appointments />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/patients"
-          element={
-            <PrivateRoute>
-              <Patients />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/prescriptions"
-          element={
-            <PrivateRoute>
-              <Prescriptions />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/medical-records"
-          element={
-            <PrivateRoute>
-              <MedicalRecords />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/messages"
-          element={
-            <PrivateRoute>
-              <Messages />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <PrivateRoute>
-              <Settings />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/devices"
-          element={
-            <PrivateRoute>
-              <Devices />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/reports"
-          element={
-            <PrivateRoute>
-              <Reports />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/resources"
-          element={
-            <PrivateRoute>
-              <Resources />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/ai-models"
-          element={
-            <PrivateRoute>
-              <AIModels />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/schedule"
-          element={
-            <PrivateRoute>
-              <Schedule />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/communication"
-          element={
-            <PrivateRoute>
-              <Communication />
-            </PrivateRoute>
-          }
-        />
-
-        {/* 404 Route */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+    <React.Suspense fallback={<LoadingScreen />}>
+      <Component {...props} />
+    </React.Suspense>
   );
 };
 
-export default AppRoutes;
+// Auth
+const Login = Loadable(lazy(() => import('./pages/auth/Login')));
+const Register = Loadable(lazy(() => import('./pages/auth/Register')));
+const ForgotPassword = Loadable(lazy(() => import('./pages/auth/ForgotPassword')));
+
+// Dashboard
+const Dashboard = Loadable(lazy(() => import('./pages/Dashboard')));
+const Profile = Loadable(lazy(() => import('./pages/Profile')));
+const Settings = Loadable(lazy(() => import('./pages/Settings')));
+
+// Medical
+const Appointments = Loadable(lazy(() => import('./pages/Schedule')));
+const Patients = Loadable(lazy(() => import('./pages/Patients')));
+const MedicalRecords = Loadable(lazy(() => import('./pages/MedicalRecords')));
+const Prescriptions = Loadable(lazy(() => import('./pages/Prescriptions')));
+
+// Hospital
+const Hospitals = Loadable(lazy(() => import('./pages/Hospitals')));
+const Departments = Loadable(lazy(() => import('./pages/Departments')));
+const Staff = Loadable(lazy(() => import('./pages/Staff')));
+
+// AI & Analytics
+const AIModels = Loadable(lazy(() => import('./pages/AIModels')));
+const Analytics = Loadable(lazy(() => import('./pages/Analytics')));
+
+// Other
+const Messages = Loadable(lazy(() => import('./pages/Messages')));
+const NotFound = Loadable(lazy(() => import('./pages/NotFound')));
+
+export default function Router() {
+  return useRoutes([
+    {
+      path: 'auth',
+      element: <AuthLayout />,
+      children: [
+        { path: 'login', element: <Login /> },
+        { path: 'register', element: <Register /> },
+        { path: 'forgot-password', element: <ForgotPassword /> }
+      ]
+    },
+    {
+      path: '/',
+      element: <MainLayout />,
+      children: [
+        { path: '', element: <Navigate to="/dashboard" /> },
+        { path: 'dashboard', element: <Dashboard /> },
+        { path: 'profile', element: <Profile /> },
+        { path: 'settings', element: <Settings /> },
+        {
+          path: 'appointments',
+          children: [
+            { path: '', element: <Appointments /> },
+            { path: ':id', element: <Appointments /> }
+          ]
+        },
+        {
+          path: 'patients',
+          children: [
+            { path: '', element: <Patients /> },
+            { path: ':id', element: <Patients /> }
+          ]
+        },
+        {
+          path: 'medical-records',
+          children: [
+            { path: '', element: <MedicalRecords /> },
+            { path: ':id', element: <MedicalRecords /> }
+          ]
+        },
+        {
+          path: 'prescriptions',
+          children: [
+            { path: '', element: <Prescriptions /> },
+            { path: ':id', element: <Prescriptions /> }
+          ]
+        },
+        {
+          path: 'hospitals',
+          children: [
+            { path: '', element: <Hospitals /> },
+            { path: ':id', element: <Hospitals /> }
+          ]
+        },
+        {
+          path: 'departments',
+          children: [
+            { path: '', element: <Departments /> },
+            { path: ':id', element: <Departments /> }
+          ]
+        },
+        {
+          path: 'staff',
+          children: [
+            { path: '', element: <Staff /> },
+            { path: ':id', element: <Staff /> }
+          ]
+        },
+        {
+          path: 'ai-models',
+          children: [
+            { path: '', element: <AIModels /> },
+            { path: ':id', element: <AIModels /> }
+          ]
+        },
+        { path: 'analytics', element: <Analytics /> },
+        { path: 'messages', element: <Messages /> },
+        { path: '404', element: <NotFound /> },
+        { path: '*', element: <Navigate to="/404" /> }
+      ]
+    },
+    { path: '*', element: <Navigate to="/404" replace /> }
+  ]);
+}
