@@ -1,0 +1,52 @@
+groups:
+  - name: doctor_syria_alerts
+    rules:
+      # Alert for high CPU usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High CPU usage on {{ $labels.instance }}
+          description: CPU usage is above 80% for 5 minutes
+
+      # Alert for high memory usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High memory usage on {{ $labels.instance }}
+          description: Memory usage is above 85% for 5 minutes
+
+      # Alert for disk space
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: Low disk space on {{ $labels.instance }}
+          description: Disk usage is above 90% for 5 minutes
+
+      # Alert for service down
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: Service {{ $labels.job }} is down
+          description: Service has been down for more than 1 minute
+
+      # Alert for high HTTP error rate
+      - alert: HighHTTPErrorRate
+        expr: rate(nginx_http_requests_total{status=~"^5.*"}[5m]) / rate(nginx_http_requests_total[5m]) * 100 > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: High HTTP error rate on {{ $labels.instance }}
+          description: HTTP error rate is above 5% for 5 minutes
