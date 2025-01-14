@@ -1,96 +1,55 @@
-"""
-Views for the accounts app
-"""
+"""Views for the accounts app."""
 
 import logging
+import os
 
 import pyotp
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.crypto import get_random_string
+from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_http_methods
 
 from .forms import (
-    EmailVerificationForm,
     LoginForm,
     MedicalInformationForm,
     ProfileUpdateForm,
-    TwoFactorSetupForm,
-    TwoFactorVerifyForm,
+    TwoFactorForm,
+    VerifyEmailForm,
 )
-from .models import MedicalInformation, User
+from .models import Appointment, MedicalInformation, User
+from .services import get_new_prescriptions_count, get_upcoming_appointments, get_user_notifications
+from .utils.id_card_generator import IDCardGenerator
 
 logger = logging.getLogger(__name__)
 
 
 @require_http_methods(["GET", "POST"])
 def login_view(request):
-    """عرض تسجيل الدخول"""
+    """Handle user login process."""
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data["username"]
             password = form.cleaned_data["password"]
-            try:
-                user = User.objects.get(username=username)
+            user = authenticate(request, username=username, password=password)
 
-                # التحقق من قفل الحساب
-                if user.is_locked:
-                    messages.error(
-                        request,
-                        "الحساب مقفل مؤقتاً بسبب محاولات تسجيل دخول متكررة. الرجاء المحاولة بعد 30 دقيقة.",
-                    )
-                    logger.warning(f"محاولة تسجيل دخول لحساب مقفل: {username}")
-                    return render(request, "registration/login.html", {"form": form})
-
-                # التحقق من المصادقة
-                if user.check_password(password):
-                    # تحديث معلومات الجهاز
-                    device_info = {
-                        "device_id": request.META.get("HTTP_USER_AGENT", ""),
-                        "device_type": "web",
-                        "ip_address": request.META.get("REMOTE_ADDR"),
-                    }
-                    try:
-                        user.add_device_info(device_info)
-                    except ValidationError as e:
-                        logger.error(f"خطأ في تحديث معلومات الجهاز: {str(e)}")
-
-                    if user.two_factor_enabled:
-                        # إذا كانت المصادقة الثنائية مفعلة
-                        request.session["2fa_user_id"] = user.id
-                        return redirect("accounts:2fa_verify")
-
-                    # تسجيل الدخول مباشرة إذا لم تكن المصادقة الثنائية مفعلة
-                    login(request, user)
-                    user.reset_failed_login()
-                    user.update_last_activity()
-                    logger.info(f"تم تسجيل دخول المستخدم: {username}")
-                    return redirect("accounts:dashboard")
-                else:
-                    user.increment_failed_login()
-                    remaining_attempts = user.get_remaining_login_attempts()
-                    if remaining_attempts > 0:
-                        messages.error(
-                            request,
-                            f"كلمة المرور غير صحيحة. تبقى لديك {remaining_attempts} محاولات.",
-                        )
-                    else:
-                        messages.error(
-                            request,
-                            "تم قفل الحساب مؤقتاً بسبب محاولات تسجيل دخول متكررة.",
-                        )
-                    logger.warning(f"محاولة تسجيل دخول فاشلة: {username}")
-            except User.DoesNotExist:
-                logger.warning(f"محاولة تسجيل دخول بمستخدم غير موجود: {username}")
-                messages.error(request, "اسم المستخدم غير موجود")
+            if user is not None:
+                login(request, user)
+                logger.info(f"User logged in: {username}")
+                return redirect("accounts:dashboard")
+            else:
+                logger.warning(f"Failed login attempt: {username}")
+                messages.error(request, "Invalid username or password.")
     else:
         form = LoginForm()
 
@@ -100,82 +59,51 @@ def login_view(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def enable_2fa(request):
-    """تفعيل المصادقة الثنائية"""
+    """Enable two-factor authentication process."""
     if request.method == "POST":
-        form = TwoFactorSetupForm(request.POST)
+        form = TwoFactorForm(request.POST)
         if form.is_valid():
             try:
-                # تفعيل المصادقة الثنائية
                 secret = pyotp.random_base32()
-                totp = pyotp.TOTP(secret)
-
-                # التحقق من عدم وجود مصادقة ثنائية مفعلة مسبقاً
-                if request.user.two_factor_enabled:
-                    messages.error(request, "المصادقة الثنائية مفعلة بالفعل")
-                    return redirect("accounts:security_settings")
-
                 request.user.two_factor_secret = secret
                 request.user.two_factor_enabled = True
                 request.user.save()
 
-                # إنشاء رابط QR
-                provisioning_uri = totp.provisioning_uri(
-                    request.user.email, issuer_name="Doctor Syria"
-                )
-
-                logger.info(
-                    f"تم تفعيل المصادقة الثنائية للمستخدم: {request.user.username}"
-                )
-
-                return render(
-                    request,
-                    "registration/2fa_setup.html",
-                    {"qr_uri": provisioning_uri, "secret": secret},
-                )
-
+                logger.info(f"2FA enabled for user: {request.user.username}")
+                messages.success(request, "Two-factor authentication enabled successfully.")
+                return redirect("accounts:security_settings")
             except ValidationError as e:
-                messages.error(request, f"خطأ في حفظ الإعدادات: {str(e)}")
-                logger.error(f"خطأ في تفعيل المصادقة الثنائية: {str(e)}")
-            except Exception as e:
-                messages.error(request, "حدث خطأ غير متوقع. الرجاء المحاولة مرة أخرى.")
-                logger.error(f"خطأ غير متوقع في تفعيل المصادقة الثنائية: {str(e)}")
+                logger.error(f"Error enabling 2FA: {str(e)}")
+                messages.error(request, str(e))
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
-        form = TwoFactorSetupForm()
+        form = TwoFactorForm()
 
     return render(request, "registration/2fa_setup.html", {"form": form})
 
 
+@login_required
 @require_http_methods(["GET", "POST"])
 def verify_2fa(request):
-    """التحقق من المصادقة الثنائية"""
-    if "2fa_user_id" not in request.session:
-        return redirect("accounts:login")
-
+    """Verify two-factor authentication code process."""
     if request.method == "POST":
-        form = TwoFactorVerifyForm(request.POST)
+        form = TwoFactorForm(request.POST)
         if form.is_valid():
-            try:
-                user = get_object_or_404(User, id=request.session["2fa_user_id"])
-                token = form.cleaned_data["token"]
+            code = form.cleaned_data["code"]
+            totp = pyotp.TOTP(request.user.two_factor_secret)
 
-                totp = pyotp.TOTP(user.two_factor_secret)
-                if totp.verify(token):
-                    login(request, user)
-                    user.reset_failed_login()
-                    user.update_last_activity()
-                    del request.session["2fa_user_id"]
-                    logger.info(
-                        f"تم التحقق من المصادقة الثنائية للمستخدم: {user.username}"
-                    )
-                    return redirect("accounts:dashboard")
-                else:
-                    logger.warning(f"رمز تحقق غير صحيح للمستخدم: {user.username}")
-                    messages.error(request, "رمز التحقق غير صحيح")
-            except Exception as e:
-                logger.error(f"خطأ في التحقق من المصادقة الثنائية: {str(e)}")
-                messages.error(request, "حدث خطأ أثناء التحقق")
+            if totp.verify(code):
+                login(request, request.user)
+                logger.info(f"2FA verification successful: {request.user.username}")
+                return redirect("accounts:dashboard")
+            else:
+                logger.warning(f"Invalid 2FA code: {request.user.username}")
+                messages.error(request, "Invalid verification code.")
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
-        form = TwoFactorVerifyForm()
+        form = TwoFactorForm()
 
     return render(request, "accounts/2fa_verify.html", {"form": form})
 
@@ -183,30 +111,32 @@ def verify_2fa(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def verify_email(request):
-    """التحقق من البريد الإلكتروني"""
+    """Send email verification code process."""
     if request.method == "POST":
         try:
-            # إرسال رمز التحقق عبر البريد
-            verification_code = get_random_string(length=6, allowed_chars="0123456789")
-            request.session["email_verification_code"] = verification_code
+            verification_code = get_random_string(32)
+            request.user.email_verification_code = verification_code
+            request.user.save()
 
-            # إرسال البريد
-            context = {"user": request.user, "verification_code": verification_code}
-            email_html = render_to_string("emails/verify_email.html", context)
+            context = {
+                "user": request.user,
+                "verification_code": verification_code,
+            }
+            email_body = render_to_string("accounts/email/verify_email.html", context)
             send_mail(
-                "تحقق من بريدك الإلكتروني - Doctor Syria",
-                "",
+                "Verify your email",
+                email_body,
                 settings.DEFAULT_FROM_EMAIL,
                 [request.user.email],
-                html_message=email_html,
+                html_message=email_body,
             )
 
-            logger.info(f"تم إرسال رمز التحقق إلى: {request.user.email}")
-            messages.success(request, "تم إرسال رمز التحقق إلى بريدك الإلكتروني")
+            logger.info(f"Verification email sent to: {request.user.email}")
+            messages.success(request, "Verification email sent.")
             return redirect("accounts:verify_email_confirm")
         except Exception as e:
-            logger.error(f"خطأ في إرسال رمز التحقق: {str(e)}")
-            messages.error(request, "حدث خطأ أثناء إرسال رمز التحقق")
+            logger.error(f"Error sending verification email: {str(e)}")
+            messages.error(request, "Error sending verification email.")
 
     return render(request, "accounts/verify_email.html")
 
@@ -214,110 +144,129 @@ def verify_email(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def verify_email_confirm(request):
-    """تأكيد التحقق من البريد الإلكتروني"""
+    """Confirm email verification code process."""
     if request.method == "POST":
-        form = EmailVerificationForm(request.POST)
+        form = VerifyEmailForm(request.POST)
         if form.is_valid():
-            try:
-                code = form.cleaned_data["code"]
-                stored_code = request.session.get("email_verification_code")
-
-                if code == stored_code:
-                    request.user.email_verified = True
-                    request.user.save()
-                    del request.session["email_verification_code"]
-                    logger.info(f"تم التحقق من البريد الإلكتروني: {request.user.email}")
-                    messages.success(request, "تم التحقق من بريدك الإلكتروني بنجاح")
-                    return redirect("accounts:profile")
-                else:
-                    logger.warning(f"رمز تحقق بريد غير صحيح: {request.user.email}")
-                    messages.error(request, "رمز التحقق غير صحيح")
-            except Exception as e:
-                logger.error(f"خطأ في تأكيد التحقق من البريد: {str(e)}")
-                messages.error(request, "حدث خطأ أثناء التحقق من البريد")
+            code = form.cleaned_data["code"]
+            if code == request.user.email_verification_code:
+                request.user.email_verified = True
+                request.user.save()
+                logger.info(f"Email verified for user: {request.user.username}")
+                messages.success(request, "Email verified successfully.")
+                return redirect("accounts:profile")
+            else:
+                logger.warning(f"Invalid verification code: {request.user.username}")
+                messages.error(request, "Invalid verification code.")
+        else:
+            messages.error(request, "Please correct the errors below.")
     else:
-        form = EmailVerificationForm()
+        form = VerifyEmailForm()
 
     return render(request, "accounts/verify_email_confirm.html", {"form": form})
 
 
 @login_required
+@cache_page(60 * 15)  # Cache for 15 minutes
 def dashboard(request):
-    """لوحة التحكم"""
+    """Display the dashboard for the current user process."""
     try:
+        # Optimize queries using select_related and prefetch_related
+        active_patients = (
+            User.objects.filter(role="patient", is_active=True)
+            .select_related("patient_profile")
+            .count()
+        )
+
+        active_doctors = (
+            User.objects.filter(role="doctor", is_active=True)
+            .select_related("doctor_profile")
+            .count()
+        )
+
+        # Get today's appointments efficiently
+        today = timezone.now().date()
+        today_appointments = (
+            Appointment.objects.filter(appointment_date__date=today)
+            .select_related("doctor", "patient")
+            .count()
+        )
+
+        # Get recent activities with optimized queries
+        recent_activities = (
+            request.user.get_recent_activities()
+            .select_related("user")
+            .prefetch_related("content_type")
+        )
+
         context = {
-            "today_appointments_count": 0,  # يمكن تنفيذ هذا حسب احتياجات المشروع
-            "new_prescriptions_count": 0,
-            "active_patients_count": User.objects.filter(
-                role="patient", is_active=True
-            ).count(),
-            "doctors_count": User.objects.filter(role="doctor", is_active=True).count(),
-            "upcoming_appointments": [],
-            "notifications": [],
-            "recent_activities": request.user.get_recent_activities(),
+            "today_appointments_count": today_appointments,
+            "new_prescriptions_count": cache.get_or_set(
+                f"new_prescriptions_{request.user.id}",
+                lambda: get_new_prescriptions_count(request.user),
+                timeout=60 * 15,
+            ),
+            "active_patients_count": active_patients,
+            "doctors_count": active_doctors,
+            "upcoming_appointments": get_upcoming_appointments(request.user),
+            "notifications": get_user_notifications(request.user),
+            "recent_activities": recent_activities[:10],
         }
-        logger.info(f"تم عرض لوحة التحكم للمستخدم: {request.user.username}")
+
+        logger.info(f"Dashboard viewed by user: {request.user.username}")
         return render(request, "dashboard/index.html", context)
+
     except Exception as e:
-        logger.error(f"خطأ في عرض لوحة التحكم: {str(e)}")
-        messages.error(request, "حدث خطأ أثناء تحميل لوحة التحكم")
+        logger.error(f"Error displaying dashboard: {str(e)}", exc_info=True)
+        messages.error(request, "Error loading dashboard.")
         return redirect("accounts:login")
 
 
 @login_required
 @require_http_methods(["GET", "POST"])
 def profile(request):
-    """الملف الشخصي"""
+    """Update user profile process."""
     if request.method == "POST":
         form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             try:
                 form.save()
-                logger.info(f"تم تحديث الملف الشخصي: {request.user.username}")
-                messages.success(request, "تم تحديث الملف الشخصي بنجاح")
+                logger.info(f"Profile updated: {request.user.username}")
+                messages.success(request, "Profile updated successfully.")
                 return redirect("accounts:profile")
             except Exception as e:
-                logger.error(f"خطأ في تحديث الملف الشخصي: {str(e)}")
-                messages.error(request, "حدث خطأ أثناء تحديث الملف الشخصي")
+                logger.error(f"Error updating profile: {str(e)}")
+                messages.error(request, "Error updating profile.")
     else:
         form = ProfileUpdateForm(instance=request.user)
 
-    # إضافة نموذج المعلومات الطبية إذا كان المستخدم مريضاً
     medical_form = None
     if request.user.role == User.Roles.PATIENT:
-        medical_info, created = MedicalInformation.objects.get_or_create(
-            user=request.user
-        )
+        medical_info, created = MedicalInformation.objects.get_or_create(user=request.user)
         medical_form = MedicalInformationForm(instance=medical_info)
 
-    return render(
-        request, "accounts/profile.html", {"form": form, "medical_form": medical_form}
-    )
+    return render(request, "accounts/profile.html", {"form": form, "medical_form": medical_form})
 
 
 @login_required
 @require_http_methods(["POST"])
 def update_medical_info(request):
-    """تحديث المعلومات الطبية"""
+    """Update user medical information process."""
     if request.user.role != User.Roles.PATIENT:
-        messages.error(request, "غير مسموح لك بتحديث المعلومات الطبية")
+        messages.error(request, "Not authorized to update medical information.")
         return redirect("accounts:profile")
 
     try:
-        medical_info, created = MedicalInformation.objects.get_or_create(
-            user=request.user
-        )
+        medical_info, created = MedicalInformation.objects.get_or_create(user=request.user)
         form = MedicalInformationForm(request.POST, instance=medical_info)
 
         if form.is_valid():
             form.save()
-            logger.info(f"تم تحديث المعلومات الطبية للمستخدم: {request.user.username}")
-            messages.success(request, "تم تحديث المعلومات الطبية بنجاح")
+            logger.info(f"Medical info updated: {request.user.username}")
+            messages.success(request, "Medical information updated successfully.")
         else:
-            logger.warning(
-                f"خطأ في تحديث المعلومات الطبية للمستخدم: {request.user.username}"
-            )
-            messages.error(request, "الرجاء تصحيح الأخطاء أدناه")
+            logger.warning(f"Invalid medical info update: {request.user.username}")
+            messages.error(request, "Please correct the errors below.")
             return render(
                 request,
                 "accounts/profile.html",
@@ -327,15 +276,15 @@ def update_medical_info(request):
                 },
             )
     except Exception as e:
-        logger.error(f"خطأ في تحديث المعلومات الطبية: {str(e)}")
-        messages.error(request, "حدث خطأ أثناء تحديث المعلومات الطبية")
+        logger.error(f"Error updating medical info: {str(e)}")
+        messages.error(request, "Error updating medical information.")
 
     return redirect("accounts:profile")
 
 
 @login_required
 def security_settings(request):
-    """إعدادات الأمان"""
+    """Display security settings process."""
     try:
         context = {
             "devices": request.user.device_info,
@@ -344,59 +293,44 @@ def security_settings(request):
             "two_factor_enabled": request.user.two_factor_enabled,
             "email_verified": request.user.email_verified,
         }
-        logger.info(f"تم عرض إعدادات الأمان للمستخدم: {request.user.username}")
+        logger.info(f"Security settings viewed: {request.user.username}")
         return render(request, "accounts/security.html", context)
     except Exception as e:
-        logger.error(f"خطأ في عرض إعدادات الأمان: {str(e)}")
-        messages.error(request, "حدث خطأ أثناء تحميل إعدادات الأمان")
+        logger.error(f"Error displaying security settings: {str(e)}")
+        messages.error(request, "Error loading security settings.")
         return redirect("accounts:profile")
 
 
 @login_required
 def logout_view(request):
-    """تسجيل الخروج"""
+    """Log out the current user process."""
     logout(request)
     messages.success(request, "You have been logged out successfully.")
     return redirect("accounts:login")
 
 
-import os
-
-from django.conf import settings
-from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render
-
-from .utils.id_card_generator import IDCardGenerator
-
-
 @login_required
 def barcode_scanner(request):
-    """عرض صفحة مسح الباركود"""
+    """Display barcode scanner page process."""
     return render(request, "barcode/scanner.html")
 
 
 @login_required
 def download_id_card(request, user_id):
-    """تحميل البطاقة التعريفية"""
+    """Download user ID card process."""
     user = get_object_or_404(User, id=user_id)
 
-    # التحقق من الصلاحيات
     if not request.user.is_staff and request.user != user:
-        return HttpResponse("غير مصرح", status=403)
+        return HttpResponse("Unauthorized", status=403)
 
-    # توليد البطاقة
     generator = IDCardGenerator()
     card_path = generator.create_card(user)
 
-    # تحميل البطاقة
     file_path = os.path.join(settings.MEDIA_ROOT, card_path)
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
             response = HttpResponse(f.read(), content_type="image/png")
-            response[
-                "Content-Disposition"
-            ] = f"attachment; filename=id_card_{user.id}.png"
+            response["Content-Disposition"] = f"attachment; filename=id_card_{user.id}.png"
             return response
 
-    return HttpResponse("البطاقة غير موجودة", status=404)
+    return HttpResponse("Card not found", status=404)
