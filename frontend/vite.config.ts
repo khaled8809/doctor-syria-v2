@@ -5,27 +5,33 @@ import path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/doctor-syria-v2/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: '/doctor-syria-v2/',
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
-    assetsDir: 'assets',
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom', '@mui/material'],
-        },
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
       },
     },
   },
-  server: {
-    port: 5173,
-    strictPort: true,
-    host: true,
+  build: {
+    outDir: 'dist',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'mui-vendor': ['@mui/material', '@mui/icons-material'],
+          'chart-vendor': ['chart.js', 'react-chartjs-2'],
+        },
+      },
+    },
   },
 });
