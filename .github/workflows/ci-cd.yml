@@ -68,8 +68,8 @@ jobs:
           pytest --cov=. --cov-report=xml --cov-report=html
 
       - name: SonarCloud Scan
-        # Requires SONAR_TOKEN to be set in repository secrets
-        if: secrets.SONAR_TOKEN != ''
+        # Skip if SONAR_TOKEN is not available
+        if: env.SONAR_TOKEN != ''
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -119,11 +119,11 @@ jobs:
   build:
     needs: [test, lint, security]
     runs-on: ubuntu-latest
-    # Only run on main branch and when DockerHub credentials are available
-    if: |
+    # Only run on main branch when DockerHub credentials are available
+    if: >
       github.ref == 'refs/heads/main' &&
-      secrets.DOCKERHUB_USERNAME != '' &&
-      secrets.DOCKERHUB_TOKEN != ''
+      env.DOCKERHUB_USERNAME != '' &&
+      env.DOCKERHUB_TOKEN != ''
     steps:
       - uses: actions/checkout@v3
 
