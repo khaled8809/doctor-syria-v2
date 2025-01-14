@@ -1,0 +1,252 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+
+{% block hms_content %}
+<div class="equipment-detail">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title">{{ equipment.name }}</h1>
+            <p class="text-muted">{{ equipment.get_equipment_type_display }}</p>
+        </div>
+        <div class="actions">
+            <a href="{% url 'hms:equipment_edit' equipment.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تعديل
+            </a>
+            <a href="{% url 'hms:maintenance_add' %}?equipment={{ equipment.pk }}" class="btn btn-info">
+                <i class="fas fa-tools"></i> إضافة صيانة
+            </a>
+            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#qrModal">
+                <i class="fas fa-qrcode"></i> عرض QR
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Basic Info -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">المعلومات الأساسية</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>الرقم التسلسلي</th>
+                            <td>{{ equipment.serial_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>الموديل</th>
+                            <td>{{ equipment.model_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>المصنّع</th>
+                            <td>{{ equipment.manufacturer }}</td>
+                        </tr>
+                        <tr>
+                            <th>القسم</th>
+                            <td>{{ equipment.department.name }}</td>
+                        </tr>
+                        <tr>
+                            <th>الموقع الحالي</th>
+                            <td>{{ equipment.current_location }}</td>
+                        </tr>
+                        <tr>
+                            <th>تاريخ الشراء</th>
+                            <td>{{ equipment.purchase_date|date:"Y-m-d" }}</td>
+                        </tr>
+                        <tr>
+                            <th>الضمان حتى</th>
+                            <td>{{ equipment.warranty_expiry|date:"Y-m-d" }}</td>
+                        </tr>
+                        <tr>
+                            <th>الحالة</th>
+                            <td>
+                                <span class="badge {% if equipment.status == 'operational' %}badge-success
+                                           {% elif equipment.status == 'maintenance' %}badge-warning
+                                           {% else %}badge-danger{% endif %}">
+                                    {{ equipment.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Supplier Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات المورّد</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>اسم المورّد</th>
+                            <td>{{ equipment.supplier_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>رقم الهاتف</th>
+                            <td>{{ equipment.supplier_phone }}</td>
+                        </tr>
+                        <tr>
+                            <th>البريد الإلكتروني</th>
+                            <td>{{ equipment.supplier_email }}</td>
+                        </tr>
+                        <tr>
+                            <th>العنوان</th>
+                            <td>{{ equipment.supplier_address }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Maintenance History -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title">سجل الصيانة</h5>
+                    <a href="{% url 'hms:maintenance_add' %}?equipment={{ equipment.pk }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> إضافة صيانة
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>التاريخ</th>
+                                    <th>نوع الصيانة</th>
+                                    <th>التكلفة</th>
+                                    <th>الفني</th>
+                                    <th>الملاحظات</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in equipment.maintenance_records.all %}
+                                <tr>
+                                    <td>{{ record.maintenance_date|date:"Y-m-d" }}</td>
+                                    <td>{{ record.get_maintenance_type_display }}</td>
+                                    <td>{{ record.cost }} ل.س</td>
+                                    <td>{{ record.technician }}</td>
+                                    <td>{{ record.notes|truncatechars:50 }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-sm btn-info" data-toggle="modal"
+                                                data-target="#maintenanceModal{{ record.pk }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Maintenance Details Modal -->
+                                <div class="modal fade" id="maintenanceModal{{ record.pk }}" tabindex="-1" role="dialog">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">تفاصيل الصيانة</h5>
+                                                <button type="button" class="close" data-dismiss="modal">
+                                                    <span>&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <table class="table">
+                                                    <tr>
+                                                        <th>التاريخ</th>
+                                                        <td>{{ record.maintenance_date|date:"Y-m-d" }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>نوع الصيانة</th>
+                                                        <td>{{ record.get_maintenance_type_display }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>التكلفة</th>
+                                                        <td>{{ record.cost }} ل.س</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>الفني</th>
+                                                        <td>{{ record.technician }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>القطع المستبدلة</th>
+                                                        <td>{{ record.parts_replaced }}</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>الملاحظات</th>
+                                                        <td>{{ record.notes }}</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center">لا يوجد سجلات صيانة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage History -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">سجل الاستخدام</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="usageChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">رمز QR للمعدات</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img src="{{ equipment.qr_code_url }}" alt="QR Code" class="img-fluid">
+                <p class="mt-3">امسح الرمز للوصول السريع إلى معلومات المعدات</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Usage History Chart
+    const ctx = document.getElementById('usageChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ usage_dates|safe }},
+            datasets: [{
+                label: 'ساعات الاستخدام',
+                data: {{ usage_hours }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

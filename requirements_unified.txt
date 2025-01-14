@@ -1,0 +1,50 @@
+# Core Framework
+Django>=4.2.0
+djangorestframework>=3.14.0
+django-cors-headers>=4.1.0
+django-filter>=23.2
+django-allauth>=0.54.0
+django-rest-auth>=0.9.5
+
+# Database and Caching
+psycopg2-binary>=2.9.6
+redis>=4.5.5
+
+# Task Queue and Real-time
+celery>=5.3.1
+flower>=1.0.0
+channels>=4.0.0
+channels-redis>=4.1.0
+
+# Payment and Authentication
+stripe>=5.4.0
+python-dotenv>=1.0.0
+django-phonenumber-field>=7.1.0
+phonenumbers>=8.13.11
+
+# AI and Machine Learning
+tensorflow>=2.8.0
+scikit-learn>=1.0.2
+opencv-python>=4.5.5.64
+Pillow>=9.5.0
+
+# Medical Imaging
+pydicom>=2.3.0
+nibabel>=3.2.2
+
+# IoT and Real-time Communication
+paho-mqtt>=1.6.1
+
+# Testing and Quality Assurance
+pytest>=7.1.1
+pytest-django>=4.5.2
+factory-boy>=3.2.1
+
+# Development Tools
+black>=22.3.0
+flake8>=4.0.1
+mypy>=0.942
+
+# Documentation
+sphinx>=4.5.0
+sphinx-rtd-theme>=1.0.0

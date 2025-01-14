@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">الأسرّة المتاحة</h5>
+                    <h2 class="display-4">{{ available_beds }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">الأسرّة المشغولة</h5>
+                    <h2 class="display-4">{{ occupied_beds }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">إجمالي الأسرّة</h5>
+                    <h2 class="display-4">{{ beds.count }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="mb-0">إدارة الأسرّة</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>رقم السرير</th>
+                            <th>القسم</th>
+                            <th>الحالة</th>
+                            <th>المريض الحالي</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bed in beds %}
+                        <tr>
+                            <td>{{ bed.bed_number }}</td>
+                            <td>{{ bed.ward }}</td>
+                            <td>
+                                {% if bed.status == 'Available' %}
+                                    <span class="badge bg-success">متاح</span>
+                                {% elif bed.status == 'Occupied' %}
+                                    <span class="badge bg-danger">مشغول</span>
+                                {% else %}
+                                    <span class="badge bg-warning">{{ bed.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ bed.current_patient|default:"---" }}</td>
+                            <td>
+                                <a href="{% url 'resource_management:bed-assign' bed.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-edit"></i> تعديل
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

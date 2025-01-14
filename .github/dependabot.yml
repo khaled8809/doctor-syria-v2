@@ -1,0 +1,67 @@
+version: 2
+updates:
+  # تحديثات تلقائية لحزم Python
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Damascus"
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "⬆️ pip"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "project-maintainers"
+    assignees:
+      - "project-maintainers"
+    target-branch: "develop"
+    versioning-strategy:
+      increase: "patch"
+    ignore:
+      # تجاهل التحديثات الرئيسية للحزم الحساسة
+      - dependency-name: "django"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "celery"
+        update-types: ["version-update:semver-major"]
+
+  # تحديثات تلقائية لإجراءات GitHub
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Damascus"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "⬆️ actions"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "project-maintainers"
+    assignees:
+      - "project-maintainers"
+
+  # تحديثات تلقائية لحزم Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Damascus"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "⬆️ docker"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "project-maintainers"
+    assignees:
+      - "project-maintainers"

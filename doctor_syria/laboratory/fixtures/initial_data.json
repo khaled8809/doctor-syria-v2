@@ -1,0 +1,124 @@
+[
+    {
+        "model": "laboratory.testcategory",
+        "pk": 1,
+        "fields": {
+            "name": "تحاليل الدم",
+            "description": "فحوصات الدم الشاملة والمتخصصة"
+        }
+    },
+    {
+        "model": "laboratory.testcategory",
+        "pk": 2,
+        "fields": {
+            "name": "تحاليل البول",
+            "description": "فحوصات البول الروتينية والمتخصصة"
+        }
+    },
+    {
+        "model": "laboratory.testcategory",
+        "pk": 3,
+        "fields": {
+            "name": "تحاليل الهرمونات",
+            "description": "فحوصات الغدد الصماء والهرمونات"
+        }
+    },
+    {
+        "model": "laboratory.labtest",
+        "pk": 1,
+        "fields": {
+            "name": "تحليل الدم الشامل CBC",
+            "category": 1,
+            "description": "فحص شامل لمكونات الدم يشمل خلايا الدم الحمراء والبيضاء والصفائح الدموية",
+            "preparation_instructions": "يجب الصيام لمدة 8 ساعات قبل الفحص",
+            "price": "50.00",
+            "duration": "1 يوم",
+            "created_at": "2025-01-03T00:00:00Z",
+            "updated_at": "2025-01-03T00:00:00Z"
+        }
+    },
+    {
+        "model": "laboratory.labtest",
+        "pk": 2,
+        "fields": {
+            "name": "تحليل السكر التراكمي HbA1c",
+            "category": 1,
+            "description": "فحص مستوى السكر التراكمي في الدم خلال 3 أشهر",
+            "preparation_instructions": "لا يحتاج إلى تحضير خاص",
+            "price": "75.00",
+            "duration": "1 يوم",
+            "created_at": "2025-01-03T00:00:00Z",
+            "updated_at": "2025-01-03T00:00:00Z"
+        }
+    },
+    {
+        "model": "laboratory.labtest",
+        "pk": 3,
+        "fields": {
+            "name": "تحليل وظائف الكلى",
+            "category": 2,
+            "description": "فحص شامل لوظائف الكلى يشمل الكرياتينين واليوريا",
+            "preparation_instructions": "يجب الصيام لمدة 8 ساعات قبل الفحص",
+            "price": "100.00",
+            "duration": "1 يوم",
+            "created_at": "2025-01-03T00:00:00Z",
+            "updated_at": "2025-01-03T00:00:00Z"
+        }
+    },
+    {
+        "model": "laboratory.labtest",
+        "pk": 4,
+        "fields": {
+            "name": "تحليل هرمون الغدة الدرقية TSH",
+            "category": 3,
+            "description": "فحص مستوى هرمون TSH المنظم لنشاط الغدة الدرقية",
+            "preparation_instructions": "يفضل إجراء الفحص في الصباح الباكر",
+            "price": "120.00",
+            "duration": "2 يوم",
+            "created_at": "2025-01-03T00:00:00Z",
+            "updated_at": "2025-01-03T00:00:00Z"
+        }
+    },
+    {
+        "model": "laboratory.referencerange",
+        "pk": 1,
+        "fields": {
+            "test": 1,
+            "parameter": "الهيموجلوبين",
+            "min_value": "13.00",
+            "max_value": "17.00",
+            "unit": "g/dL",
+            "gender": "male",
+            "min_age": 18,
+            "max_age": 99
+        }
+    },
+    {
+        "model": "laboratory.referencerange",
+        "pk": 2,
+        "fields": {
+            "test": 1,
+            "parameter": "الهيموجلوبين",
+            "min_value": "12.00",
+            "max_value": "15.50",
+            "unit": "g/dL",
+            "gender": "female",
+            "min_age": 18,
+            "max_age": 99
+        }
+    },
+    {
+        "model": "laboratory.referencerange",
+        "pk": 3,
+        "fields": {
+            "test": 2,
+            "parameter": "HbA1c",
+            "min_value": "4.00",
+            "max_value": "5.60",
+            "unit": "%",
+            "gender": null,
+            "min_age": null,
+            "max_age": null
+        }
+    }
+]

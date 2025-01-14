@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}404 - الصفحة غير موجودة{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 text-center">
+        <div>
+            <img class="mx-auto h-48 w-auto animate-bounce" src="{% static 'images/404.svg' %}" alt="404">
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                عذراً، الصفحة غير موجودة
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                الصفحة التي تبحث عنها غير موجودة أو تم نقلها
+            </p>
+        </div>
+        <div class="mt-8 space-y-4">
+            <a href="{% url 'home' %}" class="btn btn-primary w-full flex items-center justify-center">
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                العودة إلى الصفحة الرئيسية
+            </a>
+            <a href="{% url 'help:support' %}" class="btn btn-secondary w-full flex items-center justify-center">
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                الحصول على المساعدة
+            </a>
+            <div class="mt-4 text-sm text-gray-500">
+                <p>هل تحتاج إلى مساعدة؟</p>
+                <p>يمكنك التواصل معنا عبر البريد الإلكتروني: <a href="mailto:support@doctor-syria.com" class="text-blue-600 hover:text-blue-800">support@doctor-syria.com</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

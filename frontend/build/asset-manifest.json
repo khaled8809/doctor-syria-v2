@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/doctor-syria-v2/static/css/main.9c5709d5.css",
+    "main.js": "/doctor-syria-v2/static/js/main.826fc5fc.js",
+    "index.html": "/doctor-syria-v2/index.html",
+    "main.9c5709d5.css.map": "/doctor-syria-v2/static/css/main.9c5709d5.css.map",
+    "main.826fc5fc.js.map": "/doctor-syria-v2/static/js/main.826fc5fc.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9c5709d5.css",
+    "static/js/main.826fc5fc.js"
+  ]
+}

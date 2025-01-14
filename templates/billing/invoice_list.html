@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}الفواتير{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'billing/css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">إدارة الفواتير</h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createInvoiceModal">
+                    <i class="fas fa-plus"></i> إنشاء فاتورة جديدة
+                </button>
+            </div>
+
+            <!-- بطاقات الإحصائيات -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-primary text-white mb-4">
+                        <div class="card-body">
+                            <h5>إجمالي الفواتير</h5>
+                            <h2 class="mb-0" id="totalInvoices">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-success text-white mb-4">
+                        <div class="card-body">
+                            <h5>الفواتير المدفوعة</h5>
+                            <h2 class="mb-0" id="paidInvoices">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-warning text-white mb-4">
+                        <div class="card-body">
+                            <h5>الفواتير المعلقة</h5>
+                            <h2 class="mb-0" id="pendingInvoices">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card bg-danger text-white mb-4">
+                        <div class="card-body">
+                            <h5>الفواتير المتأخرة</h5>
+                            <h2 class="mb-0" id="overdueInvoices">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول الفواتير -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <i class="fas fa-table me-1"></i> قائمة الفواتير
+                        </div>
+                        <div class="col-auto">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchInvoice" placeholder="بحث...">
+                                <button class="btn btn-outline-secondary" type="button">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="invoicesTable">
+                            <thead>
+                                <tr>
+                                    <th>رقم الفاتورة</th>
+                                    <th>المريض</th>
+                                    <th>الطبيب</th>
+                                    <th>التاريخ</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoicesTableBody">
+                                <!-- سيتم ملء البيانات عن طريق JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center" id="invoicesPagination">
+                            <!-- سيتم إنشاء أزرار الصفحات عن طريق JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نموذج إنشاء فاتورة جديدة -->
+<div class="modal fade" id="createInvoiceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إنشاء فاتورة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createInvoiceForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">المريض</label>
+                            <select class="form-select" name="patient" required>
+                                <!-- سيتم ملء الخيارات عن طريق JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">الطبيب</label>
+                            <select class="form-select" name="doctor" required>
+                                <!-- سيتم ملء الخيارات عن طريق JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">تاريخ الاستحقاق</label>
+                            <input type="date" class="form-control" name="due_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">طريقة الدفع</label>
+                            <select class="form-select" name="payment_method">
+                                <option value="cash">نقداً</option>
+                                <option value="card">بطاقة ائتمان</option>
+                                <option value="bank_transfer">تحويل بنكي</option>
+                                <option value="insurance">تأمين</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">العناصر</label>
+                        <div id="invoiceItems">
+                            <!-- سيتم إضافة العناصر هنا -->
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="addItemBtn">
+                            <i class="fas fa-plus"></i> إضافة عنصر
+                        </button>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">المجموع الفرعي</label>
+                            <input type="number" class="form-control" name="subtotal" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">الضريبة</label>
+                            <input type="number" class="form-control" name="tax" readonly>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">الخصم</label>
+                            <input type="number" class="form-control" name="discount">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ملاحظات</label>
+                        <textarea class="form-control" name="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="saveInvoiceBtn">حفظ الفاتورة</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'billing/js/invoice-list.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}الأسئلة الشائعة{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">الأسئلة الشائعة</h1>
+
+    <div class="space-y-8">
+        <!-- حجز المواعيد -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">حجز المواعيد</h2>
+            <div class="space-y-4">
+                <div class="bg-white shadow overflow-hidden rounded-lg">
+                    <button class="w-full text-right px-4 py-5 border-b border-gray-200 focus:outline-none">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium text-gray-900">كيف يمكنني حجز موعد؟</span>
+                            <svg class="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="mt-4 text-gray-500 text-right">
+                            يمكنك حجز موعد من خلال:
+                            <ol class="list-decimal mr-6 mt-2">
+                                <li>تسجيل الدخول إلى حسابك</li>
+                                <li>اختيار "حجز موعد جديد"</li>
+                                <li>اختيار الطبيب والتخصص</li>
+                                <li>اختيار التاريخ والوقت المناسب</li>
+                                <li>تأكيد الحجز</li>
+                            </ol>
+                        </div>
+                    </button>
+                </div>
+
+                <div class="bg-white shadow overflow-hidden rounded-lg">
+                    <button class="w-full text-right px-4 py-5 border-b border-gray-200 focus:outline-none">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium text-gray-900">كيف يمكنني إلغاء أو تعديل موعد؟</span>
+                            <svg class="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="mt-4 text-gray-500">
+                            يمكنك إلغاء أو تعديل موعدك من خلال قسم "مواعيدي" في حسابك الشخصي. يرجى ملاحظة أنه يجب إلغاء المواعيد قبل 24 ساعة على الأقل.
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- الملف الطبي -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">الملف الطبي</h2>
+            <div class="space-y-4">
+                <div class="bg-white shadow overflow-hidden rounded-lg">
+                    <button class="w-full text-right px-4 py-5 border-b border-gray-200 focus:outline-none">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium text-gray-900">كيف يمكنني الوصول إلى ملفي الطبي؟</span>
+                            <svg class="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="mt-4 text-gray-500">
+                            يمكنك الوصول إلى ملفك الطبي من خلال قسم "الملف الطبي" في حسابك الشخصي. هناك ستجد جميع التشخيصات والوصفات الطبية والتقارير.
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- الدفع والفواتير -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">الدفع والفواتير</h2>
+            <div class="space-y-4">
+                <div class="bg-white shadow overflow-hidden rounded-lg">
+                    <button class="w-full text-right px-4 py-5 border-b border-gray-200 focus:outline-none">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium text-gray-900">ما هي طرق الدفع المتاحة؟</span>
+                            <svg class="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="mt-4 text-gray-500">
+                            نقبل الدفع عن طريق:
+                            <ul class="list-disc mr-6 mt-2">
+                                <li>البطاقات الائتمانية</li>
+                                <li>الدفع النقدي</li>
+                                <li>التحويل المصرفي</li>
+                            </ul>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- الأمان والخصوصية -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">الأمان والخصوصية</h2>
+            <div class="space-y-4">
+                <div class="bg-white shadow overflow-hidden rounded-lg">
+                    <button class="w-full text-right px-4 py-5 border-b border-gray-200 focus:outline-none">
+                        <div class="flex items-center justify-between">
+                            <span class="text-lg font-medium text-gray-900">كيف تتم حماية بياناتي الطبية؟</span>
+                            <svg class="h-5 w-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <div class="mt-4 text-gray-500">
+                            نستخدم أحدث تقنيات التشفير وأنظمة الحماية لضمان أمان بياناتك الطبية. جميع البيانات مشفرة ومخزنة في خوادم آمنة.
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- قسم لم تجد إجابة لسؤالك؟ -->
+    <div class="mt-12 bg-gray-50 rounded-lg p-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-4">لم تجد إجابة لسؤالك؟</h2>
+        <p class="text-gray-600 mb-4">يمكنك التواصل مع فريق الدعم الفني للحصول على المساعدة</p>
+        <a href="{% url 'support' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+            تواصل مع الدعم الفني
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: '🚀 ميزات جديدة'
+    labels:
+      - 'feature'
+      - 'enhancement'
+  - title: '🐛 إصلاحات'
+    labels:
+      - 'fix'
+      - 'bugfix'
+      - 'bug'
+  - title: '🧰 الصيانة'
+    labels:
+      - 'chore'
+      - 'maintenance'
+  - title: '📚 التوثيق'
+    labels:
+      - 'docs'
+      - 'documentation'
+  - title: '⚡ تحسينات الأداء'
+    labels:
+      - 'performance'
+      - 'optimization'
+  - title: '🔒 الأمان'
+    labels:
+      - 'security'
+
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+
+version-resolver:
+  major:
+    labels:
+      - 'major'
+      - 'breaking'
+  minor:
+    labels:
+      - 'minor'
+      - 'feature'
+  patch:
+    labels:
+      - 'patch'
+      - 'fix'
+      - 'bugfix'
+      - 'bug'
+      - 'maintenance'
+  default: patch
+
+template: |
+  ## التغييرات
+
+  $CHANGES
+
+  ## المساهمون
+
+  $CONTRIBUTORS
+
+exclude-labels:
+  - 'skip-changelog'
+
+autolabeler:
+  - label: 'feature'
+    branch:
+      - '/^feature\/.+/'
+  - label: 'bug'
+    branch:
+      - '/^fix\/.+/'
+  - label: 'maintenance'
+    branch:
+      - '/^maintenance\/.+/'
+  - label: 'documentation'
+    branch:
+      - '/^docs\/.+/'
+  - label: 'security'
+    branch:
+      - '/^security\/.+/'

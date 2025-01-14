@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>سجل التطعيمات</h2>
+        <a href="{% url 'preventive_care:vaccination-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة تطعيم جديد
+        </a>
+    </div>
+
+    <div class="row">
+        {% for vaccination in vaccinations %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ vaccination.vaccine_name }}</h5>
+                    <p class="card-text">
+                        <strong>تاريخ الاستحقاق:</strong> {{ vaccination.due_date }}<br>
+                        {% if vaccination.administered_date %}
+                        <strong>تاريخ التطعيم:</strong> {{ vaccination.administered_date }}<br>
+                        <span class="badge bg-success">تم التطعيم</span>
+                        {% else %}
+                        <span class="badge bg-warning">قيد الانتظار</span>
+                        {% endif %}
+                    </p>
+                    {% if vaccination.notes %}
+                    <p class="card-text"><small>{{ vaccination.notes }}</small></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                لا يوجد تطعيمات مجدولة حالياً.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

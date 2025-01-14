@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}لوحة المراقبة - نظام إدارة المستشفى{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'monitoring/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- شريط التنقل الجانبي -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3>لوحة المراقبة</h3>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link active" href="#system-metrics">مقاييس النظام</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#alerts">التنبيهات</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#performance">الأداء</a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- المحتوى الرئيسي -->
+    <div class="main-content">
+        <!-- مقاييس النظام -->
+        <section id="system-metrics" class="dashboard-section">
+            <h2>مقاييس النظام</h2>
+            <div class="metrics-grid">
+                <div class="metric-card" id="cpu-usage">
+                    <h4>استخدام CPU</h4>
+                    <div class="gauge-chart"></div>
+                </div>
+                <div class="metric-card" id="memory-usage">
+                    <h4>استخدام الذاكرة</h4>
+                    <div class="gauge-chart"></div>
+                </div>
+                <div class="metric-card" id="disk-usage">
+                    <h4>استخدام القرص</h4>
+                    <div class="gauge-chart"></div>
+                </div>
+                <div class="metric-card" id="db-connections">
+                    <h4>اتصالات قاعدة البيانات</h4>
+                    <div class="line-chart"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- التنبيهات -->
+        <section id="alerts" class="dashboard-section">
+            <h2>التنبيهات</h2>
+            <div class="alerts-container">
+                <div class="alerts-header">
+                    <div class="severity-filters">
+                        <button class="btn btn-danger active" data-severity="critical">حرج</button>
+                        <button class="btn btn-warning" data-severity="high">مرتفع</button>
+                        <button class="btn btn-info" data-severity="medium">متوسط</button>
+                        <button class="btn btn-success" data-severity="low">منخفض</button>
+                    </div>
+                </div>
+                <div class="alerts-list" id="alerts-list">
+                    <!-- سيتم ملء هذا القسم ديناميكياً -->
+                </div>
+            </div>
+        </section>
+
+        <!-- الأداء -->
+        <section id="performance" class="dashboard-section">
+            <h2>الأداء</h2>
+            <div class="performance-grid">
+                <div class="performance-card">
+                    <h4>المستخدمون النشطون</h4>
+                    <div id="active-users-chart" class="chart"></div>
+                </div>
+                <div class="performance-card">
+                    <h4>المواعيد اليومية</h4>
+                    <div id="daily-appointments-chart" class="chart"></div>
+                </div>
+                <div class="performance-card">
+                    <h4>السجلات الطبية المعلقة</h4>
+                    <div id="pending-records-chart" class="chart"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment"></script>
+<script src="{% static 'monitoring/js/dashboard.js' %}"></script>
+{% endblock %}
