@@ -18,6 +18,7 @@ permissions:
   pages: write
   id-token: write
   pull-requests: write
+  security-events: write
 
 jobs:
   test-backend:
@@ -78,8 +79,20 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
 
-      - name: SonarCloud Scan
+      - name: Check SonarCloud Token
+        id: check_sonar
         if: github.event_name != 'pull_request' && github.actor != 'dependabot[bot]' && github.ref == 'refs/heads/main'
+        run: |
+          if [ -n "${{ secrets.SONAR_TOKEN }}" ]; then
+            echo "SONAR_TOKEN is available"
+            echo "has_token=true" >> $GITHUB_OUTPUT
+          else
+            echo "SONAR_TOKEN is not available"
+            echo "has_token=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: SonarCloud Scan
+        if: steps.check_sonar.outputs.has_token == 'true'
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -116,7 +129,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: |
-          npm ci
+          npm ci --legacy-peer-deps
           rm -rf dist
 
       - name: Build
