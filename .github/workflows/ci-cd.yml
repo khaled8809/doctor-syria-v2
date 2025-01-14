@@ -69,7 +69,7 @@ jobs:
 
       - name: SonarCloud Scan
         # Skip if SONAR_TOKEN is not available
-        if: env.SONAR_TOKEN != ''
+        if: ${{ secrets.SONAR_TOKEN != '' }}
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -122,8 +122,8 @@ jobs:
     # Only run on main branch when DockerHub credentials are available
     if: >
       github.ref == 'refs/heads/main' &&
-      env.DOCKERHUB_USERNAME != '' &&
-      env.DOCKERHUB_TOKEN != ''
+      ${{ secrets.DOCKERHUB_USERNAME != '' }} &&
+      ${{ secrets.DOCKERHUB_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v3
 

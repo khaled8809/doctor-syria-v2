@@ -1,24 +1,31 @@
 import React from 'react';
-import { HashRouter as Router } from 'react-router-dom';
-import { ThemeProvider, CssBaseline } from '@mui/material';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { Provider } from 'react-redux';
-import theme from './theme';
-import store from './store';
-import Layout from './components/Layout';
-import Routes from './routes';
+import { store } from './store';
+import AppRoutes from './routes';
+import Layout from './components/layout/Layout';
+import { Toaster } from 'react-hot-toast';
+import { ThemeProvider } from './theme/ThemeProvider';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
+  },
+});
 
 function App() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Router>
+        <ThemeProvider>
+          <Router basename={process.env.PUBLIC_URL}>
             <Layout>
-              <Routes />
+              <AppRoutes />
+              <Toaster position="top-right" />
             </Layout>
           </Router>
         </ThemeProvider>

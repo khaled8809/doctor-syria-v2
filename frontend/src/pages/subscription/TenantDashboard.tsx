@@ -1,0 +1,3 @@
+// كود TenantDashboard.tsx الذي تم تحسينه سابقاً
+import React, { useState } from 'react';
+// ... باقي الكود الذي تم إضافته سابقاً ...
