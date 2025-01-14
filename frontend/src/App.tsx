@@ -1,35 +1,39 @@
-import React from 'react';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import React, { useEffect } from 'react';
 import { Provider } from 'react-redux';
+import { BrowserRouter } from 'react-router-dom';
+import { ThemeProvider } from '@mui/material/styles';
 import { store } from './store';
-import AppRoutes from './routes';
-import Layout from './components/layout/Layout';
-import { Toaster } from 'react-hot-toast';
-import { ThemeProvider } from './theme/ThemeProvider';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: false,
-    },
-  },
-});
+import { lightTheme } from './theme';
+import Layout from './components/Layout/Layout';
+import { CssBaseline } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { SnackbarProvider } from 'notistack';
+import Router from './router';
 
 function App() {
+  useEffect(() => {
+    // Remove the server-side injected CSS
+    const jssStyles = document.querySelector('#jss-server-side');
+    if (jssStyles) {
+      jssStyles.parentElement?.removeChild(jssStyles);
+    }
+  }, []);
+
   return (
     <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <Router basename={process.env.PUBLIC_URL}>
-            <Layout>
-              <AppRoutes />
-              <Toaster position="top-right" />
-            </Layout>
-          </Router>
+      <BrowserRouter basename="/doctor-syria-v2">
+        <ThemeProvider theme={lightTheme}>
+          <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <SnackbarProvider maxSnack={3}>
+              <CssBaseline />
+              <Layout>
+                <Router />
+              </Layout>
+            </SnackbarProvider>
+          </LocalizationProvider>
         </ThemeProvider>
-      </QueryClientProvider>
+      </BrowserRouter>
     </Provider>
   );
 }

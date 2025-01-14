@@ -1,79 +1,76 @@
-import { createTheme, alpha } from '@mui/material/styles';
-import { arEG } from '@mui/material/locale';
+import { createTheme, Theme, ThemeOptions } from '@mui/material/styles';
+import { PaletteOptions } from '@mui/material/styles/createPalette';
 
 declare module '@mui/material/styles' {
   interface Palette {
-    tertiary: Palette['primary'];
-    neutral: Palette['primary'];
+    neutral: {
+      main: string;
+      contrastText: string;
+    };
+    tertiary: {
+      main: string;
+      light: string;
+      dark: string;
+      contrastText: string;
+    };
   }
+
   interface PaletteOptions {
-    tertiary?: PaletteOptions['primary'];
-    neutral?: PaletteOptions['primary'];
+    neutral?: {
+      main: string;
+      contrastText: string;
+    };
+    tertiary?: {
+      main: string;
+      light: string;
+      dark: string;
+      contrastText: string;
+    };
   }
 }
 
-const baseTheme = {
-  direction: 'rtl',
+const baseThemeOptions: ThemeOptions = {
   typography: {
-    fontFamily: 'Tajawal, Arial, sans-serif',
+    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
     h1: {
       fontSize: '2.5rem',
-      fontWeight: 700,
-      lineHeight: 1.2,
+      fontWeight: 600,
+      lineHeight: 1.2
     },
     h2: {
       fontSize: '2rem',
-      fontWeight: 700,
-      lineHeight: 1.3,
+      fontWeight: 600,
+      lineHeight: 1.3
     },
     h3: {
       fontSize: '1.75rem',
       fontWeight: 600,
-      lineHeight: 1.3,
+      lineHeight: 1.4
     },
     h4: {
       fontSize: '1.5rem',
       fontWeight: 600,
-      lineHeight: 1.4,
+      lineHeight: 1.4
     },
     h5: {
       fontSize: '1.25rem',
       fontWeight: 600,
-      lineHeight: 1.4,
+      lineHeight: 1.4
     },
     h6: {
-      fontSize: '1.125rem',
-      fontWeight: 600,
-      lineHeight: 1.4,
-    },
-    subtitle1: {
       fontSize: '1rem',
-      fontWeight: 500,
-      lineHeight: 1.5,
-    },
-    subtitle2: {
-      fontSize: '0.875rem',
-      fontWeight: 500,
-      lineHeight: 1.5,
+      fontWeight: 600,
+      lineHeight: 1.4
     },
     body1: {
       fontSize: '1rem',
-      lineHeight: 1.6,
+      lineHeight: 1.5
     },
     body2: {
       fontSize: '0.875rem',
-      lineHeight: 1.6,
-    },
-    button: {
-      fontSize: '0.875rem',
-      fontWeight: 600,
-      textTransform: 'none',
-    },
+      lineHeight: 1.57
+    }
   },
-  shape: {
-    borderRadius: 8,
-  },
-  spacing: 8,
   components: {
     MuiButton: {
       styleOverrides: {
@@ -82,203 +79,187 @@ const baseTheme = {
           textTransform: 'none',
           fontWeight: 600,
           padding: '8px 16px',
-        },
-        contained: {
-          boxShadow: 'none',
           '&:hover': {
-            boxShadow: 'none',
-          },
-        },
-      },
+            boxShadow: 'none'
+          }
+        }
+      }
     },
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: 12,
-          boxShadow: '0 2px 12px 0 rgba(0,0,0,0.05)',
-        },
-      },
-    },
-    MuiCardContent: {
-      styleOverrides: {
-        root: {
-          padding: 24,
-          '&:last-child': {
-            paddingBottom: 24,
-          },
-        },
-      },
-    },
-    MuiTextField: {
-      defaultProps: {
-        variant: 'outlined',
-        size: 'small',
-      },
-      styleOverrides: {
-        root: {
-          '& .MuiOutlinedInput-root': {
-            borderRadius: 8,
-          },
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          borderRadius: 6,
-          fontWeight: 500,
-        },
-      },
-    },
-    MuiDialog: {
-      styleOverrides: {
-        paper: {
-          borderRadius: 12,
-        },
-      },
-    },
-    MuiAlert: {
-      styleOverrides: {
-        root: {
           borderRadius: 8,
-        },
-      },
-    },
-  },
+          boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)'
+        }
+      }
+    }
+  }
 };
 
-export const lightTheme = createTheme({
-  ...baseTheme,
+const lightTheme = createTheme({
+  ...baseThemeOptions,
   palette: {
     mode: 'light',
     primary: {
-      main: '#2563eb',
-      light: '#60a5fa',
-      dark: '#1d4ed8',
-      contrastText: '#ffffff',
+      main: '#0ea5e9',
+      light: '#38bdf8',
+      dark: '#0284c7',
+      contrastText: '#ffffff'
     },
     secondary: {
-      main: '#7c3aed',
+      main: '#14b8a6',
+      light: '#2dd4bf',
+      dark: '#0f766e',
+      contrastText: '#ffffff'
+    },
+    tertiary: {
+      main: '#8b5cf6',
       light: '#a78bfa',
-      dark: '#5b21b6',
-      contrastText: '#ffffff',
-    },
-    tertiary: {
-      main: '#059669',
-      light: '#34d399',
-      dark: '#047857',
-      contrastText: '#ffffff',
-    },
-    neutral: {
-      main: '#6b7280',
-      light: '#9ca3af',
-      dark: '#4b5563',
-      contrastText: '#ffffff',
-    },
-    error: {
-      main: '#dc2626',
-      light: '#ef4444',
-      dark: '#b91c1c',
-    },
-    warning: {
-      main: '#d97706',
-      light: '#f59e0b',
-      dark: '#b45309',
-    },
-    info: {
-      main: '#0284c7',
-      light: '#0ea5e9',
-      dark: '#0369a1',
-    },
-    success: {
-      main: '#059669',
-      light: '#10b981',
-      dark: '#047857',
-    },
-    background: {
-      default: '#f9fafb',
-      paper: '#ffffff',
-    },
-    text: {
-      primary: '#111827',
-      secondary: '#4b5563',
-      disabled: '#9ca3af',
-    },
-    divider: '#e5e7eb',
-    action: {
-      active: alpha('#111827', 0.54),
-      hover: alpha('#111827', 0.04),
-      selected: alpha('#111827', 0.08),
-      disabled: alpha('#111827', 0.26),
-      disabledBackground: alpha('#111827', 0.12),
-    },
-  },
-}, arEG);
-
-export const darkTheme = createTheme({
-  ...baseTheme,
-  palette: {
-    mode: 'dark',
-    primary: {
-      main: '#60a5fa',
-      light: '#93c5fd',
-      dark: '#3b82f6',
-      contrastText: '#ffffff',
-    },
-    secondary: {
-      main: '#a78bfa',
-      light: '#c4b5fd',
-      dark: '#8b5cf6',
-      contrastText: '#ffffff',
-    },
-    tertiary: {
-      main: '#34d399',
-      light: '#6ee7b7',
-      dark: '#10b981',
-      contrastText: '#ffffff',
-    },
-    neutral: {
-      main: '#9ca3af',
-      light: '#d1d5db',
-      dark: '#6b7280',
-      contrastText: '#ffffff',
+      dark: '#6d28d9',
+      contrastText: '#ffffff'
     },
     error: {
       main: '#ef4444',
       light: '#f87171',
       dark: '#dc2626',
+      contrastText: '#ffffff'
     },
     warning: {
       main: '#f59e0b',
       light: '#fbbf24',
       dark: '#d97706',
+      contrastText: '#ffffff'
     },
     info: {
+      main: '#3b82f6',
+      light: '#60a5fa',
+      dark: '#2563eb',
+      contrastText: '#ffffff'
+    },
+    success: {
+      main: '#22c55e',
+      light: '#4ade80',
+      dark: '#16a34a',
+      contrastText: '#ffffff'
+    },
+    grey: {
+      50: '#f9fafb',
+      100: '#f3f4f6',
+      200: '#e5e7eb',
+      300: '#d1d5db',
+      400: '#9ca3af',
+      500: '#6b7280',
+      600: '#4b5563',
+      700: '#374151',
+      800: '#1f2937',
+      900: '#111827'
+    },
+    neutral: {
+      main: '#64748b',
+      contrastText: '#ffffff'
+    },
+    text: {
+      primary: '#111827',
+      secondary: '#4b5563',
+      disabled: '#9ca3af'
+    },
+    divider: '#e5e7eb',
+    background: {
+      paper: '#ffffff',
+      default: '#f9fafb'
+    },
+    action: {
+      active: '#6b7280',
+      hover: 'rgba(107, 114, 128, 0.04)',
+      selected: 'rgba(107, 114, 128, 0.08)',
+      disabled: 'rgba(107, 114, 128, 0.26)',
+      disabledBackground: 'rgba(107, 114, 128, 0.12)',
+      focus: 'rgba(107, 114, 128, 0.12)'
+    }
+  }
+});
+
+const darkTheme = createTheme({
+  ...baseThemeOptions,
+  palette: {
+    mode: 'dark',
+    primary: {
       main: '#0ea5e9',
       light: '#38bdf8',
       dark: '#0284c7',
+      contrastText: '#ffffff'
+    },
+    secondary: {
+      main: '#14b8a6',
+      light: '#2dd4bf',
+      dark: '#0f766e',
+      contrastText: '#ffffff'
+    },
+    tertiary: {
+      main: '#8b5cf6',
+      light: '#a78bfa',
+      dark: '#6d28d9',
+      contrastText: '#ffffff'
+    },
+    error: {
+      main: '#ef4444',
+      light: '#f87171',
+      dark: '#dc2626',
+      contrastText: '#ffffff'
+    },
+    warning: {
+      main: '#f59e0b',
+      light: '#fbbf24',
+      dark: '#d97706',
+      contrastText: '#ffffff'
+    },
+    info: {
+      main: '#3b82f6',
+      light: '#60a5fa',
+      dark: '#2563eb',
+      contrastText: '#ffffff'
     },
     success: {
-      main: '#10b981',
-      light: '#34d399',
-      dark: '#059669',
+      main: '#22c55e',
+      light: '#4ade80',
+      dark: '#16a34a',
+      contrastText: '#ffffff'
     },
-    background: {
-      default: '#111827',
-      paper: '#1f2937',
+    grey: {
+      50: '#f9fafb',
+      100: '#f3f4f6',
+      200: '#e5e7eb',
+      300: '#d1d5db',
+      400: '#9ca3af',
+      500: '#6b7280',
+      600: '#4b5563',
+      700: '#374151',
+      800: '#1f2937',
+      900: '#111827'
+    },
+    neutral: {
+      main: '#64748b',
+      contrastText: '#ffffff'
     },
     text: {
       primary: '#f9fafb',
-      secondary: '#d1d5db',
-      disabled: '#6b7280',
+      secondary: '#e5e7eb',
+      disabled: '#9ca3af'
     },
     divider: '#374151',
-    action: {
-      active: alpha('#f9fafb', 0.54),
-      hover: alpha('#f9fafb', 0.04),
-      selected: alpha('#f9fafb', 0.08),
-      disabled: alpha('#f9fafb', 0.26),
-      disabledBackground: alpha('#f9fafb', 0.12),
+    background: {
+      paper: '#1f2937',
+      default: '#111827'
     },
-  },
-}, arEG);
+    action: {
+      active: '#e5e7eb',
+      hover: 'rgba(229, 231, 235, 0.04)',
+      selected: 'rgba(229, 231, 235, 0.08)',
+      disabled: 'rgba(229, 231, 235, 0.26)',
+      disabledBackground: 'rgba(229, 231, 235, 0.12)',
+      focus: 'rgba(229, 231, 235, 0.12)'
+    }
+  }
+});
+
+export { lightTheme, darkTheme };
