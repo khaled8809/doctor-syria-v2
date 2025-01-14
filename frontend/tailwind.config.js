@@ -1,9 +1,8 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   content: [
-    '../templates/**/*.html',
-    '../**/templates/**/*.html',
-    '../static/js/**/*.js',
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -34,13 +33,9 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Cairo', 'sans-serif'],
+        sans: ['Roboto', 'Arial', 'sans-serif'],
       },
     },
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('@tailwindcss/typography'),
-    require('@tailwindcss/aspect-ratio'),
-  ],
+  plugins: [],
 }
