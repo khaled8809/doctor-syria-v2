@@ -4,7 +4,7 @@ import {
   TextField,
   Typography,
   Paper,
-  Link,
+  Link as MuiLink,
   InputAdornment,
   IconButton,
   Alert,
@@ -29,10 +29,10 @@ const validationSchema = Yup.object({
     .oneOf([Yup.ref('password')], 'كلمات المرور غير متطابقة')
     .required('تأكيد كلمة المرور مطلوب'),
   role: Yup.string().required('نوع المستخدم مطلوب'),
-  specialization: Yup.string().when('role', (role, schema) => {
+  specialization: Yup.string().when('role', (role: string | undefined, schema) => {
     return role === 'doctor' ? schema.required('التخصص مطلوب') : schema;
   }),
-  licenseNumber: Yup.string().when('role', (role, schema) => {
+  licenseNumber: Yup.string().when('role', (role: string | undefined, schema) => {
     return role === 'doctor' ? schema.required('رقم الترخيص مطلوب') : schema;
   }),
 });
@@ -294,13 +294,9 @@ const Register = () => {
           <Box sx={{ mt: 2, textAlign: 'center' }}>
             <Typography variant="body2">
               لديك حساب بالفعل؟{' '}
-              <Link
-                component={RouterLink}
-                to="/login"
-                sx={{ textDecoration: 'none' }}
-              >
+              <RouterLink to="/login" sx={{ textDecoration: 'none' }}>
                 تسجيل الدخول
-              </Link>
+              </RouterLink>
             </Typography>
           </Box>
         </form>

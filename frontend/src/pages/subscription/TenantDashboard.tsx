@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Card,
@@ -7,9 +7,9 @@ import {
   Grid,
   CircularProgress,
   Button,
+  Alert,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../store';
 import { api } from '../../store/api';
 
 interface TenantData {
@@ -34,50 +34,26 @@ interface TenantData {
 
 const TenantDashboard = () => {
   const navigate = useNavigate();
-  const [tenantData, setTenantData] = useState<TenantData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const { data: tenantData, isLoading, isError } = api.useGetTenantDataQuery();
 
-  useEffect(() => {
-    const fetchTenantData = async () => {
-      try {
-        const response = await api.get<TenantData>('/api/tenant');
-        setTenantData(response.data);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load tenant data');
-        console.error('Error fetching tenant data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTenantData();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
         <CircularProgress />
       </Box>
     );
   }
 
-  if (error) {
+  if (isError || !tenantData) {
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" minHeight="400px" p={3}>
-        <Typography color="error" gutterBottom>
-          {error}
-        </Typography>
-        <Button variant="contained" onClick={() => window.location.reload()}>
-          Retry
-        </Button>
+      <Box p={3}>
+        <Alert severity="error">
+          حدث خطأ أثناء تحميل البيانات. الرجاء المحاولة مرة أخرى.
+        </Alert>
       </Box>
     );
-  }
-
-  if (!tenantData) {
-    return null;
   }
 
   const { subscription, usage, billing } = tenantData;

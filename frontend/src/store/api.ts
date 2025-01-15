@@ -15,6 +15,8 @@ export const api = createApi({
     },
   }),
   endpoints: (builder) => ({
-    // Define your endpoints here
+    getTenantData: builder.query<any, void>({
+      query: () => '/api/tenant',
+    }),
   }),
 });
