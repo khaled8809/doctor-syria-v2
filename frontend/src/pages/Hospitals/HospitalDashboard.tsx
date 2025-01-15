@@ -32,7 +32,7 @@ import {
   Person as PatientIcon,
   Event as AdmissionIcon,
   LocalShipping as TransferIcon,
-  Emergency as EmergencyIcon,
+  Warning as EmergencyIcon,
   Bed as BedIcon,
   MeetingRoom as RoomIcon,
   Timeline as StatsIcon,
@@ -498,6 +498,7 @@ const HospitalDashboard = () => {
               </Stack>
             </Grid>
           </>
+
         )}
       </Grid>
 

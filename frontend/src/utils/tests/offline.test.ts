@@ -1,3 +1,5 @@
+export {};
+
 describe('Service Worker Tests', () => {
   beforeAll(async () => {
     await navigator.serviceWorker.register('/doctor-syria-v2/sw.js');

@@ -11,45 +11,16 @@ interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   className?: string;
 }
 
-const Image: React.FC<ImageProps> = ({
-  src,
-  alt,
-  fallback = '/images/placeholder.png',
-  blur = true,
-  aspectRatio = '1/1',
-  objectFit = 'cover',
-  className = '',
-  ...props
-}) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [currentSrc, setCurrentSrc] = useState(src);
-
-  useEffect(() => {
-    setCurrentSrc(src);
-    setIsLoading(true);
-    setError(false);
-  }, [src]);
+const Image = motion(({ src, alt, fallback = '/images/placeholder.png', blur = true, aspectRatio = '1/1', objectFit = 'cover', className = '', ...props }: ImageProps) => {
+  const [loaded, setLoaded] = React.useState(false);
+  const [error, setError] = React.useState(false);
 
   const handleLoad = () => {
-    setIsLoading(false);
+    setLoaded(true);
   };
 
   const handleError = () => {
     setError(true);
-    setCurrentSrc(fallback);
-  };
-
-  // Generate srcSet for responsive images
-  const generateSrcSet = (url: string) => {
-    const sizes = [320, 480, 640, 768, 1024, 1280];
-    return sizes
-      .map((size) => {
-        const imageUrl = new URL(url);
-        imageUrl.searchParams.set('width', size.toString());
-        return `${imageUrl.toString()} ${size}w`;
-      })
-      .join(', ');
   };
 
   return (
@@ -58,7 +29,7 @@ const Image: React.FC<ImageProps> = ({
       style={{ aspectRatio }}
     >
       <AnimatePresence>
-        {isLoading && blur && (
+        {blur && (
           <motion.div
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -67,23 +38,13 @@ const Image: React.FC<ImageProps> = ({
         )}
       </AnimatePresence>
 
-      <motion.img
-        {...props}
-        src={currentSrc}
+      <img
+        src={error ? fallback : src}
         alt={alt}
-        srcSet={generateSrcSet(currentSrc)}
-        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        loading="lazy"
-        decoding="async"
+        className={`${className} ${loaded ? 'opacity-100' : 'opacity-0'} ${objectFit} ${blur && loaded ? 'blur-sm scale-105' : 'blur-0 scale-100'}`}
         onLoad={handleLoad}
         onError={handleError}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isLoading ? 0.5 : 1 }}
-        transition={{ duration: 0.3 }}
-        className={`w-full h-full ${objectFit} ${
-          isLoading && blur ? 'blur-sm scale-105' : 'blur-0 scale-100'
-        }`}
-        style={{ objectFit }}
+        {...props}
       />
 
       {error && (
@@ -95,6 +56,6 @@ const Image: React.FC<ImageProps> = ({
       )}
     </div>
   );
-};
+});
 
 export default Image;

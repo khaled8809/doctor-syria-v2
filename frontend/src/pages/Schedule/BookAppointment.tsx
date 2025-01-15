@@ -153,7 +153,9 @@ export default function BookAppointment() {
                     value={date}
                     onChange={(newValue) => setDate(newValue)}
                     disablePast
-                    renderInput={(params) => <TextField {...params} fullWidth />}
+                    slots={{
+                      textField: (params) => <TextField {...params} fullWidth />,
+                    }}
                   />
                 </LocalizationProvider>
               </Grid>
@@ -164,7 +166,9 @@ export default function BookAppointment() {
                       label="اختر الوقت"
                       value={time}
                       onChange={(newValue) => setTime(newValue)}
-                      renderInput={(params) => <TextField {...params} fullWidth />}
+                      slots={{
+                        textField: (params) => <TextField {...params} fullWidth />,
+                      }}
                     />
                   </LocalizationProvider>
                 </Grid>

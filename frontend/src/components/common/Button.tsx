@@ -1,28 +1,41 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline';
-  size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
-  icon?: React.ReactNode;
+  variant?: 'contained' | 'outlined' | 'text';
+  color?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
+  startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
 }
 
-const Button: React.FC<ButtonProps> = ({
-  children,
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  icon,
-  className = '',
-  ...props
-}) => {
+const Button: React.FC<ButtonProps> = motion((
+  {
+    children,
+    loading,
+    variant = 'contained',
+    color = 'primary',
+    startIcon,
+    endIcon,
+    className = '',
+    ...props
+  }: ButtonProps
+) => {
   const baseStyles = 'inline-flex items-center justify-center font-medium rounded-md focus:outline-none transition-colors duration-200';
 
   const variants = {
+    contained: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500',
+    outlined: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500',
+    text: 'text-gray-700 hover:text-gray-900 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500',
+  };
+
+  const colors = {
     primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500',
     secondary: 'bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500',
-    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:ring-primary-500',
+    error: 'bg-error-600 text-white hover:bg-error-700 focus:ring-2 focus:ring-offset-2 focus:ring-error-500',
+    warning: 'bg-warning-600 text-white hover:bg-warning-700 focus:ring-2 focus:ring-offset-2 focus:ring-warning-500',
+    info: 'bg-info-600 text-white hover:bg-info-700 focus:ring-2 focus:ring-offset-2 focus:ring-info-500',
+    success: 'bg-success-600 text-white hover:bg-success-700 focus:ring-2 focus:ring-offset-2 focus:ring-success-500',
   };
 
   const sizes = {
@@ -34,7 +47,7 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <motion.button
       whileTap={{ scale: 0.98 }}
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`${baseStyles} ${variants[variant]} ${colors[color]} ${sizes['md']} ${className}`}
       disabled={loading}
       {...props}
     >
@@ -59,12 +72,15 @@ const Button: React.FC<ButtonProps> = ({
             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
           />
         </svg>
-      ) : icon ? (
-        <span className="mr-2">{icon}</span>
+      ) : startIcon ? (
+        <span className="mr-2">{startIcon}</span>
       ) : null}
       {children}
+      {endIcon ? (
+        <span className="ml-2">{endIcon}</span>
+      ) : null}
     </motion.button>
   );
-};
+});
 
 export default Button;

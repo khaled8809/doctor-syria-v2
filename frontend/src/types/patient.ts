@@ -1,27 +1,33 @@
 export interface MedicalRecord {
+  id: string;
+  date: string;
   condition: string;
-  diagnosedDate: string;
-  notes: string;
+  treatment: string;
+  notes?: string;
 }
 
 export interface Visit {
+  id: string;
   date: string;
-  doctor: string;
   reason: string;
-  notes: string;
+  diagnosis?: string;
+  prescription?: string;
+  notes?: string;
 }
 
 export interface Patient {
   id: string;
-  patientId: string;
   firstName: string;
   lastName: string;
+  patientId: string;
+  fileNumber: string;
+  doctorId: string;
   photoUrl?: string;
-  status: string;
   age: number;
-  gender: string;
+  gender: 'male' | 'female' | 'other';
   phone: string;
   address: string;
+  status: 'active' | 'inactive';
   medicalHistory: MedicalRecord[];
   visits: Visit[];
 }

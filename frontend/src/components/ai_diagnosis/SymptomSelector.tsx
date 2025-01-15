@@ -8,33 +8,42 @@ import {
   Paper,
 } from '@mui/material';
 
+interface Symptom {
+  symptom_id: number;
+  name: string;
+  severity: number;
+  notes?: string;
+}
+
 interface SymptomSelectorProps {
-  onDiagnosisStart: (symptoms: string[]) => Promise<void>;
-  loading: boolean;
+  selectedSymptoms: Symptom[];
+  onSymptomSelect: (symptom: Symptom) => void;
+  onSymptomRemove: (symptomId: number) => void;
 }
 
 const SymptomSelector: React.FC<SymptomSelectorProps> = ({
-  onDiagnosisStart,
-  loading,
+  selectedSymptoms,
+  onSymptomSelect,
+  onSymptomRemove,
 }) => {
-  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [selectedSymptomsState, setSelectedSymptomsState] = useState<Symptom[]>([]);
 
   const commonSymptoms = [
-    'Fever',
-    'Headache',
-    'Cough',
-    'Fatigue',
-    'Nausea',
-    'Dizziness',
-    'Chest Pain',
-    'Shortness of Breath',
-    'Body Aches',
-    'Sore Throat',
+    { symptom_id: 1, name: 'Fever', severity: 1 },
+    { symptom_id: 2, name: 'Headache', severity: 2 },
+    { symptom_id: 3, name: 'Cough', severity: 3 },
+    { symptom_id: 4, name: 'Fatigue', severity: 4 },
+    { symptom_id: 5, name: 'Nausea', severity: 5 },
+    { symptom_id: 6, name: 'Dizziness', severity: 6 },
+    { symptom_id: 7, name: 'Chest Pain', severity: 7 },
+    { symptom_id: 8, name: 'Shortness of Breath', severity: 8 },
+    { symptom_id: 9, name: 'Body Aches', severity: 9 },
+    { symptom_id: 10, name: 'Sore Throat', severity: 10 },
   ];
 
   const handleSubmit = async () => {
-    if (selectedSymptoms.length > 0) {
-      await onDiagnosisStart(selectedSymptoms);
+    if (selectedSymptomsState.length > 0) {
+      // await onDiagnosisStart(selectedSymptomsState);
     }
   };
 
@@ -47,8 +56,8 @@ const SymptomSelector: React.FC<SymptomSelectorProps> = ({
         <Autocomplete
           multiple
           options={commonSymptoms}
-          value={selectedSymptoms}
-          onChange={(_, newValue) => setSelectedSymptoms(newValue)}
+          value={selectedSymptomsState}
+          onChange={(_, newValue) => setSelectedSymptomsState(newValue)}
           renderInput={(params) => (
             <TextField
               {...params}
@@ -64,10 +73,10 @@ const SymptomSelector: React.FC<SymptomSelectorProps> = ({
           variant="contained"
           color="primary"
           onClick={handleSubmit}
-          disabled={selectedSymptoms.length === 0 || loading}
+          disabled={selectedSymptomsState.length === 0}
           fullWidth
         >
-          {loading ? 'Analyzing...' : 'Start Diagnosis'}
+          Start Diagnosis
         </Button>
       </Box>
     </Paper>

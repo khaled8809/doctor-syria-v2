@@ -1,25 +1,18 @@
 // Web Worker لمعالجة بيانات الجدول
-self.onmessage = (event) => {
-  const { data, sortConfig } = event.data;
+export {};
 
-  if (sortConfig) {
-    const sortedData = [...data].sort((a, b) => {
-      const aValue = a[sortConfig.key];
-      const bValue = b[sortConfig.key];
+const worker = self as unknown as Worker;
 
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortConfig.direction === 'asc'
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
+worker.onmessage = (event: MessageEvent) => {
+  const { data, sortBy, sortDirection } = event.data;
+  
+  // Sort data
+  const sortedData = data.sort((a: any, b: any) => {
+    if (sortDirection === 'asc') {
+      return a[sortBy] > b[sortBy] ? 1 : -1;
+    }
+    return a[sortBy] < b[sortBy] ? 1 : -1;
+  });
 
-      return sortConfig.direction === 'asc'
-        ? aValue - bValue
-        : bValue - aValue;
-    });
-
-    self.postMessage(sortedData);
-  } else {
-    self.postMessage(data);
-  }
+  worker.postMessage(sortedData);
 };

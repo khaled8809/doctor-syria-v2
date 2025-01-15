@@ -131,22 +131,19 @@ export default function Schedule() {
     }
   };
 
-  const eventStyleGetter = (event: ScheduleEvent) => {
-    let backgroundColor = '#2196f3';
-    switch (event.type) {
-      case 'APPOINTMENT':
-        backgroundColor = '#4caf50';
-        break;
-      case 'SURGERY':
-        backgroundColor = '#f44336';
-        break;
-      case 'MAINTENANCE':
-        backgroundColor = '#ff9800';
-        break;
-      case 'MEETING':
-        backgroundColor = '#9c27b0';
-        break;
+  const getEventColor = (event: ScheduleEvent): string => {
+    switch (event.status) {
+      case 'completed':
+        return '#4CAF50';
+      case 'cancelled':
+        return '#F44336';
+      default:
+        return '#2196F3';
     }
+  };
+
+  const eventStyleGetter = (event: ScheduleEvent) => {
+    let backgroundColor = getEventColor(event);
 
     return {
       style: {

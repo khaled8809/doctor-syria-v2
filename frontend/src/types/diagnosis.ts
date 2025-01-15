@@ -1,21 +1,31 @@
 export interface DiagnosisResult {
   id: string;
-  patientId: string;
-  symptoms: string[];
-  diagnosis: string;
+  diagnosis: {
+    name: string;
+    icd_code: string;
+    risk_level: number;
+  };
   confidence: number;
+  reasoning: {
+    matching_symptoms: {
+      name: string;
+      importance: number;
+    }[];
+    missing_symptoms: {
+      name: string;
+      importance: number;
+    }[];
+    confidence_explanation: string;
+  };
   recommendations: string[];
   riskLevel: 'low' | 'medium' | 'high';
-  timestamp: Date;
-  doctorNotes?: string;
-  followUpDate?: Date;
 }
 
 export interface Symptom {
-  id: string;
+  symptom_id: number;
   name: string;
-  description?: string;
-  severity: 'mild' | 'moderate' | 'severe';
+  severity: number;
+  notes?: string;
 }
 
 export interface ResourcePrediction {
