@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: doctor-syria
+    env: docker
+    dockerfilePath: ./Dockerfile.prod
+    healthCheckPath: /health/
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: doctor-syria-db
+          property: connectionString
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: SECRET_KEY
+        generateValue: true
+
+databases:
+  - name: doctor-syria-db
+    databaseName: doctor_syria
+    plan: free

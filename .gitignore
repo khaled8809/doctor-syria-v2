@@ -45,17 +45,22 @@ yarn-error.log*
 
 # Environment variables
 .env
+.env.production
 .env.local
-.env.*.local
+.env.*
 
-# Docker
-.docker/
+# Database
+*.sqlite3
+db.sqlite3
 
-# Project specific
-backups/
-static/
-media/
-logs/
+# Media and static files
+/media/
+/static/
+/staticfiles/
+
+# Logs
+/logs/
+*.log
 
 # System Files
 .DS_Store
