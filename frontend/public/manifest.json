@@ -1,11 +1,12 @@
 {
   "short_name": "Doctor Syria",
-  "name": "Doctor Syria - نظام إدارة المستشفيات",
+  "name": "Doctor Syria - نظام إدارة العيادات الطبية",
+  "description": "نظام متكامل لإدارة المستشفيات والعيادات الطبية في سوريا",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "favicon.svg",
       "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "type": "image/svg+xml"
     },
     {
       "src": "logo192.png",
@@ -20,29 +21,32 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#2c3e50",
+  "theme_color": "#000000",
   "background_color": "#ffffff",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "dir": "rtl",
   "lang": "ar",
-  "description": "نظام شامل ومتكامل لإدارة المستشفيات والعيادات الطبية",
-  "categories": ["medical", "healthcare", "hospital"],
+  "categories": ["medical", "healthcare", "business"],
   "screenshots": [
     {
-      "src": "images/screenshot1.png",
+      "src": "screenshots/dashboard.png",
       "sizes": "1280x720",
-      "type": "image/png"
+      "type": "image/png",
+      "platform": "wide",
+      "label": "لوحة التحكم الرئيسية"
     }
   ],
   "shortcuts": [
     {
-      "name": "إضافة مريض جديد",
-      "url": "/patients/new",
-      "icons": [{ "src": "icons/add-patient.png", "sizes": "192x192" }]
+      "name": "المواعيد",
+      "url": "/appointments",
+      "icons": [{ "src": "icons/appointments.png", "sizes": "96x96" }]
     },
     {
-      "name": "المواعيد اليوم",
-      "url": "/appointments/today",
-      "icons": [{ "src": "icons/appointments.png", "sizes": "192x192" }]
+      "name": "المرضى",
+      "url": "/patients",
+      "icons": [{ "src": "icons/patients.png", "sizes": "96x96" }]
     }
   ]
 }

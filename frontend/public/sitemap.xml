@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://khaled8809.github.io/doctor-syria-v2/</loc>
+    <lastmod>2025-01-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://khaled8809.github.io/doctor-syria-v2/dashboard</loc>
+    <lastmod>2025-01-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://khaled8809.github.io/doctor-syria-v2/patients</loc>
+    <lastmod>2025-01-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://khaled8809.github.io/doctor-syria-v2/appointments</loc>
+    <lastmod>2025-01-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://khaled8809.github.io/doctor-syria-v2/medical-records</loc>
+    <lastmod>2025-01-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
