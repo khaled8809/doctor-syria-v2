@@ -29,13 +29,11 @@ const validationSchema = Yup.object({
     .oneOf([Yup.ref('password')], 'كلمات المرور غير متطابقة')
     .required('تأكيد كلمة المرور مطلوب'),
   role: Yup.string().required('نوع المستخدم مطلوب'),
-  specialization: Yup.string().when('role', {
-    is: 'doctor',
-    then: Yup.string().required('التخصص مطلوب'),
+  specialization: Yup.string().when('role', (role, schema) => {
+    return role === 'doctor' ? schema.required('التخصص مطلوب') : schema;
   }),
-  licenseNumber: Yup.string().when('role', {
-    is: 'doctor',
-    then: Yup.string().required('رقم الترخيص مطلوب'),
+  licenseNumber: Yup.string().when('role', (role, schema) => {
+    return role === 'doctor' ? schema.required('رقم الترخيص مطلوب') : schema;
   }),
 });
 

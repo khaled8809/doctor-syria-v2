@@ -7,7 +7,6 @@ import {
   Grid,
   CircularProgress,
   Button,
-  useTheme,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAppSelector } from '../../store';
@@ -34,13 +33,10 @@ interface TenantData {
 }
 
 const TenantDashboard = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   const [tenantData, setTenantData] = useState<TenantData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const { user } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchTenantData = async () => {
