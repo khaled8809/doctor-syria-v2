@@ -1,0 +1,45 @@
+# Build stage
+FROM node:18-alpine as frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
+
+# Production stage
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV PORT 10000
+
+# Install system dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        postgresql-client \
+        netcat-traditional \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create and set work directory
+WORKDIR /app
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy project
+COPY . .
+
+# Copy frontend build from build stage
+COPY --from=frontend-build /app/frontend/build /app/frontend/build
+
+# Create necessary directories
+RUN mkdir -p /app/static /app/media /app/logs /app/backups
+
+# Copy and set entrypoint script
+COPY scripts/entrypoint.prod.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
