@@ -1,49 +1,48 @@
-import React from 'react';
-import { Box, CssBaseline, ThemeProvider } from '@mui/material';
-import { useTheme } from '../../../hooks/useTheme';
-import Sidebar from './Sidebar';
-import TopBar from './TopBar';
-import NotificationSystem from './NotificationSystem';
+import React, { useState } from 'react';
+import { Box, CssBaseline } from '@mui/material';
+import { TopBar } from './TopBar';
+import { Sidebar } from './Sidebar';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
-  const { theme, toggleTheme } = useTheme();
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+export const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+  const [open, setOpen] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+  const handleDrawerToggle = () => {
+    setOpen(!open);
+  };
+
+  const handleThemeToggle = () => {
+    setIsDarkMode(!isDarkMode);
   };
 
   return (
-    <ThemeProvider theme={theme}>
+    <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', direction: 'rtl' }}>
-        <TopBar
-          onSidebarToggle={toggleSidebar}
-          onThemeToggle={toggleTheme}
-        />
-        <Sidebar
-          open={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            width: { sm: `calc(100% - ${240}px)` },
-            mt: 8
-          }}
-        >
-          {children}
-        </Box>
-        <NotificationSystem />
+      <TopBar
+        onSidebarToggle={handleDrawerToggle}
+        onThemeToggle={handleThemeToggle}
+        isDarkMode={isDarkMode}
+      />
+      <Sidebar
+        open={open}
+        onClose={handleDrawerToggle}
+      />
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { sm: `calc(100% - ${240}px)` },
+          ml: { sm: `${240}px` },
+          mt: ['48px', '56px', '64px'],
+        }}
+      >
+        {children}
       </Box>
-    </ThemeProvider>
+    </Box>
   );
 };
-
-export default DashboardLayout;

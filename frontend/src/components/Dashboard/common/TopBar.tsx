@@ -1,36 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  Box,
   Avatar,
+  Box,
+  IconButton,
   Menu,
   MenuItem,
-  Badge,
-  useTheme,
+  Toolbar,
+  Typography,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Notifications,
-  Mail,
-  Person,
-  ExitToApp,
+  AccountCircle,
+  Brightness4,
+  Brightness7,
 } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../../hooks/useAuth';
-import NotificationBadge from '../../Notifications/NotificationBadge';
+import { useAppSelector } from '../../../store';
 
 interface TopBarProps {
-  onMenuClick: () => void;
+  onSidebarToggle: () => void;
+  onThemeToggle: () => void;
+  isDarkMode?: boolean;
 }
 
-const TopBar: React.FC<TopBarProps> = ({ onMenuClick }) => {
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+export const TopBar: React.FC<TopBarProps> = ({
+  onSidebarToggle,
+  onThemeToggle,
+  isDarkMode = false,
+}) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const user = useAppSelector((state) => state.auth.user);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -40,85 +39,64 @@ const TopBar: React.FC<TopBarProps> = ({ onMenuClick }) => {
     setAnchorEl(null);
   };
 
-  const handleProfile = () => {
-    handleClose();
-    navigate('/profile');
-  };
-
-  const handleLogout = () => {
-    handleClose();
-    logout();
-  };
-
   return (
-    <AppBar
-      position="fixed"
-      sx={{
-        zIndex: theme.zIndex.drawer + 1,
-        backgroundColor: theme.palette.background.paper,
-        color: theme.palette.text.primary,
-      }}
-    >
+    <AppBar position="fixed">
       <Toolbar>
         <IconButton
           color="inherit"
           aria-label="open drawer"
           edge="start"
-          onClick={onMenuClick}
-          sx={{ marginRight: 2 }}
+          onClick={onSidebarToggle}
+          sx={{ mr: 2 }}
         >
           <MenuIcon />
         </IconButton>
-        <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
           Doctor Syria
         </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <NotificationBadge />
-          <IconButton color="inherit">
-            <Badge badgeContent={4} color="error">
-              <Mail />
-            </Badge>
+
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton color="inherit" onClick={onThemeToggle}>
+            {isDarkMode ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
-          <IconButton
-            edge="end"
-            aria-label="account of current user"
-            aria-controls="menu-appbar"
-            aria-haspopup="true"
-            onClick={handleMenu}
-            color="inherit"
-          >
-            {user?.avatar ? (
-              <Avatar src={user.avatar} alt={user.name} />
-            ) : (
-              <Avatar>{user?.name?.charAt(0)}</Avatar>
-            )}
-          </IconButton>
-          <Menu
-            id="menu-appbar"
-            anchorEl={anchorEl}
-            anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'right',
-            }}
-            keepMounted
-            transformOrigin={{
-              vertical: 'top',
-              horizontal: 'right',
-            }}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            <MenuItem onClick={handleProfile}>
-              <Person sx={{ marginRight: 1 }} /> Profile
-            </MenuItem>
-            <MenuItem onClick={handleLogout}>
-              <ExitToApp sx={{ marginRight: 1 }} /> Logout
-            </MenuItem>
-          </Menu>
+
+          <div>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleMenu}
+              color="inherit"
+            >
+              {user?.photoURL ? (
+                <Avatar src={user.photoURL} alt={user.displayName || 'User'} />
+              ) : (
+                <AccountCircle />
+              )}
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorEl}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={handleClose}>الملف الشخصي</MenuItem>
+              <MenuItem onClick={handleClose}>تسجيل الخروج</MenuItem>
+            </Menu>
+          </div>
         </Box>
       </Toolbar>
     </AppBar>
   );
 };
-
-export default TopBar;

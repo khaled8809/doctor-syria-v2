@@ -1,112 +1,94 @@
 import React from 'react';
-import { Box, Grid, Paper, useTheme } from '@mui/material';
-import { DashboardProvider, useDashboard } from './integration/DashboardIntegration';
-import { SmartTaskSystem } from './tasks/SmartTaskSystem';
-import { AdvancedResourceManagement } from './resources/AdvancedResourceManagement';
-import { AIPredictions } from './ai/AIPredictions';
+import { Box, Grid } from '@mui/material';
 import { SmartAlertSystem } from './alerts/SmartAlertSystem';
+import { TaskManagement } from './tasks/TaskManagement';
+import { ResourceManagement } from './resources/ResourceManagement';
+import { AIPredictions } from './ai/AIPredictions';
 import { AdvancedAnalytics } from './analytics/AdvancedAnalytics';
-import { AdvancedReporting } from './reports/AdvancedReporting';
+import { useAppSelector } from '../../store';
 
-// مكون لوحة التحكم الداخلية
-const DashboardContent: React.FC = () => {
-  const { state, updateState, refreshData } = useDashboard();
-  const theme = useTheme();
+interface MainDashboardProps {
+  updateState?: (newState: any) => void;
+}
+
+export const MainDashboard: React.FC<MainDashboardProps> = () => {
+  const notifications: Notification[] = [];
+  const tasks: Task[] = [];
+  const employees: User[] = [];
+  const resources: Resource[] = [];
+  const predictions = [
+    { id: '1', type: 'diagnosis', prediction: 'High risk of condition A', confidence: 0.85, actions: ['Refer to specialist', 'Order tests'] },
+  ];
+
+  const handleAlertAction = (alertId: string, action: string) => {
+    console.log(`Alert ${alertId} action: ${action}`);
+  };
+
+  const handleTaskUpdate = async (taskId: string, updates: any) => {
+    try {
+      console.log(`Task ${taskId} updates: ${JSON.stringify(updates)}`);
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  };
+
+  const handleResourceUpdate = async (resourceId: string, updates: any) => {
+    try {
+      console.log(`Resource ${resourceId} updates: ${JSON.stringify(updates)}`);
+    } catch (error) {
+      console.error('Error updating resource:', error);
+    }
+  };
+
+  const handlePredictionAction = (predictionId: string, action: string) => {
+    console.log(`Prediction ${predictionId} action: ${action}`);
+  };
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Grid container spacing={3}>
-        {/* نظام التنبيهات الذكي */}
         <Grid item xs={12}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            <SmartAlertSystem
-              alerts={state.notifications}
-              onAlertAction={(alertId, action) => {
-                // معالجة إجراءات التنبيهات
-              }}
-            />
-          </Paper>
+          <SmartAlertSystem 
+            alerts={notifications} 
+            onAlertAction={handleAlertAction} 
+          />
         </Grid>
-
-        {/* نظام المهام الذكي */}
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            <SmartTaskSystem
-              tasks={state.tasks}
-              employees={state.currentUser ? [state.currentUser] : []}
-              onTaskUpdate={async (taskId, updates) => {
-                try {
-                  await updateTask(taskId, updates);
-                  await refreshData();
-                } catch (error) {
-                  console.error('Failed to update task:', error);
-                }
-              }}
-            />
-          </Paper>
-        </Grid>
-
-        {/* إدارة الموارد المتقدمة */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            <AdvancedResourceManagement
-              resources={state.resources}
-              onResourceUpdate={async (resourceId, updates) => {
-                try {
-                  await updateResource(resourceId, updates);
-                  await refreshData();
-                } catch (error) {
-                  console.error('Failed to update resource:', error);
-                }
-              }}
-            />
-          </Paper>
-        </Grid>
-
-        {/* التنبؤات الذكية */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            <AIPredictions
-              predictions={state.analytics?.predictions || []}
-              onPredictionAction={(predictionId, action) => {
-                // معالجة إجراءات التنبؤات
-              }}
-            />
-          </Paper>
+          <TaskManagement 
+            tasks={tasks} 
+            employees={employees} 
+            onTaskUpdate={handleTaskUpdate} 
+          />
         </Grid>
-
-        {/* التحليلات المتقدمة */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            <AdvancedAnalytics
-              data={{
-                patientMetrics: state.analytics?.patientMetrics || [],
-                departmentPerformance: state.analytics?.departmentPerformance || [],
-                resourceUtilization: state.analytics?.resourceUtilization || [],
-                financialMetrics: state.analytics?.financialMetrics || []
-              }}
-            />
-          </Paper>
+          <ResourceManagement 
+            resources={resources} 
+            onResourceUpdate={handleResourceUpdate} 
+          />
         </Grid>
-
-        {/* نظام التقارير */}
         <Grid item xs={12}>
-          <Paper sx={{ p: 2, display: 'flex', flexDirection: 'column' }}>
-            <AdvancedReporting />
-          </Paper>
+          <AIPredictions 
+            predictions={predictions} 
+            onPredictionAction={handlePredictionAction} 
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <AdvancedAnalytics 
+            patientStats={{
+              total: 1000,
+              admitted: 150,
+              discharged: 100,
+              critical: 20
+            }}
+            financialStats={{
+              revenue: 500000,
+              expenses: 300000,
+              profit: 200000,
+              trend: 'up'
+            }}
+          />
         </Grid>
       </Grid>
     </Box>
   );
 };
-
-// مكون لوحة التحكم الرئيسية مع مزود السياق
-export const MainDashboard: React.FC = () => {
-  return (
-    <DashboardProvider>
-      <DashboardContent />
-    </DashboardProvider>
-  );
-};
-
-export default MainDashboard;
