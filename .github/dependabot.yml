@@ -4,29 +4,28 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: "daily"
       time: "09:00"
       timezone: "Asia/Damascus"
     labels:
       - "dependencies"
       - "python"
+      - "security"
     commit-message:
-      prefix: "⬆️ pip"
-    open-pull-requests-limit: 10
+      prefix: "⬆️ deps"
+      include: "scope"
+    open-pull-requests-limit: 15
     reviewers:
-      - "project-maintainers"
+      - "khaled8809"
     assignees:
-      - "project-maintainers"
-    target-branch: "develop"
+      - "khaled8809"
+    target-branch: "main"
     versioning-strategy:
-      increase: "patch"
-    ignore:
-      # تجاهل التحديثات الرئيسية للحزم الحساسة
-      - dependency-name: "django"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "celery"
-        update-types: ["version-update:semver-major"]
+      increase: "auto"
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    security-updates-only: false
 
   # تحديثات تلقائية لإجراءات GitHub
   - package-ecosystem: "github-actions"
@@ -43,9 +42,9 @@ updates:
       prefix: "⬆️ actions"
     open-pull-requests-limit: 10
     reviewers:
-      - "project-maintainers"
+      - "khaled8809"
     assignees:
-      - "project-maintainers"
+      - "khaled8809"
 
   # تحديثات تلقائية لحزم Docker
   - package-ecosystem: "docker"
@@ -62,6 +61,6 @@ updates:
       prefix: "⬆️ docker"
     open-pull-requests-limit: 10
     reviewers:
-      - "project-maintainers"
+      - "khaled8809"
     assignees:
-      - "project-maintainers"
+      - "khaled8809"
