@@ -28,30 +28,46 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './frontend/package-lock.json'
 
-      - name: Install dependencies
+      - name: Clean install dependencies
         working-directory: ./frontend
-        run: npm ci
+        run: |
+          npm cache clean --force
+          rm -rf node_modules
+          npm ci
 
-      - name: List directory before build
+      - name: Check directory structure
         working-directory: ./frontend
-        run: ls -la
+        run: |
+          pwd
+          ls -la
+          echo "Node version:"
+          node -v
+          echo "NPM version:"
+          npm -v
 
       - name: Build
         working-directory: ./frontend
         env:
           CI: false
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: |
+          npm run clean
           npm run build
-          ls -la dist || true
-          cp dist/index.html dist/404.html || true
+          if [ ! -d "dist" ]; then
+            echo "Error: dist directory not found!"
+            exit 1
+          fi
+          cp dist/index.html dist/404.html
 
-      - name: List directory after build
+      - name: Check build output
         working-directory: ./frontend
         run: |
-          echo "Current directory contents:"
-          ls -la
-          echo "Dist directory contents:"
-          ls -la dist || true
+          echo "Build directory contents:"
+          ls -la dist/
+          if [ ! -f "dist/index.html" ]; then
+            echo "Error: index.html not found in dist directory!"
+            exit 1
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
