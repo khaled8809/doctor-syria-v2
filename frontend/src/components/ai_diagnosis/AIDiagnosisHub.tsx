@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
+  Container,
+  Grid,
+  Paper,
+  Typography,
   Tabs,
   Tab,
-  Typography,
-  Paper,
   Divider,
   Button,
   Alert,
@@ -31,7 +33,7 @@ import { usePatientContext } from '../../contexts/PatientContext';
 import { useAIService } from '../../services/ai-service';
 import { useMedicalRecordService } from '../../services/medical-record-service';
 import { useNotificationService } from '../../services/notification-service';
-import { DiagnosisResult, SymptomInput } from '../../types/diagnosis';
+import { DiagnosisResult, SymptomInput, MedicalRecord } from '../../types/diagnosis';
 import { Patient } from '../../types/patient';
 
 interface TabPanelProps {
@@ -76,7 +78,7 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-export default function AIDiagnosisHub() {
+const AIDiagnosisHub: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [activeTab, setActiveTab] = useState(0);
@@ -84,11 +86,17 @@ export default function AIDiagnosisHub() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [diagnosisResults, setDiagnosisResults] = useState<DiagnosisResult[] | null>(null);
+  const [symptoms, setSymptoms] = useState<SymptomInput[]>([]);
+  const [currentPatient, setCurrentPatient] = useState<Patient | null>(null);
 
-  const { currentPatient } = usePatientContext();
+  const { currentPatient: patientContext } = usePatientContext();
   const { startDiagnosis } = useAIService();
   const { saveMedicalRecord } = useMedicalRecordService();
   const { sendNotification } = useNotificationService();
+
+  useEffect(() => {
+    setCurrentPatient(patientContext);
+  }, [patientContext]);
 
   useEffect(() => {
     if (!currentPatient) {
@@ -102,34 +110,34 @@ export default function AIDiagnosisHub() {
     setActiveTab(newValue);
   };
 
-  const handleStartDiagnosis = async (symptoms: SymptomInput[]) => {
-    if (!currentPatient) return;
-
-    setLoading(true);
-    setError(null);
-
+  const handleStartDiagnosis = async (input: DiagnosisStartParams) => {
     try {
-      const results = await startDiagnosis({
-        patientId: currentPatient.id,
-        symptoms,
-      } as DiagnosisStartParams);
+      setLoading(true);
+      setError(null);
+
+      const results = await startDiagnosis(input);
 
       setDiagnosisResults(results);
 
-      // Save to medical record
-      await saveMedicalRecord({
-        patientId: currentPatient.id,
+      const record: MedicalRecord = {
+        patientId: input.patientId,
         diagnosisResults: results,
-        symptoms,
+        symptoms: input.symptoms,
+        timestamp: new Date().toISOString(),
+      };
+
+      await saveMedicalRecord({
+        patientId: input.patientId,
+        diagnosisResults: results,
+        symptoms: input.symptoms,
       } as MedicalRecordSaveParams);
 
-      // Send notification to attending physician
       if (results.some((r) => r.riskLevel === 'high')) {
         await sendNotification({
           type: 'high_risk_diagnosis',
-          recipientId: currentPatient.doctorId,
+          recipientId: currentPatient?.doctorId,
           data: {
-            patientName: `${currentPatient.firstName} ${currentPatient.lastName}`,
+            patientName: `${currentPatient?.firstName} ${currentPatient?.lastName}`,
             diagnosisId: results[0].id,
           },
         } as NotificationParams);
@@ -137,7 +145,7 @@ export default function AIDiagnosisHub() {
 
       setActiveTab(1); // Switch to results tab
     } catch (err) {
-      setError('An error occurred during diagnosis');
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -260,4 +268,6 @@ export default function AIDiagnosisHub() {
       </Box>
     </Box>
   );
-}
+};
+
+export default AIDiagnosisHub;

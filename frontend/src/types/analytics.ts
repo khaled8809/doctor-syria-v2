@@ -20,4 +20,19 @@ export interface Analytics {
     expenses: number;
     profit: number;
   };
+  predictions?: {
+    patientLoad: any[];
+    resourceNeeds: any[];
+    staffingRequirements: any[];
+  };
+  nurseMetrics?: {
+    taskCompletion: number;
+    responseTime: number;
+    patientSatisfaction: number;
+  };
+  doctorStats?: {
+    patientsSeen: number;
+    avgConsultationTime: number;
+    successRate: number;
+  };
 }
