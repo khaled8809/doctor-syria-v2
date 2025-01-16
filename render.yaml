@@ -4,6 +4,9 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile.prod
     healthCheckPath: /health/
+    region: frankfurt
+    plan: free
+    numInstances: 1
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -15,8 +18,15 @@ services:
         value: ".onrender.com"
       - key: SECRET_KEY
         generateValue: true
+      - key: CORS_ALLOWED_ORIGINS
+        value: "https://doctor-syria.onrender.com"
+      - key: REACT_APP_API_URL
+        value: "https://doctor-syria.onrender.com"
+      - key: REACT_APP_ENV
+        value: "production"
 
 databases:
   - name: doctor-syria-db
     databaseName: doctor_syria
     plan: free
+    region: frankfurt
