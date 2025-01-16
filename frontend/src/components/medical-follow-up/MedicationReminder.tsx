@@ -36,6 +36,21 @@ interface Reminder {
   time: Date;
   active: boolean;
   taken: boolean;
+  frequency?: 'daily' | 'weekly' | 'monthly';
+  notes?: string;
+  lastTaken?: Date;
+  nextDue?: Date;
+  patientId?: string;
+  createdBy?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ReminderDialogProps {
+  open: boolean;
+  onClose: () => void;
+  reminder: Reminder | null;
+  onSave: (reminder: Omit<Reminder, 'id'>) => void;
 }
 
 const MedicationReminder: React.FC = () => {
@@ -98,11 +113,11 @@ const MedicationReminder: React.FC = () => {
     }
   };
 
-  const handleSaveReminder = (reminder: Reminder) => {
+  const handleSaveReminder = (reminder: Omit<Reminder, 'id'>) => {
     if (currentReminder) {
       // Edit existing reminder
       setReminders(prev =>
-        prev.map(r => (r.id === currentReminder.id ? reminder : r))
+        prev.map(r => (r.id === currentReminder.id ? { ...r, ...reminder } : r))
       );
     } else {
       // Add new reminder
@@ -132,9 +147,14 @@ const MedicationReminder: React.FC = () => {
     );
   };
 
-  const ReminderDialog: React.FC = () => {
+  const ReminderDialog: React.FC<ReminderDialogProps> = ({
+    open,
+    onClose,
+    reminder,
+    onSave,
+  }) => {
     const [formData, setFormData] = useState(
-      currentReminder || {
+      reminder || {
         medicationName: '',
         dosage: '',
         time: new Date(),
@@ -144,9 +164,9 @@ const MedicationReminder: React.FC = () => {
     );
 
     return (
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {currentReminder
+          {reminder
             ? t('medications.reminder.edit')
             : t('medications.reminder.add')}
         </DialogTitle>
@@ -197,11 +217,11 @@ const MedicationReminder: React.FC = () => {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>
+          <Button onClick={onClose}>
             {t('common.cancel')}
           </Button>
           <Button
-            onClick={() => handleSaveReminder(formData)}
+            onClick={() => onSave(formData)}
             variant="contained"
             color="primary"
           >
@@ -301,7 +321,12 @@ const MedicationReminder: React.FC = () => {
         ))}
       </Grid>
 
-      <ReminderDialog />
+      <ReminderDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        reminder={currentReminder}
+        onSave={handleSaveReminder}
+      />
     </Box>
   );
 };

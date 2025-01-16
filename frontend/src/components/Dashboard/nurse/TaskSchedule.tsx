@@ -39,13 +39,33 @@ interface Task {
   priority: 'high' | 'medium' | 'low';
   status: 'pending' | 'completed' | 'overdue';
   notes?: string;
+  assignedTo?: string;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+  category?: 'medication' | 'checkup' | 'procedure' | 'other';
+  estimatedDuration?: number;
 }
 
 interface TaskScheduleProps {
   tasks: Task[];
+  onTaskUpdate?: (taskId: string, updates: Partial<Task>) => void;
+  onTaskComplete?: (taskId: string) => void;
+  onTaskEdit?: (task: Task) => void;
+  showCompleted?: boolean;
+  filterByPriority?: ('high' | 'medium' | 'low')[];
+  filterByStatus?: ('pending' | 'completed' | 'overdue')[];
 }
 
-export const TaskSchedule: React.FC<TaskScheduleProps> = ({ tasks }) => {
+export const TaskSchedule: React.FC<TaskScheduleProps> = ({
+  tasks,
+  onTaskUpdate,
+  onTaskComplete,
+  onTaskEdit,
+  showCompleted,
+  filterByPriority,
+  filterByStatus,
+}) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [notes, setNotes] = useState('');
@@ -62,7 +82,9 @@ export const TaskSchedule: React.FC<TaskScheduleProps> = ({ tasks }) => {
   };
 
   const handleTaskComplete = (taskId: string) => {
-    // تحديث حالة المهمة
+    if (onTaskComplete) {
+      onTaskComplete(taskId);
+    }
     console.log('Task completed:', taskId);
   };
 
@@ -79,9 +101,8 @@ export const TaskSchedule: React.FC<TaskScheduleProps> = ({ tasks }) => {
   };
 
   const handleNotesSave = () => {
-    if (selectedTask) {
-      // حفظ الملاحظات
-      console.log('Notes saved for task:', selectedTask.id, notes);
+    if (selectedTask && onTaskUpdate) {
+      onTaskUpdate(selectedTask.id, { notes });
     }
     handleDialogClose();
   };
@@ -89,72 +110,82 @@ export const TaskSchedule: React.FC<TaskScheduleProps> = ({ tasks }) => {
   return (
     <>
       <Timeline position="right">
-        {tasks.map((task) => (
-          <TimelineItem key={task.id}>
-            <TimelineOppositeContent sx={{ flex: 0.2 }}>
-              <Typography variant="caption" color="text.secondary">
-                {task.time}
-              </Typography>
-            </TimelineOppositeContent>
-            <TimelineSeparator>
-              <TimelineDot color={getPriorityColor(task.priority)}>
-                <Assignment />
-              </TimelineDot>
-              <TimelineConnector />
-            </TimelineSeparator>
-            <TimelineContent>
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: 'background.paper',
-                  borderRadius: 1,
-                  boxShadow: 1,
-                  '&:hover': {
-                    boxShadow: 2,
-                  },
-                }}
-              >
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="subtitle1">
-                    {task.title}
+        {tasks
+          .filter((task) => {
+            if (filterByPriority && !filterByPriority.includes(task.priority)) {
+              return false;
+            }
+            if (filterByStatus && !filterByStatus.includes(task.status)) {
+              return false;
+            }
+            return true;
+          })
+          .map((task) => (
+            <TimelineItem key={task.id}>
+              <TimelineOppositeContent sx={{ flex: 0.2 }}>
+                <Typography variant="caption" color="text.secondary">
+                  {task.time}
+                </Typography>
+              </TimelineOppositeContent>
+              <TimelineSeparator>
+                <TimelineDot color={getPriorityColor(task.priority)}>
+                  <Assignment />
+                </TimelineDot>
+                <TimelineConnector />
+              </TimelineSeparator>
+              <TimelineContent>
+                <Box
+                  sx={{
+                    p: 2,
+                    bgcolor: 'background.paper',
+                    borderRadius: 1,
+                    boxShadow: 1,
+                    '&:hover': {
+                      boxShadow: 2,
+                    },
+                  }}
+                >
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="subtitle1">
+                      {task.title}
+                    </Typography>
+                    <Box>
+                      <Checkbox
+                        checked={task.status === 'completed'}
+                        onChange={() => handleTaskComplete(task.id)}
+                      />
+                      <IconButton size="small" onClick={() => handleTaskEdit(task)}>
+                        <Edit />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {task.description}
                   </Typography>
-                  <Box>
-                    <Checkbox
-                      checked={task.status === 'completed'}
-                      onChange={() => handleTaskComplete(task.id)}
+                  <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <Chip
+                      icon={<Person />}
+                      label={task.patientName}
+                      size="small"
+                      variant="outlined"
                     />
-                    <IconButton size="small" onClick={() => handleTaskEdit(task)}>
-                      <Edit />
-                    </IconButton>
+                    <Chip
+                      icon={<Room />}
+                      label={`غرفة ${task.roomNumber}`}
+                      size="small"
+                      variant="outlined"
+                    />
+                    <Chip
+                      icon={<AccessTime />}
+                      label={task.status}
+                      size="small"
+                      color={task.status === 'overdue' ? 'error' : 'default'}
+                    />
                   </Box>
                 </Box>
-                <Typography variant="body2" color="text.secondary">
-                  {task.description}
-                </Typography>
-                <Box sx={{ mt: 1, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  <Chip
-                    icon={<Person />}
-                    label={task.patientName}
-                    size="small"
-                    variant="outlined"
-                  />
-                  <Chip
-                    icon={<Room />}
-                    label={`غرفة ${task.roomNumber}`}
-                    size="small"
-                    variant="outlined"
-                  />
-                  <Chip
-                    icon={<AccessTime />}
-                    label={task.status}
-                    size="small"
-                    color={task.status === 'overdue' ? 'error' : 'default'}
-                  />
-                </Box>
-              </Box>
-            </TimelineContent>
-          </TimelineItem>
-        ))}
+              </TimelineContent>
+            </TimelineItem>
+          ))}
       </Timeline>
 
       <Dialog open={dialogOpen} onClose={handleDialogClose} maxWidth="sm" fullWidth>
