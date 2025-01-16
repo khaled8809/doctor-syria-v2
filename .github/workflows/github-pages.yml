@@ -32,11 +32,26 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
+      - name: List directory before build
+        working-directory: ./frontend
+        run: ls -la
+
       - name: Build
         working-directory: ./frontend
+        env:
+          CI: false
         run: |
           npm run build
-          cp dist/index.html dist/404.html
+          ls -la dist || true
+          cp dist/index.html dist/404.html || true
+
+      - name: List directory after build
+        working-directory: ./frontend
+        run: |
+          echo "Current directory contents:"
+          ls -la
+          echo "Dist directory contents:"
+          ls -la dist || true
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
