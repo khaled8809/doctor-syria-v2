@@ -28,13 +28,12 @@ import {
 } from '@mui/icons-material';
 
 interface Column<T> {
-  id: keyof T | 'actions';
+  id: keyof T | string;
   label: string;
   minWidth?: number;
-  align?: 'left' | 'right' | 'center';
-  format?: (value: any) => React.ReactNode;
+  align?: 'right' | 'left' | 'center';
+  format?: (value: any) => string | React.ReactNode;
   sortable?: boolean;
-  filterable?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -46,13 +45,15 @@ interface DataTableProps<T> {
   searchable?: boolean;
   searchFields?: (keyof T)[];
   exportable?: boolean;
-  onExport?: (format: 'csv' | 'pdf') => void;
+  onExport?: (selectedItems: T[]) => void;
   printable?: boolean;
-  onPrint?: () => void;
+  onPrint?: (selectedItems: T[]) => void;
   emptyMessage?: string;
   rowsPerPageOptions?: number[];
   defaultRowsPerPage?: number;
   getRowId?: (row: T) => string | number;
+  onRowClick?: (row: T) => void;
+  customActions?: React.ReactNode;
 }
 
 export default function DataTable<T extends object>({
@@ -71,6 +72,8 @@ export default function DataTable<T extends object>({
   rowsPerPageOptions = [10, 25, 50, 100],
   defaultRowsPerPage = 10,
   getRowId = (row: any) => row.id,
+  onRowClick,
+  customActions,
 }: DataTableProps<T>) {
   const theme = useTheme();
   const [page, setPage] = useState(0);
@@ -193,7 +196,7 @@ export default function DataTable<T extends object>({
 
         {exportable && (
           <Tooltip title="تصدير">
-            <IconButton onClick={() => onExport?.('csv')}>
+            <IconButton onClick={() => onExport?.(selected)}>
               <DownloadIcon />
             </IconButton>
           </Tooltip>
@@ -201,7 +204,7 @@ export default function DataTable<T extends object>({
 
         {printable && (
           <Tooltip title="طباعة">
-            <IconButton onClick={onPrint}>
+            <IconButton onClick={() => onPrint?.(selected)}>
               <PrintIcon />
             </IconButton>
           </Tooltip>
@@ -212,6 +215,8 @@ export default function DataTable<T extends object>({
             <FilterIcon />
           </IconButton>
         </Tooltip>
+
+        {customActions}
       </Box>
 
       <TableContainer sx={{ maxHeight: 440 }}>

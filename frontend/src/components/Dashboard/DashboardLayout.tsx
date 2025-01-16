@@ -51,9 +51,13 @@ const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  title?: string;
+  showSidebar?: boolean;
+  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | false;
+  disablePadding?: boolean;
 }
 
-const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
+const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children, title, showSidebar, maxWidth, disablePadding }) => {
   const [open, setOpen] = React.useState(true);
   const theme = useTheme();
   const { t } = useTranslation();

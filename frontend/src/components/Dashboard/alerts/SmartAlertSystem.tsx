@@ -7,20 +7,32 @@ import {
   ListItem,
   ListItemText,
   ListItemIcon,
-  Chip,
-  IconButton
+  IconButton,
+  Chip
 } from '@mui/material';
 import {
   Warning,
   Error,
   Info,
-  CheckCircle
+  CheckCircle,
+  Check,
+  Clear
 } from '@mui/icons-material';
-import { Notification } from '../../../types/common';
+
+interface Alert {
+  id: string;
+  type: 'warning' | 'error' | 'info';
+  message: string;
+  timestamp: string;
+  status: 'active' | 'acknowledged' | 'resolved';
+  priority: 'high' | 'medium' | 'low';
+  source: string;
+  details?: Record<string, unknown>;
+}
 
 interface SmartAlertSystemProps {
-  alerts: Notification[];
-  onAlertAction: (alertId: string, action: string) => void;
+  alerts: Alert[];
+  onAlertAction: (alertId: string, action: 'acknowledge' | 'resolve' | 'dismiss') => void;
 }
 
 export const SmartAlertSystem: React.FC<SmartAlertSystemProps> = ({ alerts, onAlertAction }) => {
@@ -30,8 +42,6 @@ export const SmartAlertSystem: React.FC<SmartAlertSystemProps> = ({ alerts, onAl
         return <Error color="error" />;
       case 'warning':
         return <Warning color="warning" />;
-      case 'success':
-        return <CheckCircle color="success" />;
       default:
         return <Info color="info" />;
     }
@@ -43,8 +53,6 @@ export const SmartAlertSystem: React.FC<SmartAlertSystemProps> = ({ alerts, onAl
         return 'error';
       case 'warning':
         return 'warning';
-      case 'success':
-        return 'success';
       default:
         return 'info';
     }

@@ -14,6 +14,7 @@ import { DiagnosisResult } from '../../types/diagnosis';
 
 interface DiagnosisResultsProps {
   result: DiagnosisResult;
+  onFollowUp?: (result: DiagnosisResult) => void;
 }
 
 const getRiskColor = (riskLevel: 'low' | 'medium' | 'high'): string => {
