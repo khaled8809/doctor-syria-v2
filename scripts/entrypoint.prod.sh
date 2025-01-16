@@ -1,9 +1,13 @@
 #!/bin/sh
 
+# Get database host and port from DATABASE_URL
+DB_HOST=$(echo $DATABASE_URL | sed -n 's/.*@\([^:]*\).*/\1/p')
+DB_PORT=5432
+
 # Wait for postgres
-while ! nc -z db 5432; do
-    echo "Waiting for postgres..."
-    sleep 1
+until nc -z $DB_HOST $DB_PORT; do
+    echo "Waiting for postgres at $DB_HOST:$DB_PORT..."
+    sleep 2
 done
 
 echo "PostgreSQL started"
@@ -17,5 +21,5 @@ python manage.py collectstatic --no-input
 # Create superuser if not exists
 python manage.py createsuperuser --noinput || true
 
-# Start Gunicorn
+# Start the application
 exec "$@"

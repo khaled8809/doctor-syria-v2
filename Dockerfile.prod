@@ -42,4 +42,5 @@ RUN mkdir -p /app/static /app/media /app/logs /app/backups
 COPY scripts/entrypoint.prod.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Set the command to run gunicorn
+CMD gunicorn doctor_syria.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 120
