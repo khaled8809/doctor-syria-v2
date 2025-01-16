@@ -36,7 +36,7 @@ jobs:
         working-directory: ./frontend
         run: |
           npm run build
-          cp build/index.html build/404.html
+          cp dist/index.html dist/404.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -44,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './frontend/build'
+          path: './frontend/dist'
 
   deploy:
     environment:
