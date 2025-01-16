@@ -7,8 +7,6 @@ services:
     region: frankfurt
     plan: free
     numInstances: 1
-    buildCommand: docker build -t doctor-syria-v2 -f Dockerfile.prod .
-    startCommand: gunicorn doctor_syria.wsgi:application --bind 0.0.0.0:$PORT --workers 4
     envVars:
       - key: DATABASE_URL
         fromDatabase:
