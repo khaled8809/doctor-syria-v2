@@ -1,0 +1,35 @@
+title: Doctor Syria Documentation
+description: Documentation for the Doctor Syria Medical Management System
+theme: jekyll-theme-cayman
+
+# Site settings
+url: https://khaled8809.github.io/doctor-syria-v2
+baseurl: /doctor-syria-v2
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Navigation
+nav:
+  - title: Home
+    url: /
+  - title: Installation
+    url: /installation
+  - title: User Guide
+    url: /user-guide
+  - title: API Reference
+    url: /api-reference
+  - title: Contributing
+    url: /contributing
+
+# Exclude files from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor

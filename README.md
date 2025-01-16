@@ -1,5 +1,11 @@
 # Doctor Syria - نظام إدارة العيادات الطبية
 
+[![CI/CD](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/ci-cd.yml)
+[![GitHub Pages](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/pages.yml/badge.svg)](https://khaled8809.github.io/doctor-syria-v2/)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=khaled8809_doctor-syria-v2&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=khaled8809_doctor-syria-v2)
+[![Coverage](https://codecov.io/gh/khaled8809/doctor-syria-v2/branch/main/graph/badge.svg)](https://codecov.io/gh/khaled8809/doctor-syria-v2)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 نظام متكامل لإدارة العيادات الطبية والمستشفيات، مبني باستخدام Django و Docker.
 
 ## المميزات الرئيسية
@@ -22,7 +28,7 @@
 
 1. استنساخ المشروع:
 ```bash
-git clone https://github.com/yourusername/doctor-syria-v2.git
+git clone https://github.com/khaled8809/doctor-syria-v2.git
 cd doctor-syria-v2
 ```
 
@@ -47,6 +53,10 @@ docker-compose exec web python manage.py createsuperuser
 
 - واجهة المستخدم: http://localhost:8000
 - لوحة الإدارة: http://localhost:8000/admin
+
+## التوثيق
+
+يمكنك الوصول إلى التوثيق الكامل على [صفحة المشروع](https://khaled8809.github.io/doctor-syria-v2/).
 
 ## المساهمة
 
