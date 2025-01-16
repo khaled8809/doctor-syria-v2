@@ -32,11 +32,32 @@ import { useAIService } from '../../services/ai-service';
 import { useMedicalRecordService } from '../../services/medical-record-service';
 import { useNotificationService } from '../../services/notification-service';
 import { DiagnosisResult, SymptomInput } from '../../types/diagnosis';
+import { Patient } from '../../types/patient';
 
 interface TabPanelProps {
   children?: React.ReactNode;
   index: number;
   value: number;
+}
+
+interface DiagnosisStartParams {
+  patientId: string;
+  symptoms: SymptomInput[];
+}
+
+interface MedicalRecordSaveParams {
+  patientId: string;
+  diagnosisResults: DiagnosisResult[];
+  symptoms?: SymptomInput[];
+}
+
+interface NotificationParams {
+  type: 'high_risk_diagnosis';
+  recipientId: string;
+  data: {
+    patientName: string;
+    diagnosisId: string;
+  };
 }
 
 function TabPanel(props: TabPanelProps) {
@@ -71,7 +92,7 @@ export default function AIDiagnosisHub() {
 
   useEffect(() => {
     if (!currentPatient) {
-      setError('الرجاء اختيار مريض أولاً');
+      setError('Please select a patient first');
     } else {
       setError(null);
     }
@@ -91,32 +112,32 @@ export default function AIDiagnosisHub() {
       const results = await startDiagnosis({
         patientId: currentPatient.id,
         symptoms,
-      });
+      } as DiagnosisStartParams);
 
       setDiagnosisResults(results);
 
-      // حفظ في السجل الطبي
+      // Save to medical record
       await saveMedicalRecord({
         patientId: currentPatient.id,
         diagnosisResults: results,
         symptoms,
-      });
+      } as MedicalRecordSaveParams);
 
-      // إرسال إشعار للطبيب المعالج
+      // Send notification to attending physician
       if (results.some((r) => r.riskLevel === 'high')) {
         await sendNotification({
           type: 'high_risk_diagnosis',
           recipientId: currentPatient.doctorId,
           data: {
-            patientName: currentPatient.name,
+            patientName: `${currentPatient.firstName} ${currentPatient.lastName}`,
             diagnosisId: results[0].id,
           },
-        });
+        } as NotificationParams);
       }
 
-      setActiveTab(1); // الانتقال إلى تب النتائج
+      setActiveTab(1); // Switch to results tab
     } catch (err) {
-      setError('حدث خطأ أثناء التشخيص');
+      setError('An error occurred during diagnosis');
     } finally {
       setLoading(false);
     }
@@ -129,16 +150,16 @@ export default function AIDiagnosisHub() {
       await saveMedicalRecord({
         patientId: currentPatient.id,
         diagnosisResults,
-      });
+      } as MedicalRecordSaveParams);
     } catch (err) {
-      setError('حدث خطأ أثناء حفظ النتائج');
+      setError('An error occurred while saving results');
     }
   };
 
   const renderDrawerContent = () => (
     <Box sx={{ width: 250, p: 2 }}>
       <Typography variant="h6" gutterBottom>
-        الذكاء الاصطناعي الطبي
+        Medical AI Assistant
       </Typography>
       <Divider sx={{ my: 2 }} />
       <Tabs
@@ -149,25 +170,25 @@ export default function AIDiagnosisHub() {
       >
         <Tab
           icon={<LocalHospital />}
-          label="جلسة تشخيص"
+          label="Diagnosis Session"
           id="ai-diagnosis-tab-0"
           aria-controls="ai-diagnosis-tabpanel-0"
         />
         <Tab
           icon={<Assessment />}
-          label="نتائج التشخيص"
+          label="Diagnosis Results"
           id="ai-diagnosis-tab-1"
           aria-controls="ai-diagnosis-tabpanel-1"
         />
         <Tab
           icon={<Timeline />}
-          label="مؤشرات المخاطر"
+          label="Risk Indicators"
           id="ai-diagnosis-tab-2"
           aria-controls="ai-diagnosis-tabpanel-2"
         />
         <Tab
           icon={<Notifications />}
-          label="متابعة الحالة"
+          label="Follow-up"
           id="ai-diagnosis-tab-3"
           aria-controls="ai-diagnosis-tabpanel-3"
         />
@@ -222,7 +243,7 @@ export default function AIDiagnosisHub() {
                   onClick={handleSaveToRecord}
                   sx={{ mt: 2 }}
                 >
-                  حفظ في السجل الطبي
+                  Save to Medical Record
                 </Button>
               </>
             )}

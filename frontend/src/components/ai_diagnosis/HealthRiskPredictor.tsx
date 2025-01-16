@@ -1,43 +1,63 @@
-import { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Box,
   Typography,
-  Paper,
   Grid,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  Chip,
   CircularProgress,
   Alert,
   useTheme,
 } from '@mui/material';
 import { usePatientContext } from '../../contexts/PatientContext';
 import { useAIService } from '../../services/ai-service';
+import { HealthRisk, HealthMetric } from '../../types/diagnosis';
 
-interface HealthRisk {
-  riskType: string;
-  riskLevel: 'low' | 'medium' | 'high';
-  probability: number;
-  factors: string[];
-  recommendations: string[];
+interface HealthRiskPredictorProps {
+  risk: HealthRisk;
+  metrics: HealthMetric[];
 }
 
-interface HealthMetric {
-  name: string;
-  value: number;
-  unit: string;
-  status: 'normal' | 'warning' | 'critical';
-  trend: 'up' | 'down' | 'stable';
-}
+const getRiskColor = (level: string): string => {
+  switch (level) {
+    case 'high':
+      return '#f44336';
+    case 'medium':
+      return '#ff9800';
+    case 'low':
+      return '#4caf50';
+    default:
+      return '#757575';
+  }
+};
+
+const getMetricColor = (status: HealthMetric['status']) => {
+  switch (status) {
+    case 'critical':
+      return '#f44336';
+    case 'warning':
+      return '#ff9800';
+    case 'normal':
+      return '#4caf50';
+    default:
+      return '#757575';
+  }
+};
 
 export function HealthRiskPredictor() {
   const theme = useTheme();
   const { currentPatient } = usePatientContext();
   const { predictHealthRisks, getHealthMetrics } = useAIService();
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [healthRisks, setHealthRisks] = useState<HealthRisk[]>([]);
-  const [healthMetrics, setHealthMetrics] = useState<HealthMetric[]>([]);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [healthRisks, setHealthRisks] = React.useState<HealthRisk[]>([]);
+  const [healthMetrics, setHealthMetrics] = React.useState<HealthMetric[]>([]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!currentPatient) return;
 
     const fetchData = async () => {
@@ -61,32 +81,6 @@ export function HealthRiskPredictor() {
 
     fetchData();
   }, [currentPatient, predictHealthRisks, getHealthMetrics]);
-
-  const getRiskColor = (riskLevel: HealthRisk['riskLevel']) => {
-    switch (riskLevel) {
-      case 'high':
-        return theme.palette.error.main;
-      case 'medium':
-        return theme.palette.warning.main;
-      case 'low':
-        return theme.palette.success.main;
-      default:
-        return theme.palette.info.main;
-    }
-  };
-
-  const getMetricColor = (status: HealthMetric['status']) => {
-    switch (status) {
-      case 'critical':
-        return theme.palette.error.main;
-      case 'warning':
-        return theme.palette.warning.main;
-      case 'normal':
-        return theme.palette.success.main;
-      default:
-        return theme.palette.text.primary;
-    }
-  };
 
   if (loading) {
     return (
@@ -114,66 +108,51 @@ export function HealthRiskPredictor() {
         {healthRisks.map((risk, index) => (
           <Grid item xs={12} md={6} key={index}>
             <Paper sx={{ p: 3 }}>
-              <Typography
-                variant="h6"
-                gutterBottom
-                sx={{ color: getRiskColor(risk.riskLevel) }}
-              >
+              <Typography variant="h6" gutterBottom>
                 {risk.riskType}
               </Typography>
 
               <Box sx={{ mb: 2 }}>
-                <Typography variant="body1" gutterBottom>
-                  مستوى الخطورة: {risk.riskLevel}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  احتمالية: {Math.round(risk.probability * 100)}%
-                </Typography>
+                <Chip
+                  label={`Risk Level: ${risk.riskLevel.toUpperCase()}`}
+                  sx={{
+                    bgcolor: getRiskColor(risk.riskLevel),
+                    color: 'white',
+                    fontWeight: 'bold',
+                  }}
+                />
               </Box>
 
-              <Typography variant="subtitle1" gutterBottom>
-                العوامل المؤثرة:
+              <Typography variant="body1" gutterBottom>
+                {risk.description}
               </Typography>
-              <ul>
-                {risk.factors.map((factor, idx) => (
-                  <li key={idx}>{factor}</li>
-                ))}
-              </ul>
 
-              <Typography variant="subtitle1" gutterBottom>
-                التوصيات:
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                Key Metrics:
               </Typography>
-              <ul>
-                {risk.recommendations.map((rec, idx) => (
-                  <li key={idx}>{rec}</li>
-                ))}
-              </ul>
-            </Paper>
-          </Grid>
-        ))}
+              <List dense>
+                {healthMetrics
+                  .filter((metric) => metric.name === risk.riskType)
+                  .map((metric, index) => (
+                    <ListItem key={index}>
+                      <ListItemText
+                        primary={`${metric.name}: ${metric.value}${metric.unit}`}
+                        secondary={`Normal Range: ${metric.normalRange.min}-${metric.normalRange.max}${metric.unit}`}
+                      />
+                    </ListItem>
+                  ))}
+              </List>
 
-        {healthMetrics.map((metric, index) => (
-          <Grid item xs={12} md={4} key={index}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                {metric.name}
+              <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
+                Recommendations:
               </Typography>
-              <Typography
-                variant="h4"
-                sx={{ color: getMetricColor(metric.status) }}
-              >
-                {metric.value}
-                <Typography component="span" variant="body1">
-                  {metric.unit}
-                </Typography>
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ mt: 1 }}
-              >
-                الحالة: {metric.status}
-              </Typography>
+              <List dense>
+                {risk.recommendations.map((recommendation, index) => (
+                  <ListItem key={index}>
+                    <ListItemText primary={recommendation} />
+                  </ListItem>
+                ))}
+              </List>
             </Paper>
           </Grid>
         ))}

@@ -1,22 +1,28 @@
 export interface DiagnosisResult {
-  id: string | number;
-  patientId: number;
+  id: string;
+  patientId: string;
   diagnosis: string;
-  confidence: number;
-  recommendations: string[];
   riskLevel: 'low' | 'medium' | 'high';
   timestamp: string;
-  details?: {
-    icd_code?: string;
-    matching_symptoms?: {
-      name: string;
-      importance: number;
-    }[];
-    missing_symptoms?: {
-      name: string;
-      importance: number;
-    }[];
-    confidence_explanation?: string;
+  symptoms: string[];
+  recommendations: string[];
+  confidence: number;
+  doctorId?: string;
+}
+
+export interface HealthRisk {
+  level: 'low' | 'medium' | 'high';
+  description: string;
+  recommendations: string[];
+}
+
+export interface HealthMetric {
+  name: string;
+  value: number;
+  unit: string;
+  normalRange: {
+    min: number;
+    max: number;
   };
 }
 

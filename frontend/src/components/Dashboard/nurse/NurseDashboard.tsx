@@ -10,20 +10,52 @@ import { PatientVitalsList } from './PatientVitalsList';
 import { TaskSchedule } from './TaskSchedule';
 import { MedicationSchedule } from './MedicationSchedule';
 import { useNurseStats } from '../../../hooks/useNurseStats';
+import { Patient, Task, Medication, PatientVital } from '../../../types/common';
 
 const NurseDashboard: React.FC = () => {
   const { stats, tasks, patients, medications, loading } = useNurseStats();
 
-  if (loading) return <div>جاري التحميل...</div>;
+  if (loading) return <div>Loading...</div>;
+
+  // Convert Patient[] to PatientVital[]
+  const patientVitals: PatientVital[] = patients.map(patient => ({
+    ...patient,
+    status: getPatientStatus(patient)
+  }));
+
+  // Helper function to determine patient status based on vitals
+  function getPatientStatus(patient: Patient): 'normal' | 'warning' | 'critical' {
+    if (!patient.vitals) return 'normal';
+
+    const { heartRate, temperature, oxygenSaturation } = patient.vitals;
+
+    if (
+      heartRate > 100 || heartRate < 60 ||
+      temperature > 38.5 || temperature < 36 ||
+      oxygenSaturation < 92
+    ) {
+      return 'critical';
+    }
+
+    if (
+      heartRate > 90 || heartRate < 65 ||
+      temperature > 37.8 || temperature < 36.5 ||
+      oxygenSaturation < 95
+    ) {
+      return 'warning';
+    }
+
+    return 'normal';
+  }
 
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h4">لوحة تحكم الممرض</Typography>
+        <Typography variant="h4">Nurse Dashboard</Typography>
         <Box>
           <Chip
             icon={<AccessTime />}
-            label={`المناوبة: ${stats.currentShift}`}
+            label={`Shift: ${stats.currentShift}`}
             color="primary"
             sx={{ mr: 1 }}
           />
@@ -32,7 +64,7 @@ const NurseDashboard: React.FC = () => {
             color="primary"
             startIcon={<NotificationsActive />}
           >
-            تنبيه طارئ
+            Emergency Alert
           </Button>
         </Box>
       </Box>
@@ -42,7 +74,7 @@ const NurseDashboard: React.FC = () => {
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              حالة الجناح الحالي
+              Current Ward Status
             </Typography>
             <Grid container spacing={2}>
               <Grid item xs={6} sm={3}>
@@ -50,7 +82,7 @@ const NurseDashboard: React.FC = () => {
                   <Typography variant="h4" color="primary">
                     {stats.totalPatients}
                   </Typography>
-                  <Typography variant="body2">إجمالي المرضى</Typography>
+                  <Typography variant="body2">Total Patients</Typography>
                 </Box>
               </Grid>
               <Grid item xs={6} sm={3}>
@@ -58,7 +90,7 @@ const NurseDashboard: React.FC = () => {
                   <Typography variant="h4" color="error">
                     {stats.criticalCases}
                   </Typography>
-                  <Typography variant="body2">حالات حرجة</Typography>
+                  <Typography variant="body2">Critical Cases</Typography>
                 </Box>
               </Grid>
               <Grid item xs={6} sm={3}>
@@ -66,7 +98,7 @@ const NurseDashboard: React.FC = () => {
                   <Typography variant="h4" color="warning.main">
                     {stats.pendingTasks}
                   </Typography>
-                  <Typography variant="body2">مهام معلقة</Typography>
+                  <Typography variant="body2">Pending Tasks</Typography>
                 </Box>
               </Grid>
               <Grid item xs={6} sm={3}>
@@ -74,7 +106,7 @@ const NurseDashboard: React.FC = () => {
                   <Typography variant="h4" color="success.main">
                     {stats.completedTasks}
                   </Typography>
-                  <Typography variant="body2">مهام مكتملة</Typography>
+                  <Typography variant="body2">Completed Tasks</Typography>
                 </Box>
               </Grid>
             </Grid>
@@ -85,7 +117,7 @@ const NurseDashboard: React.FC = () => {
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              إجراءات سريعة
+              Quick Actions
             </Typography>
             <Grid container spacing={1}>
               <Grid item xs={6}>
@@ -95,7 +127,7 @@ const NurseDashboard: React.FC = () => {
                   startIcon={<Assignment />}
                   sx={{ mb: 1 }}
                 >
-                  تسجيل العلامات الحيوية
+                  Record Vitals
                 </Button>
               </Grid>
               <Grid item xs={6}>
@@ -105,7 +137,7 @@ const NurseDashboard: React.FC = () => {
                   startIcon={<Favorite />}
                   sx={{ mb: 1 }}
                 >
-                  طلب مساعدة طبيب
+                  Request Doctor
                 </Button>
               </Grid>
             </Grid>
@@ -116,9 +148,9 @@ const NurseDashboard: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, height: '400px', overflow: 'auto' }}>
             <Typography variant="h6" gutterBottom>
-              العلامات الحيوية للمرضى
+              Patient Vitals
             </Typography>
-            <PatientVitalsList patients={patients} />
+            <PatientVitalsList patients={patientVitals} />
           </Paper>
         </Grid>
 
@@ -126,7 +158,7 @@ const NurseDashboard: React.FC = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2, height: '400px', overflow: 'auto' }}>
             <Typography variant="h6" gutterBottom>
-              جدول المهام
+              Task Schedule
             </Typography>
             <TaskSchedule tasks={tasks} />
           </Paper>
@@ -136,7 +168,7 @@ const NurseDashboard: React.FC = () => {
         <Grid item xs={12}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              جدول الأدوية
+              Medication Schedule
             </Typography>
             <MedicationSchedule medications={medications} />
           </Paper>

@@ -16,6 +16,7 @@ import {
   Brightness7,
 } from '@mui/icons-material';
 import { useAppSelector } from '../../../store';
+import { User } from '../../../types/user';
 
 interface TopBarProps {
   onSidebarToggle: () => void;
@@ -29,7 +30,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   isDarkMode = false,
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const user = useAppSelector((state) => state.auth.user);
+  const user = useAppSelector((state) => state.auth.user) as User | null;
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -37,6 +38,11 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const getDisplayName = (user: User | null) => {
+    if (!user) return '';
+    return `${user.firstName} ${user.lastName}`;
   };
 
   return (
@@ -70,8 +76,8 @@ export const TopBar: React.FC<TopBarProps> = ({
               onClick={handleMenu}
               color="inherit"
             >
-              {user?.photoURL ? (
-                <Avatar src={user.photoURL} alt={user.displayName || 'User'} />
+              {user?.avatar ? (
+                <Avatar src={user.avatar} alt={getDisplayName(user)} />
               ) : (
                 <AccountCircle />
               )}
@@ -91,8 +97,8 @@ export const TopBar: React.FC<TopBarProps> = ({
               open={Boolean(anchorEl)}
               onClose={handleClose}
             >
-              <MenuItem onClick={handleClose}>الملف الشخصي</MenuItem>
-              <MenuItem onClick={handleClose}>تسجيل الخروج</MenuItem>
+              <MenuItem onClick={handleClose}>Profile</MenuItem>
+              <MenuItem onClick={handleClose}>Logout</MenuItem>
             </Menu>
           </div>
         </Box>

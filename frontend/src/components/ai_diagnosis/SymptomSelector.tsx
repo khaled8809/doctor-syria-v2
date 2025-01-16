@@ -1,145 +1,106 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
-  Chip,
   TextField,
+  Autocomplete,
+  Chip,
   Button,
   Typography,
-  Autocomplete,
   CircularProgress,
-  Slider,
-  Grid,
-  Paper,
 } from '@mui/material';
 import { SymptomInput } from '../../types/diagnosis';
+import { useAIService } from '../../services/ai-service';
 
-interface Symptom {
-  id: number;
-  name: string;
-  description?: string;
-}
-
-interface SymptomSelectorProps {
+export interface SymptomSelectorProps {
   selectedSymptoms: SymptomInput[];
   onSymptomsChange: (symptoms: SymptomInput[]) => void;
   onSubmit: () => void;
   isSubmitting: boolean;
 }
 
-const SEVERITY_MARKS = [
-  { value: 1, label: 'خفيف' },
-  { value: 2, label: 'متوسط' },
-  { value: 3, label: 'شديد' },
-];
-
-const commonSymptoms: Symptom[] = [
-  { id: 1, name: 'حمى', description: 'ارتفاع في درجة حرارة الجسم' },
-  { id: 2, name: 'سعال', description: 'سعال جاف أو مصحوب بالبلغم' },
-  { id: 3, name: 'صداع', description: 'ألم في الرأس' },
-  { id: 4, name: 'تعب', description: 'إرهاق وضعف عام' },
-  { id: 5, name: 'ألم في العضلات', description: 'ألم وتعب في العضلات' },
-];
-
 export const SymptomSelector: React.FC<SymptomSelectorProps> = ({
   selectedSymptoms,
   onSymptomsChange,
   onSubmit,
-  isSubmitting
+  isSubmitting,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [availableSymptoms, setAvailableSymptoms] = useState<Symptom[]>(commonSymptoms);
+  const { getSymptoms, loading, error } = useAIService();
+  const [availableSymptoms, setAvailableSymptoms] = useState<SymptomInput[]>([]);
 
-  const handleSymptomAdd = (symptom: Symptom | null) => {
-    if (!symptom) return;
-
-    const newSymptom: SymptomInput = {
-      symptom_id: symptom.id,
-      symptom: symptom.name,
-      severity: 2, // Default severity
-    };
-
-    onSymptomsChange([...selectedSymptoms, newSymptom]);
+  const handleSymptomAdd = (symptom: SymptomInput | null) => {
+    if (symptom && !selectedSymptoms.some(s => s.name === symptom.name)) {
+      onSymptomsChange([...selectedSymptoms, symptom]);
+    }
     setSearchQuery('');
   };
 
-  const handleSymptomRemove = (symptomId: number) => {
-    onSymptomsChange(selectedSymptoms.filter((s) => s.symptom_id !== symptomId));
-  };
-
-  const handleSeverityChange = (symptomId: number, newSeverity: number) => {
-    onSymptomsChange(
-      selectedSymptoms.map((s) =>
-        s.symptom_id === symptomId ? { ...s, severity: newSeverity } : s
-      )
-    );
+  const handleSymptomRemove = (symptomToRemove: SymptomInput) => {
+    onSymptomsChange(selectedSymptoms.filter(s => s.name !== symptomToRemove.name));
   };
 
   return (
     <Box>
-      <Typography variant="h6" gutterBottom>
-        Select Symptoms
-      </Typography>
-
-      <Autocomplete
-        options={availableSymptoms.filter(
-          (s) => !selectedSymptoms.some((selected) => selected.symptom_id === s.id)
-        )}
-        getOptionLabel={(option) => option.name}
-        value={null}
-        onChange={(_event, newValue) => handleSymptomAdd(newValue)}
-        inputValue={searchQuery}
-        onInputChange={(_event, newValue) => setSearchQuery(newValue)}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Search symptoms"
-            variant="outlined"
-            fullWidth
-          />
-        )}
-      />
-
-      <Box sx={{ mt: 3 }}>
-        {selectedSymptoms.map((symptom) => (
-          <Paper key={symptom.symptom_id} sx={{ p: 2, mt: 2 }}>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={4}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Chip
-                    label={symptom.symptom}
-                    onDelete={() => handleSymptomRemove(symptom.symptom_id)}
-                    color="primary"
-                  />
-                </Box>
-              </Grid>
-
-              <Grid item xs={12} sm={4}>
-                <Typography gutterBottom>Severity</Typography>
-                <Slider
-                  value={symptom.severity}
-                  min={1}
-                  max={10}
-                  step={1}
-                  marks={[]}
-                  onChange={(_event, value) =>
-                    handleSeverityChange(symptom.symptom_id, value as number)
-                  }
-                />
-              </Grid>
-            </Grid>
-          </Paper>
-        ))}
+      <Box sx={{ mb: 3 }}>
+        <Autocomplete
+          value={null}
+          onChange={(_, newValue) => handleSymptomAdd(newValue)}
+          inputValue={searchQuery}
+          onInputChange={(_, newValue) => setSearchQuery(newValue)}
+          options={availableSymptoms}
+          getOptionLabel={(option) => option.name}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              label="Search Symptoms"
+              variant="outlined"
+              fullWidth
+              error={!!error}
+              helperText={error}
+              InputProps={{
+                ...params.InputProps,
+                endAdornment: (
+                  <>
+                    {loading && <CircularProgress size={20} />}
+                    {params.InputProps.endAdornment}
+                  </>
+                ),
+              }}
+            />
+          )}
+        />
       </Box>
 
-      <Box sx={{ mt: 3 }}>
+      <Box sx={{ mb: 3 }}>
+        {selectedSymptoms.length > 0 ? (
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            {selectedSymptoms.map((symptom) => (
+              <Chip
+                key={symptom.name}
+                label={symptom.name}
+                onDelete={() => handleSymptomRemove(symptom)}
+              />
+            ))}
+          </Box>
+        ) : (
+          <Typography color="text.secondary">
+            No symptoms selected. Start typing to search and add symptoms.
+          </Typography>
+        )}
+      </Box>
+
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
         <Button
           variant="contained"
+          color="primary"
           onClick={onSubmit}
           disabled={selectedSymptoms.length === 0 || isSubmitting}
-          fullWidth
         >
           {isSubmitting ? (
-            <CircularProgress size={24} color="inherit" />
+            <>
+              Analyzing...
+              <CircularProgress size={20} sx={{ ml: 1 }} />
+            </>
           ) : (
             'Start Diagnosis'
           )}
@@ -148,5 +109,3 @@ export const SymptomSelector: React.FC<SymptomSelectorProps> = ({
     </Box>
   );
 };
-
-export default SymptomSelector;
