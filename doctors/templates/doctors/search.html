@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- قسم البحث -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="q" class="form-control" placeholder="ابحث عن طبيب..." value="{{ query }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="specialty" class="form-select">
+                        <option value="">كل التخصصات</option>
+                        {% for specialty in specialties %}
+                        <option value="{{ specialty.name }}" {% if specialty.name == selected_specialty %}selected{% endif %}>
+                            {{ specialty.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select name="area" class="form-select">
+                        <option value="">كل المناطق</option>
+                        {% for area in areas %}
+                        <option value="{{ area.name }}" {% if area.name == selected_area %}selected{% endif %}>
+                            {{ area.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">بحث</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- قائمة الأطباء -->
+        <div class="col-md-8">
+            <h4 class="mb-3">نتائج البحث</h4>
+            {% if doctors %}
+                {% for doctor in doctors %}
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <img src="{% static 'img/doctor-placeholder.png' %}" class="img-fluid rounded-circle">
+                            </div>
+                            <div class="col-md-10">
+                                <h5 class="card-title">{{ doctor.title }} {{ doctor.user.get_full_name }}</h5>
+                                <p class="text-muted">{{ doctor.specialty.name }}</p>
+                                <div class="mb-2">
+                                    {% for i in "12345" %}
+                                    <i class="fas fa-star {% if forloop.counter <= doctor.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                    {% endfor %}
+                                    <span class="ms-2">({{ doctor.reviews.count }} تقييم)</span>
+                                </div>
+                                <p class="card-text">{{ doctor.bio|truncatewords:30 }}</p>
+                                <a href="{% url 'doctor_profile' doctor.id %}" class="btn btn-outline-primary">عرض الملف الشخصي</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- الترقيم -->
+                {% if doctors.has_other_pages %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if doctors.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ doctors.previous_page_number }}&q={{ query }}&specialty={{ selected_specialty }}&area={{ selected_area }}">السابق</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for i in doctors.paginator.page_range %}
+                        <li class="page-item {% if doctors.number == i %}active{% endif %}">
+                            <a class="page-link" href="?page={{ i }}&q={{ query }}&specialty={{ selected_specialty }}&area={{ selected_area }}">{{ i }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        {% if doctors.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ doctors.next_page_number }}&q={{ query }}&specialty={{ selected_specialty }}&area={{ selected_area }}">التالي</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+            <div class="alert alert-info">
+                لم يتم العثور على نتائج مطابقة لبحثك
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- الشريط الجانبي -->
+        <div class="col-md-4">
+            <!-- آراء المرضى -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">آراء المرضى</h5>
+                </div>
+                <div class="card-body">
+                    {% for review in recent_reviews %}
+                    <div class="mb-3 pb-3 border-bottom">
+                        <p class="mb-1"><strong>{{ review.patient.get_full_name }}</strong></p>
+                        <div class="mb-2">
+                            {% for i in "12345" %}
+                            <i class="fas fa-star {% if forloop.counter <= review.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                        <p class="mb-1">{{ review.comment|truncatewords:20 }}</p>
+                        <small class="text-muted">{{ review.doctor.title }} {{ review.doctor.user.get_full_name }}</small>
+                        <br>
+                        <small class="text-muted">{{ review.created_at|date:"j/n/Y" }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- المدونة الطبية -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">المدونة الطبية</h5>
+                </div>
+                <div class="card-body">
+                    {% for post in recent_posts %}
+                    <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                        <h6 class="mb-1">{{ post.title }}</h6>
+                        <p class="mb-1"><small class="text-muted">{{ post.get_category_display }}</small></p>
+                        <p class="mb-1"><small class="text-muted">{{ post.read_time }} دقائق</small></p>
+                        <p class="mb-1">{{ post.content|truncatewords:15 }}</p>
+                        <small class="text-muted">{{ post.created_at|date:"j/n/Y" }}</small>
+                    </div>
+                    {% endfor %}
+                    <a href="{% url 'blog_list' %}" class="btn btn-outline-primary btn-sm w-100">عرض جميع المقالات</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
