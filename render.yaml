@@ -1,29 +1,37 @@
 services:
   - type: web
-    name: doctor-syria
+    name: doctor-syria-v2
     env: docker
     dockerfilePath: ./Dockerfile.prod
     healthCheckPath: /health/
     region: frankfurt
     plan: free
     numInstances: 1
+    buildCommand: docker build -t doctor-syria-v2 -f Dockerfile.prod .
+    startCommand: gunicorn doctor_syria.wsgi:application --bind 0.0.0.0:$PORT --workers 4
     envVars:
       - key: DATABASE_URL
         fromDatabase:
           name: doctor-syria-db
           property: connectionString
       - key: DEBUG
-        value: false
+        value: "false"
       - key: ALLOWED_HOSTS
         value: ".onrender.com"
       - key: SECRET_KEY
         generateValue: true
       - key: CORS_ALLOWED_ORIGINS
-        value: "https://doctor-syria.onrender.com"
+        value: "https://doctor-syria-v2.onrender.com"
       - key: REACT_APP_API_URL
-        value: "https://doctor-syria.onrender.com"
+        value: "https://doctor-syria-v2.onrender.com"
       - key: REACT_APP_ENV
         value: "production"
+      - key: PORT
+        value: "10000"
+      - key: DJANGO_SETTINGS_MODULE
+        value: "doctor_syria.settings.production"
+      - key: PYTHONPATH
+        value: "/app"
 
 databases:
   - name: doctor-syria-db
