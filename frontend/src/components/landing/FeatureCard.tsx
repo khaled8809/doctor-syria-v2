@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card, CardContent, Typography, Box } from '@mui/material';
+import { Card, CardContent, Typography, Box, SvgIconProps } from '@mui/material';
 import { motion } from 'framer-motion';
 
 interface FeatureCardProps {
-  icon: string;
+  icon: React.ReactElement<SvgIconProps>;
   title: string;
   description: string;
 }

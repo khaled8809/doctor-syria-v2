@@ -12,9 +12,36 @@ import { LabResults } from './LabResults';
 import { useDoctorStats } from '../../../hooks/useDoctorStats';
 import { DoctorTaskCard } from './DoctorTaskCard';
 
+interface DoctorStats {
+  totalPatients: number;
+  todayAppointments: number;
+  pendingResults: number;
+  completedDiagnoses: number;
+  emergencyCases: number;
+  activePatients: number;
+  newLabResults: number;
+}
+
+interface DoctorAppointment {
+  id: string;
+  patientName: string;
+  datetime: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
+  type: string;
+}
+
+interface LabResult {
+  id: string;
+  patientName: string;
+  testType: string;
+  status: 'pending' | 'completed';
+  date: string;
+  results?: string;
+}
+
 const DoctorDashboard: React.FC = () => {
   const [tabValue, setTabValue] = React.useState(0);
-  const { stats, appointments, patients, labResults, loading } = useDoctorStats();
+  const { stats, appointments, patients, labResults, loading } = useDoctorStats<DoctorStats, DoctorAppointment[], LabResult[]>();
 
   if (loading) return <div>جاري التحميل...</div>;
 
