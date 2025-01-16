@@ -19,5 +19,5 @@ python manage.py createsuperuser --noinput || true
 # Collect static files
 python manage.py collectstatic --noinput
 
-# Start Gunicorn
+# Start command
 exec "$@"

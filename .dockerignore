@@ -1,7 +1,6 @@
 # Git
 .git
 .gitignore
-.github
 
 # Python
 __pycache__
@@ -38,8 +37,10 @@ yarn-error.log*
 *~
 
 # Project specific
-media/
-static/
+media/*
+!media/.gitkeep
+static/*
+!static/.gitkeep
 *.sqlite3
 local_settings.py
 celerybeat-schedule
@@ -67,3 +68,9 @@ docker-compose.yml
 *.prod
 *.staging
 *.local
+
+# Keep important files
+!manage.py
+!requirements.txt
+!requirements-dev.txt
+!requirements_unified.txt

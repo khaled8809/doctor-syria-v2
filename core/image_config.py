@@ -2,32 +2,48 @@
 Image configuration settings
 """
 
-# إعدادات تحسين الصور
+# إعدادات الصور
 IMAGE_SETTINGS = {
-    "THUMBNAIL_SIZES": {
-        "small": (100, 100),
-        "medium": (300, 300),
-        "large": (600, 600),
-        "original": None,
-    },
-    "COMPRESSION_QUALITY": 85,
-    "MAX_UPLOAD_SIZE": 5 * 1024 * 1024,  # 5MB
-    "ALLOWED_EXTENSIONS": ["jpg", "jpeg", "png", "gif"],
-    "AUTO_OPTIMIZE": True,
+    'THUMBNAIL_SIZE': (300, 300),
+    'PROFILE_PICTURE_SIZE': (150, 150),
+    'LARGE_IMAGE_SIZE': (1200, 800),
+    'ALLOWED_EXTENSIONS': ['jpg', 'jpeg', 'png', 'gif'],
+    'MAX_UPLOAD_SIZE': 5242880,  # 5MB
+    'COMPRESSION_QUALITY': 80,
 }
 
 # إعدادات التحميل الكسول
 LAZY_LOADING_SETTINGS = {
-    "ENABLE": True,
-    "THRESHOLD_SIZE": 100 * 1024,  # 100KB
-    "DEFAULT_PLACEHOLDER": "static/images/placeholder.jpg",
-    "LOADING_ANIMATION": True,
+    'ENABLED': True,
+    'PLACEHOLDER': 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"%3E%3C/svg%3E',
+    'THRESHOLD': 0.1,
 }
 
-# إعدادات التخزين المؤقت للصور
-IMAGE_CACHE_SETTINGS = {
-    "ENABLE": True,
-    "CACHE_TIMEOUT": 60 * 60 * 24,  # 24 hours
-    "CACHE_KEY_PREFIX": "img_cache_",
-    "USE_COMPRESSION": True,
-}
+from imagekit import ImageSpec, register
+from imagekit.processors import ResizeToFill, Adjust, SmartResize
+
+class ThumbnailSpec(ImageSpec):
+    processors = [SmartResize(width=300, height=300)]
+    format = 'JPEG'
+    options = {'quality': 80}
+
+class ProfilePictureSpec(ImageSpec):
+    processors = [
+        SmartResize(width=150, height=150),
+        Adjust(contrast=1.2, sharpness=1.1)
+    ]
+    format = 'JPEG'
+    options = {'quality': 85}
+
+class LargeImageSpec(ImageSpec):
+    processors = [
+        ResizeToFill(width=1200, height=800),
+        Adjust(contrast=1.1)
+    ]
+    format = 'JPEG'
+    options = {'quality': 75}
+
+# تسجيل المواصفات
+register.generator('thumbnail', ThumbnailSpec)
+register.generator('profile_picture', ProfilePictureSpec)
+register.generator('large_image', LargeImageSpec)

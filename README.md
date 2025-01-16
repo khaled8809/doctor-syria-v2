@@ -1,35 +1,24 @@
-# Doctor Syria - نظام إدارة المستشفيات والعيادات
+# Doctor Syria - نظام إدارة العيادات الطبية
 
-[![CI/CD](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/khaled8809/doctor-syria-v2/actions/workflows/ci-cd.yml)
-[![codecov](https://codecov.io/gh/khaled8809/doctor-syria-v2/branch/main/graph/badge.svg)](https://codecov.io/gh/khaled8809/doctor-syria-v2)
-[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=khaled8809_doctor-syria-v2&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=khaled8809_doctor-syria-v2)
-[![Maintainability](https://api.codeclimate.com/v1/badges/your-repo-id/maintainability)](https://codeclimate.com/github/khaled8809/doctor-syria-v2)
-
-نظام شامل لإدارة المستشفيات والعيادات الطبية، مبني باستخدام Django وDocker.
+نظام متكامل لإدارة العيادات الطبية والمستشفيات، مبني باستخدام Django و Docker.
 
 ## المميزات الرئيسية
 
-- إدارة المرضى والمواعيد
-- السجلات الطبية الإلكترونية
-- إدارة العيادات والمستشفيات
-- نظام المختبرات والأشعة
-- نظام الصيدلية
-- التشخيص بمساعدة الذكاء الاصطناعي
-- نظام الفوترة والمحاسبة
-- تقارير وإحصائيات متقدمة
-- نظام التنبيهات والإشعارات
-- واجهة مستخدم سهلة وحديثة
+- ✨ إدارة المواعيد والحجوزات
+- 👥 إدارة المرضى والسجلات الطبية
+- 💊 إدارة الوصفات الطبية والأدوية
+- 📊 التقارير والإحصائيات
+- 🏥 إدارة العيادات والمستشفيات
+- 💳 نظام الفواتير والمدفوعات
+- 📱 واجهة مستخدم سهلة الاستخدام
 
 ## المتطلبات الأساسية
 
-- Docker و Docker Compose
+- Docker Desktop
+- Docker Compose
 - Git
-- Python 3.9+
-- Node.js 16+
-- PostgreSQL 15+
-- Redis 7+
 
-## البدء السريع
+## التثبيت والتشغيل
 
 1. استنساخ المشروع:
 ```bash
@@ -37,50 +26,27 @@ git clone https://github.com/yourusername/doctor-syria-v2.git
 cd doctor-syria-v2
 ```
 
-2. إنشاء ملف البيئة:
+2. إعداد ملف البيئة:
 ```bash
-cp .env.example .env.production
-# قم بتعديل الإعدادات في ملف .env.production
+cp .env.example .env
 ```
+قم بتعديل الإعدادات في ملف `.env` حسب بيئتك.
 
-3. بناء وتشغيل الخدمات:
+3. بناء وتشغيل الحاويات:
 ```bash
 docker-compose up -d --build
 ```
 
-4. إنشاء مستخدم مدير:
+4. تهيئة قاعدة البيانات:
 ```bash
+docker-compose exec web python manage.py migrate
 docker-compose exec web python manage.py createsuperuser
 ```
 
-## الهيكل التنظيمي للمشروع
+## الوصول إلى التطبيق
 
-```
-doctor-syria-v2/
-├── accounts/          # إدارة المستخدمين والصلاحيات
-├── appointments/      # نظام المواعيد
-├── clinics/          # إدارة العيادات
-├── doctor/           # إدارة الأطباء
-├── patient_records/  # السجلات الطبية
-├── pharmacy/         # نظام الصيدلية
-├── laboratory/       # نظام المختبر
-├── radiology/        # نظام الأشعة
-├── billing/          # نظام الفوترة
-└── monitoring/       # نظام المراقبة
-```
-
-## المراقبة والتتبع
-
-- Prometheus: `http://localhost:9090`
-- Grafana: `http://localhost:3000`
-- Flower (Celery): `http://localhost:5555`
-
-## النسخ الاحتياطي
-
-يتم إجراء نسخ احتياطي تلقائي يومياً لقاعدة البيانات في المسار:
-```
-/var/backups/doctor-syria/
-```
+- واجهة المستخدم: http://localhost:8000
+- لوحة الإدارة: http://localhost:8000/admin
 
 ## المساهمة
 
@@ -92,4 +58,4 @@ doctor-syria-v2/
 
 ## الدعم
 
-إذا واجهت أي مشكلة أو لديك أي استفسار، يرجى فتح issue في GitHub.
+إذا واجهتك أي مشكلة أو لديك أي استفسار، يرجى فتح issue جديد في صفحة المشروع على GitHub.

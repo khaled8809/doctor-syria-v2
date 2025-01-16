@@ -12,6 +12,7 @@ WORKDIR /app
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         postgresql-client \
+        netcat-traditional \
         build-essential \
         libpq-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -24,7 +25,7 @@ RUN pip install --upgrade pip \
 # Copy project
 COPY . .
 
-# Run entrypoint script
+# Copy entrypoint script directly to root
 COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
