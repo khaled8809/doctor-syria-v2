@@ -1,8 +1,9 @@
 export interface Analytics {
-  predictions: {
-    patientLoad: any[];
-    resourceNeeds: any[];
-    staffingRequirements: any[];
+  patientMetrics: {
+    total: number;
+    admitted: number;
+    discharged: number;
+    critical: number;
   };
   departmentPerformance: {
     efficiency: number;

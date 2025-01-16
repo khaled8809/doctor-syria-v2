@@ -1,23 +1,15 @@
 import React from 'react';
 import {
   Box,
-  Paper,
-  Typography,
-  Grid,
   Card,
   CardContent,
+  Typography,
   Button,
-  Chip,
-  LinearProgress
+  Grid,
+  LinearProgress,
+  Chip
 } from '@mui/material';
-import {
-  TrendingUp,
-  TrendingDown,
-  Warning,
-  Info,
-  Psychology,
-  Analytics
-} from '@mui/icons-material';
+import { Warning } from '@mui/icons-material';
 
 interface Prediction {
   id: string;
@@ -32,58 +24,64 @@ interface AIPredictionsProps {
   onPredictionAction: (predictionId: string, action: string) => void;
 }
 
-export const AIPredictions: React.FC<AIPredictionsProps> = ({ predictions, onPredictionAction }) => {
-  return (
-    <Paper sx={{ p: 2, height: '100%' }}>
-      <Box display="flex" alignItems="center" mb={2}>
-        <Psychology sx={{ mr: 1 }} />
-        <Typography variant="h6">AI Predictions & Insights</Typography>
-      </Box>
+export const AIPredictions: React.FC<AIPredictionsProps> = ({
+  predictions,
+  onPredictionAction
+}) => {
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 0.8) return 'success';
+    if (confidence >= 0.6) return 'warning';
+    return 'error';
+  };
 
-      <Grid container spacing={2}>
-        {predictions.map((prediction) => (
-          <Grid item xs={12} key={prediction.id}>
-            <Card>
-              <CardContent>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Typography variant="subtitle1" fontWeight="bold">
+  return (
+    <Card>
+      <CardContent>
+        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+          <Warning color="warning" sx={{ mr: 1 }} />
+          <Typography variant="h6" component="div">
+            AI Predictions & Insights
+          </Typography>
+        </Box>
+        <Grid container spacing={2}>
+          {predictions.map((prediction) => (
+            <Grid item xs={12} key={prediction.id}>
+              <Card variant="outlined">
+                <CardContent>
+                  <Typography variant="subtitle1" gutterBottom>
                     {prediction.type}
                   </Typography>
-                  <Chip
-                    icon={prediction.confidence >= 0.7 ? <TrendingUp /> : <Warning />}
-                    label={`${(prediction.confidence * 100).toFixed(0)}% Confidence`}
-                    color={prediction.confidence >= 0.7 ? "success" : "warning"}
-                    size="small"
-                  />
-                </Box>
-
-                <Typography color="text.secondary" mb={2}>
-                  {prediction.prediction}
-                </Typography>
-
-                <LinearProgress
-                  variant="determinate"
-                  value={prediction.confidence * 100}
-                  sx={{ mb: 2 }}
-                />
-
-                <Box display="flex" gap={1} flexWrap="wrap">
-                  {prediction.actions.map((action, index) => (
-                    <Button
-                      key={index}
-                      size="small"
-                      variant="outlined"
-                      onClick={() => onPredictionAction(prediction.id, action)}
-                    >
-                      {action}
-                    </Button>
-                  ))}
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Paper>
+                  <Typography variant="body1" color="text.secondary" gutterBottom>
+                    {prediction.prediction}
+                  </Typography>
+                  <Box sx={{ mt: 2, mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Confidence: {(prediction.confidence * 100).toFixed(0)}%
+                    </Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={prediction.confidence * 100}
+                      color={getConfidenceColor(prediction.confidence)}
+                      sx={{ mt: 1 }}
+                    />
+                  </Box>
+                  <Box sx={{ mt: 2 }}>
+                    {prediction.actions.map((action) => (
+                      <Chip
+                        key={action}
+                        label={action}
+                        onClick={() => onPredictionAction(prediction.id, action)}
+                        sx={{ mr: 1, mb: 1 }}
+                        clickable
+                      />
+                    ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </CardContent>
+    </Card>
   );
 };

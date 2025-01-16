@@ -32,6 +32,10 @@ services:
         value: "doctor_syria.settings.production"
       - key: PYTHONPATH
         value: "/app"
+      - key: NODE_ENV
+        value: "production"
+      - key: CI
+        value: "false"
 
 databases:
   - name: doctor-syria-db
