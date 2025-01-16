@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Box,
   Paper,
@@ -9,32 +9,37 @@ import {
   Button,
   CircularProgress,
   Alert,
+  Grid,
 } from '@mui/material';
-import SymptomSelector from './SymptomSelector';
-import DiagnosisResults from './DiagnosisResults';
+import { SymptomSelector } from './SymptomSelector';
+import { DiagnosisResults } from './DiagnosisResults';
 import { useAIService } from '../../services/ai-service';
 import { usePatientContext } from '../../contexts/PatientContext';
+import { DiagnosisResult, SymptomInput } from '../../types/diagnosis';
+
+interface DiagnosisSessionProps {
+  patientId: number;
+  onDiagnosisComplete?: (result: DiagnosisResult) => void;
+  onCancel?: () => void;
+}
 
 const steps = ['اختيار الأعراض', 'التشخيص الأولي', 'النتائج والتوصيات'];
 
-interface DiagnosisResult {
-  id: string;
-  diagnosis: string;
-  confidence: number;
-  recommendations: string[];
-  riskLevel: 'low' | 'medium' | 'high';
-}
-
-export default function DiagnosisSession() {
+export function DiagnosisSession({
+  patientId,
+  onDiagnosisComplete,
+  onCancel,
+}: DiagnosisSessionProps) {
   const [activeStep, setActiveStep] = useState(0);
   const [diagnosisResults, setDiagnosisResults] = useState<DiagnosisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSymptoms, setSelectedSymptoms] = useState<SymptomInput[]>([]);
 
   const { startDiagnosis } = useAIService();
   const { currentPatient } = usePatientContext();
 
-  const handleDiagnosisStart = async (symptoms: string[]) => {
+  const handleDiagnosisStart = async (symptoms: SymptomInput[]) => {
     setError(null);
     setLoading(true);
 
@@ -55,6 +60,16 @@ export default function DiagnosisSession() {
   const handleBack = () => {
     setActiveStep((prevStep) => prevStep - 1);
     setError(null);
+  };
+
+  const handleStartDiagnosis = async () => {
+    if (selectedSymptoms.length === 0) {
+      setError('الرجاء اختيار عرض واحد على الأقل');
+      return;
+    }
+
+    setError(null);
+    await handleDiagnosisStart(selectedSymptoms);
   };
 
   return (
@@ -87,8 +102,8 @@ export default function DiagnosisSession() {
         <Box sx={{ mt: 2, minHeight: '400px' }}>
           {activeStep === 0 && (
             <SymptomSelector
-              onDiagnosisStart={handleDiagnosisStart}
-              loading={loading}
+              selectedSymptoms={selectedSymptoms}
+              onSymptomsChange={setSelectedSymptoms}
             />
           )}
 
@@ -116,8 +131,8 @@ export default function DiagnosisSession() {
           </Button>
           <Button
             variant="contained"
-            onClick={() => setActiveStep((prev) => prev + 1)}
-            disabled={loading || activeStep === steps.length - 1}
+            onClick={handleStartDiagnosis}
+            disabled={loading || activeStep === steps.length - 1 || selectedSymptoms.length === 0}
           >
             {activeStep === steps.length - 1 ? 'إنهاء' : 'التالي'}
             {loading && <CircularProgress size={24} sx={{ ml: 1 }} />}
@@ -127,3 +142,5 @@ export default function DiagnosisSession() {
     </Box>
   );
 }
+
+export default DiagnosisSession;

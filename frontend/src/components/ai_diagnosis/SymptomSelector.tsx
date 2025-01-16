@@ -1,85 +1,151 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
+  Chip,
   TextField,
-  Autocomplete,
   Button,
   Typography,
+  Autocomplete,
+  CircularProgress,
+  Slider,
+  Grid,
   Paper,
 } from '@mui/material';
+import { SymptomInput } from '../../types/diagnosis';
 
 interface Symptom {
-  symptom_id: number;
+  id: number;
   name: string;
-  severity: number;
-  notes?: string;
+  description?: string;
 }
 
 interface SymptomSelectorProps {
-  selectedSymptoms: Symptom[];
-  onSymptomSelect: (symptom: Symptom) => void;
-  onSymptomRemove: (symptomId: number) => void;
+  selectedSymptoms: SymptomInput[];
+  onSymptomsChange: (symptoms: SymptomInput[]) => void;
+  onSubmit: () => void;
+  isSubmitting: boolean;
 }
 
-const SymptomSelector: React.FC<SymptomSelectorProps> = ({
+const SEVERITY_MARKS = [
+  { value: 1, label: 'خفيف' },
+  { value: 2, label: 'متوسط' },
+  { value: 3, label: 'شديد' },
+];
+
+const commonSymptoms: Symptom[] = [
+  { id: 1, name: 'حمى', description: 'ارتفاع في درجة حرارة الجسم' },
+  { id: 2, name: 'سعال', description: 'سعال جاف أو مصحوب بالبلغم' },
+  { id: 3, name: 'صداع', description: 'ألم في الرأس' },
+  { id: 4, name: 'تعب', description: 'إرهاق وضعف عام' },
+  { id: 5, name: 'ألم في العضلات', description: 'ألم وتعب في العضلات' },
+];
+
+export const SymptomSelector: React.FC<SymptomSelectorProps> = ({
   selectedSymptoms,
-  onSymptomSelect,
-  onSymptomRemove,
+  onSymptomsChange,
+  onSubmit,
+  isSubmitting
 }) => {
-  const [selectedSymptomsState, setSelectedSymptomsState] = useState<Symptom[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [availableSymptoms, setAvailableSymptoms] = useState<Symptom[]>(commonSymptoms);
 
-  const commonSymptoms = [
-    { symptom_id: 1, name: 'Fever', severity: 1 },
-    { symptom_id: 2, name: 'Headache', severity: 2 },
-    { symptom_id: 3, name: 'Cough', severity: 3 },
-    { symptom_id: 4, name: 'Fatigue', severity: 4 },
-    { symptom_id: 5, name: 'Nausea', severity: 5 },
-    { symptom_id: 6, name: 'Dizziness', severity: 6 },
-    { symptom_id: 7, name: 'Chest Pain', severity: 7 },
-    { symptom_id: 8, name: 'Shortness of Breath', severity: 8 },
-    { symptom_id: 9, name: 'Body Aches', severity: 9 },
-    { symptom_id: 10, name: 'Sore Throat', severity: 10 },
-  ];
+  const handleSymptomAdd = (symptom: Symptom | null) => {
+    if (!symptom) return;
 
-  const handleSubmit = async () => {
-    if (selectedSymptomsState.length > 0) {
-      // await onDiagnosisStart(selectedSymptomsState);
-    }
+    const newSymptom: SymptomInput = {
+      symptom_id: symptom.id,
+      symptom: symptom.name,
+      severity: 2, // Default severity
+    };
+
+    onSymptomsChange([...selectedSymptoms, newSymptom]);
+    setSearchQuery('');
+  };
+
+  const handleSymptomRemove = (symptomId: number) => {
+    onSymptomsChange(selectedSymptoms.filter((s) => s.symptom_id !== symptomId));
+  };
+
+  const handleSeverityChange = (symptomId: number, newSeverity: number) => {
+    onSymptomsChange(
+      selectedSymptoms.map((s) =>
+        s.symptom_id === symptomId ? { ...s, severity: newSeverity } : s
+      )
+    );
   };
 
   return (
-    <Paper elevation={3} sx={{ p: 3 }}>
+    <Box>
       <Typography variant="h6" gutterBottom>
         Select Symptoms
       </Typography>
-      <Box sx={{ mb: 3 }}>
-        <Autocomplete
-          multiple
-          options={commonSymptoms}
-          value={selectedSymptomsState}
-          onChange={(_, newValue) => setSelectedSymptomsState(newValue)}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="outlined"
-              label="Search symptoms"
-              placeholder="Type to search"
-              fullWidth
-            />
-          )}
-          sx={{ mb: 2 }}
-        />
+
+      <Autocomplete
+        options={availableSymptoms.filter(
+          (s) => !selectedSymptoms.some((selected) => selected.symptom_id === s.id)
+        )}
+        getOptionLabel={(option) => option.name}
+        value={null}
+        onChange={(_event, newValue) => handleSymptomAdd(newValue)}
+        inputValue={searchQuery}
+        onInputChange={(_event, newValue) => setSearchQuery(newValue)}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Search symptoms"
+            variant="outlined"
+            fullWidth
+          />
+        )}
+      />
+
+      <Box sx={{ mt: 3 }}>
+        {selectedSymptoms.map((symptom) => (
+          <Paper key={symptom.symptom_id} sx={{ p: 2, mt: 2 }}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} sm={4}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Chip
+                    label={symptom.symptom}
+                    onDelete={() => handleSymptomRemove(symptom.symptom_id)}
+                    color="primary"
+                  />
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} sm={4}>
+                <Typography gutterBottom>Severity</Typography>
+                <Slider
+                  value={symptom.severity}
+                  min={1}
+                  max={10}
+                  step={1}
+                  marks={[]}
+                  onChange={(_event, value) =>
+                    handleSeverityChange(symptom.symptom_id, value as number)
+                  }
+                />
+              </Grid>
+            </Grid>
+          </Paper>
+        ))}
+      </Box>
+
+      <Box sx={{ mt: 3 }}>
         <Button
           variant="contained"
-          color="primary"
-          onClick={handleSubmit}
-          disabled={selectedSymptomsState.length === 0}
+          onClick={onSubmit}
+          disabled={selectedSymptoms.length === 0 || isSubmitting}
           fullWidth
         >
-          Start Diagnosis
+          {isSubmitting ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            'Start Diagnosis'
+          )}
         </Button>
       </Box>
-    </Paper>
+    </Box>
   );
 };
 

@@ -1,112 +1,96 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
+  Paper,
   Grid,
   CircularProgress,
-  Tooltip,
-  IconButton,
-  Chip,
-  LinearProgress,
+  Alert,
+  useTheme,
 } from '@mui/material';
-import {
-  InfoOutlined,
-  TrendingUp,
-  TrendingDown,
-  Warning,
-  CheckCircle,
-} from '@mui/icons-material';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-  Legend,
-  Tooltip as RechartsTooltip,
-} from 'recharts';
+import { usePatientContext } from '../../contexts/PatientContext';
 import { useAIService } from '../../services/ai-service';
-import { useTheme } from '@mui/material/styles';
 
-interface RiskFactor {
-  name: string;
+interface HealthRisk {
+  riskType: string;
+  riskLevel: 'low' | 'medium' | 'high';
   probability: number;
-  trend: 'up' | 'down' | 'stable';
-  severity: 'low' | 'medium' | 'high';
-  description: string;
+  factors: string[];
+  recommendations: string[];
 }
 
 interface HealthMetric {
   name: string;
-  current: number;
-  target: number;
+  value: number;
   unit: string;
-  status: 'good' | 'warning' | 'critical';
+  status: 'normal' | 'warning' | 'critical';
+  trend: 'up' | 'down' | 'stable';
 }
 
-export default function HealthRiskPredictor({ patientId }: { patientId: number }) {
+export function HealthRiskPredictor() {
   const theme = useTheme();
-  const { predictPatientRisks } = useAIService();
-  const [loading, setLoading] = useState(true);
-  const [riskFactors, setRiskFactors] = useState<RiskFactor[]>([]);
-  const [healthMetrics, setHealthMetrics] = useState<HealthMetric[]>([]);
+  const { currentPatient } = usePatientContext();
+  const { predictHealthRisks, getHealthMetrics } = useAIService();
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [healthRisks, setHealthRisks] = useState<HealthRisk[]>([]);
+  const [healthMetrics, setHealthMetrics] = useState<HealthMetric[]>([]);
 
   useEffect(() => {
-    const loadPredictions = async () => {
+    if (!currentPatient) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
       try {
-        const data = await predictPatientRisks(patientId);
-        setRiskFactors(data.riskFactors);
-        setHealthMetrics(data.healthMetrics);
+        const [risks, metrics] = await Promise.all([
+          predictHealthRisks(currentPatient.id),
+          getHealthMetrics(currentPatient.id),
+        ]);
+
+        setHealthRisks(risks);
+        setHealthMetrics(metrics);
       } catch (err) {
-        setError('حدث خطأ في تحميل التنبؤات');
+        setError('حدث خطأ أثناء تحليل المخاطر الصحية');
       } finally {
         setLoading(false);
       }
     };
 
-    loadPredictions();
-  }, [patientId]);
+    fetchData();
+  }, [currentPatient, predictHealthRisks, getHealthMetrics]);
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
+  const getRiskColor = (riskLevel: HealthRisk['riskLevel']) => {
+    switch (riskLevel) {
       case 'high':
         return theme.palette.error.main;
       case 'medium':
         return theme.palette.warning.main;
-      default:
+      case 'low':
         return theme.palette.success.main;
-    }
-  };
-
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'up':
-        return <TrendingUp color="error" />;
-      case 'down':
-        return <TrendingDown color="success" />;
       default:
-        return null;
+        return theme.palette.info.main;
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getMetricColor = (status: HealthMetric['status']) => {
     switch (status) {
       case 'critical':
-        return <Warning color="error" />;
+        return theme.palette.error.main;
       case 'warning':
-        return <Warning color="warning" />;
+        return theme.palette.warning.main;
+      case 'normal':
+        return theme.palette.success.main;
       default:
-        return <CheckCircle color="success" />;
+        return theme.palette.text.primary;
     }
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+      <Box display="flex" justifyContent="center" p={3}>
         <CircularProgress />
       </Box>
     );
@@ -114,142 +98,88 @@ export default function HealthRiskPredictor({ patientId }: { patientId: number }
 
   if (error) {
     return (
-      <Box sx={{ p: 3 }}>
-        <Typography color="error">{error}</Typography>
-      </Box>
+      <Alert severity="error" sx={{ mb: 2 }}>
+        {error}
+      </Alert>
     );
   }
 
   return (
-    <Box sx={{ mt: 4 }}>
-      <Typography variant="h6" gutterBottom>
+    <Box>
+      <Typography variant="h5" gutterBottom>
         تحليل المخاطر الصحية
       </Typography>
 
       <Grid container spacing={3}>
-        {/* عوامل الخطر */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="subtitle1" gutterBottom>
-                عوامل الخطر المحتملة
+        {healthRisks.map((risk, index) => (
+          <Grid item xs={12} md={6} key={index}>
+            <Paper sx={{ p: 3 }}>
+              <Typography
+                variant="h6"
+                gutterBottom
+                sx={{ color: getRiskColor(risk.riskLevel) }}
+              >
+                {risk.riskType}
               </Typography>
 
-              {riskFactors.map((factor, index) => (
-                <Box
-                  key={index}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    mb: 2,
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography>{factor.name}</Typography>
-                    <Tooltip title={factor.description}>
-                      <IconButton size="small">
-                        <InfoOutlined fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Chip
-                      label={`${Math.round(factor.probability * 100)}%`}
-                      size="small"
-                      sx={{
-                        bgcolor: getSeverityColor(factor.severity),
-                        color: 'white',
-                      }}
-                    />
-                    {getTrendIcon(factor.trend)}
-                  </Box>
-                </Box>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* المؤشرات الصحية */}
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="subtitle1" gutterBottom>
-                المؤشرات الصحية
-              </Typography>
-
-              {healthMetrics.map((metric, index) => (
-                <Box key={index} sx={{ mb: 3 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      mb: 1,
-                    }}
-                  >
-                    <Typography variant="body2">
-                      {metric.name} ({metric.unit})
-                    </Typography>
-                    {getStatusIcon(metric.status)}
-                  </Box>
-
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <LinearProgress
-                        variant="determinate"
-                        value={(metric.current / metric.target) * 100}
-                        color={
-                          metric.status === 'good'
-                            ? 'success'
-                            : metric.status === 'warning'
-                            ? 'warning'
-                            : 'error'
-                        }
-                      />
-                    </Box>
-                    <Typography variant="body2" color="text.secondary">
-                      {metric.current}/{metric.target}
-                    </Typography>
-                  </Box>
-                </Box>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* رسم بياني للاتجاهات */}
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant="subtitle1" gutterBottom>
-                تحليل الاتجاهات
-              </Typography>
-
-              <Box sx={{ height: 300 }}>
-                <ResponsiveContainer>
-                  <BarChart
-                    data={riskFactors}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <RechartsTooltip />
-                    <Legend />
-                    <Bar
-                      dataKey="probability"
-                      name="احتمالية الخطر"
-                      fill={theme.palette.primary.main}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body1" gutterBottom>
+                  مستوى الخطورة: {risk.riskLevel}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  احتمالية: {Math.round(risk.probability * 100)}%
+                </Typography>
               </Box>
-            </CardContent>
-          </Card>
-        </Grid>
+
+              <Typography variant="subtitle1" gutterBottom>
+                العوامل المؤثرة:
+              </Typography>
+              <ul>
+                {risk.factors.map((factor, idx) => (
+                  <li key={idx}>{factor}</li>
+                ))}
+              </ul>
+
+              <Typography variant="subtitle1" gutterBottom>
+                التوصيات:
+              </Typography>
+              <ul>
+                {risk.recommendations.map((rec, idx) => (
+                  <li key={idx}>{rec}</li>
+                ))}
+              </ul>
+            </Paper>
+          </Grid>
+        ))}
+
+        {healthMetrics.map((metric, index) => (
+          <Grid item xs={12} md={4} key={index}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                {metric.name}
+              </Typography>
+              <Typography
+                variant="h4"
+                sx={{ color: getMetricColor(metric.status) }}
+              >
+                {metric.value}
+                <Typography component="span" variant="body1">
+                  {metric.unit}
+                </Typography>
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ mt: 1 }}
+              >
+                الحالة: {metric.status}
+              </Typography>
+            </Paper>
+          </Grid>
+        ))}
       </Grid>
     </Box>
   );
 }
+
+export default HealthRiskPredictor;

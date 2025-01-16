@@ -13,6 +13,12 @@ import {
   Button,
   Alert,
   Stack,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Chip,
 } from '@mui/material';
 import {
   LineChart,
@@ -32,6 +38,21 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ar } from 'date-fns/locale';
 import { useAIService } from '../../services/ai-service';
 import { useTheme } from '@mui/material/styles';
+import {
+  LocalHospital as HospitalIcon,
+  Healing as HealingIcon,
+  Warning as WarningIcon,
+  CheckCircle as CheckCircleIcon,
+} from '@mui/icons-material';
+import { ResourcePrediction, ResourceNeed } from '../../types/diagnosis';
+
+interface ResourcePredictorProps {
+  patientId: number;
+  isLoading?: boolean;
+  error?: string | null;
+  predictions?: ResourcePrediction[];
+  currentNeeds?: ResourceNeed[];
+}
 
 interface ResourcePrediction {
   date: string;
@@ -95,6 +116,32 @@ export default function ResourcePredictor() {
       loadPredictions();
     }
   }, [dateRange, timeframe]);
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high':
+        return 'error';
+      case 'medium':
+        return 'warning';
+      case 'low':
+        return 'success';
+      default:
+        return 'default';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'fulfilled':
+        return <CheckCircleIcon color="success" />;
+      case 'pending':
+        return <WarningIcon color="warning" />;
+      case 'cancelled':
+        return <HealingIcon color="error" />;
+      default:
+        return <HospitalIcon />;
+    }
+  };
 
   return (
     <Box sx={{ mt: 4 }}>
@@ -239,52 +286,96 @@ export default function ResourcePredictor() {
 
           {/* احتياجات الموارد */}
           <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="subtitle1" gutterBottom>
-                  احتياجات الموارد المتوقعة
-                </Typography>
-                <Stack spacing={2}>
-                  {resourceNeeds.map((need, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        p: 2,
-                        border: 1,
-                        borderColor: 'divider',
-                        borderRadius: 1,
-                        bgcolor: need.shortage ? 'error.lighter' : 'success.lighter',
-                      }}
-                    >
-                      <Typography variant="subtitle2" gutterBottom>
-                        {need.resource}
-                      </Typography>
-                      <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary">
-                            الحالي: {need.current}
-                          </Typography>
-                        </Grid>
-                        <Grid item xs={6}>
-                          <Typography variant="body2" color="text.secondary">
-                            المتوقع: {need.predicted}
-                          </Typography>
-                        </Grid>
-                      </Grid>
-                      {need.shortage && (
-                        <Typography
-                          variant="body2"
-                          color="error"
-                          sx={{ mt: 1 }}
-                        >
-                          {need.recommendation}
-                        </Typography>
-                      )}
-                    </Box>
-                  ))}
-                </Stack>
-              </CardContent>
-            </Card>
+            <Paper elevation={3} sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Resource Predictions & Needs
+              </Typography>
+
+              <Grid container spacing={3}>
+                {/* Predictions Section */}
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Predicted Resource Needs
+                  </Typography>
+                  {predictions.length === 0 ? (
+                    <Typography color="text.secondary">
+                      No resource predictions available.
+                    </Typography>
+                  ) : (
+                    <List>
+                      {predictions.map((prediction, index) => (
+                        <ListItem key={index}>
+                          <ListItemIcon>
+                            <HospitalIcon />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <Typography>{prediction.resourceType}</Typography>
+                                <Chip
+                                  label={`${(prediction.probability * 100).toFixed(1)}%`}
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              </Box>
+                            }
+                            secondary={
+                              <Typography variant="body2" color="text.secondary">
+                                Est. Quantity: {prediction.estimatedQuantity} ({prediction.timeframe})
+                              </Typography>
+                            }
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
+                </Grid>
+
+                {/* Current Needs Section */}
+                <Grid item xs={12} md={6}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Current Resource Needs
+                  </Typography>
+                  {resourceNeeds.length === 0 ? (
+                    <Typography color="text.secondary">
+                      No current resource needs.
+                    </Typography>
+                  ) : (
+                    <List>
+                      {resourceNeeds.map((need, index) => (
+                        <ListItem key={index}>
+                          <ListItemIcon>
+                            {getStatusIcon(need.status)}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <Typography>{need.resourceType}</Typography>
+                                <Chip
+                                  label={need.priority}
+                                  size="small"
+                                  color={getPriorityColor(need.priority)}
+                                />
+                                <Chip
+                                  label={need.status}
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              </Box>
+                            }
+                            secondary={
+                              <Typography variant="body2" color="text.secondary">
+                                Quantity Needed: {need.quantity}
+                              </Typography>
+                            }
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  )}
+                </Grid>
+              </Grid>
+            </Paper>
           </Grid>
         </Grid>
       )}

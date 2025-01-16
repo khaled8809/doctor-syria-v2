@@ -1,29 +1,28 @@
 export interface DiagnosisResult {
-  id: string;
-  diagnosis: {
-    name: string;
-    icd_code: string;
-    risk_level: number;
-  };
+  id: string | number;
+  patientId: number;
+  diagnosis: string;
   confidence: number;
-  reasoning: {
-    matching_symptoms: {
-      name: string;
-      importance: number;
-    }[];
-    missing_symptoms: {
-      name: string;
-      importance: number;
-    }[];
-    confidence_explanation: string;
-  };
   recommendations: string[];
   riskLevel: 'low' | 'medium' | 'high';
+  timestamp: string;
+  details?: {
+    icd_code?: string;
+    matching_symptoms?: {
+      name: string;
+      importance: number;
+    }[];
+    missing_symptoms?: {
+      name: string;
+      importance: number;
+    }[];
+    confidence_explanation?: string;
+  };
 }
 
-export interface Symptom {
+export interface SymptomInput {
   symptom_id: number;
-  name: string;
+  symptom: string;
   severity: number;
   notes?: string;
 }

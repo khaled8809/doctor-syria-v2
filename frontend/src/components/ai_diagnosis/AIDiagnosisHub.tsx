@@ -19,7 +19,6 @@ import {
   Timeline,
   Assessment,
   Notifications,
-  Settings,
 } from '@mui/icons-material';
 import DiagnosisSession from './DiagnosisSession';
 import DiagnosisResults from './DiagnosisResults';
@@ -32,6 +31,7 @@ import { usePatientContext } from '../../contexts/PatientContext';
 import { useAIService } from '../../services/ai-service';
 import { useMedicalRecordService } from '../../services/medical-record-service';
 import { useNotificationService } from '../../services/notification-service';
+import { DiagnosisResult, SymptomInput } from '../../types/diagnosis';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -62,7 +62,7 @@ export default function AIDiagnosisHub() {
   const [drawerOpen, setDrawerOpen] = useState(!isMobile);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [diagnosisResults, setDiagnosisResults] = useState<any>(null);
+  const [diagnosisResults, setDiagnosisResults] = useState<DiagnosisResult[] | null>(null);
 
   const { currentPatient } = usePatientContext();
   const { startDiagnosis } = useAIService();
@@ -77,11 +77,11 @@ export default function AIDiagnosisHub() {
     }
   }, [currentPatient]);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 
-  const handleStartDiagnosis = async (symptoms: any[]) => {
+  const handleStartDiagnosis = async (symptoms: SymptomInput[]) => {
     if (!currentPatient) return;
 
     setLoading(true);
@@ -103,7 +103,7 @@ export default function AIDiagnosisHub() {
       });
 
       // إرسال إشعار للطبيب المعالج
-      if (results.some((r: any) => r.disease.risk_level >= 2)) {
+      if (results.some((r) => r.riskLevel === 'high')) {
         await sendNotification({
           type: 'high_risk_diagnosis',
           recipientId: currentPatient.doctorId,
@@ -149,24 +149,27 @@ export default function AIDiagnosisHub() {
       >
         <Tab
           icon={<LocalHospital />}
-          label="التشخيص"
+          label="جلسة تشخيص"
           id="ai-diagnosis-tab-0"
+          aria-controls="ai-diagnosis-tabpanel-0"
         />
         <Tab
           icon={<Assessment />}
-          label="النتائج"
+          label="نتائج التشخيص"
           id="ai-diagnosis-tab-1"
-          disabled={!diagnosisResults}
+          aria-controls="ai-diagnosis-tabpanel-1"
         />
         <Tab
           icon={<Timeline />}
-          label="التحليلات"
+          label="مؤشرات المخاطر"
           id="ai-diagnosis-tab-2"
+          aria-controls="ai-diagnosis-tabpanel-2"
         />
         <Tab
           icon={<Notifications />}
-          label="المتابعة"
+          label="متابعة الحالة"
           id="ai-diagnosis-tab-3"
+          aria-controls="ai-diagnosis-tabpanel-3"
         />
       </Tabs>
     </Box>
@@ -175,126 +178,64 @@ export default function AIDiagnosisHub() {
   return (
     <Box sx={{ display: 'flex' }}>
       {isMobile ? (
-        <Drawer
-          variant="temporary"
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          onClick={() => setDrawerOpen(!drawerOpen)}
+          sx={{ mr: 2 }}
         >
-          {renderDrawerContent()}
-        </Drawer>
-      ) : (
-        <Drawer
-          variant="permanent"
-          sx={{
-            width: 250,
-            flexShrink: 0,
-            '& .MuiDrawer-paper': {
-              width: 250,
-              boxSizing: 'border-box',
-            },
-          }}
-        >
-          {renderDrawerContent()}
-        </Drawer>
-      )}
+          <MenuIcon />
+        </IconButton>
+      ) : null}
 
-      <Box sx={{ flexGrow: 1, p: 3 }}>
-        {isMobile && (
-          <IconButton
-            edge="start"
-            onClick={() => setDrawerOpen(true)}
-            sx={{ mb: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
-        )}
+      <Drawer
+        variant={isMobile ? 'temporary' : 'permanent'}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      >
+        {renderDrawerContent()}
+      </Drawer>
 
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
           </Alert>
         )}
 
-        {currentPatient && (
-          <Paper sx={{ mb: 3, p: 2 }}>
-            <Typography variant="h6">
-              المريض: {currentPatient.name}
-            </Typography>
-            <Typography color="text.secondary">
-              رقم الملف: {currentPatient.fileNumber}
-            </Typography>
-          </Paper>
-        )}
+        <Paper sx={{ width: '100%', mb: 2 }}>
+          <TabPanel value={activeTab} index={0}>
+            <DiagnosisSession
+              onDiagnosisStart={handleStartDiagnosis}
+              loading={loading}
+            />
+          </TabPanel>
 
-        <TabPanel value={activeTab} index={0}>
-          <DiagnosisSession
-            onDiagnosisStart={handleStartDiagnosis}
-            loading={loading}
-          />
-        </TabPanel>
-
-        <TabPanel value={activeTab} index={1}>
-          {diagnosisResults && (
-            <>
-              <DiagnosisResults results={diagnosisResults} />
-              <DiagnosisChart data={diagnosisResults} />
-              <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+          <TabPanel value={activeTab} index={1}>
+            {diagnosisResults && (
+              <>
+                <DiagnosisResults results={diagnosisResults} />
                 <Button
                   variant="contained"
+                  color="primary"
                   onClick={handleSaveToRecord}
+                  sx={{ mt: 2 }}
                 >
                   حفظ في السجل الطبي
                 </Button>
-                <Button
-                  variant="outlined"
-                  onClick={() => setActiveTab(3)}
-                >
-                  إضافة متابعة
-                </Button>
-              </Box>
-            </>
-          )}
-        </TabPanel>
-
-        <TabPanel value={activeTab} index={2}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {currentPatient && (
-              <HealthRiskPredictor patientId={currentPatient.id} />
+              </>
             )}
-            <ResourcePredictor />
-          </Box>
-        </TabPanel>
+          </TabPanel>
 
-        <TabPanel value={activeTab} index={3}>
-          {currentPatient && diagnosisResults && (
-            <FollowUpReminder
-              patientId={currentPatient.id}
-              diagnosis={diagnosisResults[0].disease}
-              onReminderCreate={async (reminder) => {
-                try {
-                  await sendNotification({
-                    type: 'follow_up_reminder',
-                    recipientId: currentPatient.id,
-                    data: reminder,
-                  });
-                } catch (err) {
-                  setError('حدث خطأ أثناء إنشاء التذكير');
-                }
-              }}
-              onReminderUpdate={async (reminder) => {
-                try {
-                  await sendNotification({
-                    type: 'reminder_update',
-                    recipientId: currentPatient.id,
-                    data: reminder,
-                  });
-                } catch (err) {
-                  setError('حدث خطأ أثناء تحديث التذكير');
-                }
-              }}
-            />
-          )}
-        </TabPanel>
+          <TabPanel value={activeTab} index={2}>
+            <HealthRiskPredictor />
+          </TabPanel>
+
+          <TabPanel value={activeTab} index={3}>
+            <FollowUpReminder />
+          </TabPanel>
+        </Paper>
       </Box>
     </Box>
   );
