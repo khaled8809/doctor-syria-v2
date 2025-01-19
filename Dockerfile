@@ -4,6 +4,7 @@ FROM python:3.11-slim
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV DJANGO_SETTINGS_MODULE=doctor_syria.settings_simple
 
 # Set work directory
 WORKDIR /app
@@ -11,10 +12,9 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        postgresql-client \
-        netcat-traditional \
+        default-libmysqlclient-dev \
         build-essential \
-        libpq-dev \
+        pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -25,8 +25,8 @@ RUN pip install --upgrade pip \
 # Copy project
 COPY . .
 
-# Copy entrypoint script directly to root
-COPY scripts/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Collect static files
+RUN python manage.py collectstatic --noinput
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Run gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "doctor_syria.wsgi:application"]

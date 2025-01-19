@@ -1,6 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
-
+from django.views.generic import ListView
+from rest_framework import viewsets, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from .models import Specialty
+from .serializers import SpecialtySerializer
 
 def error_404(request, exception):
     return render(request, "errors/404.html", status=404)
@@ -51,3 +55,20 @@ def terms(request):
 
 def faq(request):
     return render(request, "help/faq.html")
+
+
+class SpecialtyViewSet(viewsets.ModelViewSet):
+    queryset = Specialty.objects.all()
+    serializer_class = SpecialtySerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['name']
+    search_fields = ['name', 'description']
+    ordering_fields = ['name', 'created_at']
+    ordering = ['name']
+
+
+class SpecialtyListView(ListView):
+    model = Specialty
+    template_name = 'core/specialty_list.html'
+    context_object_name = 'specialties'
+    ordering = ['name']
