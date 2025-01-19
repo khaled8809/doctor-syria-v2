@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Organization Details</h5>
+                    <p class="card-text">
+                        <strong>Name:</strong> {{ tenant.name }}<br>
+                        <strong>Subdomain:</strong> {{ tenant.subdomain }}<br>
+                        <strong>Current Plan:</strong> {{ tenant.subscription_plan }}<br>
+                        {% if tenant.subscription_end_date %}
+                        <strong>Subscription Valid Until:</strong> {{ tenant.subscription_end_date|date:"F d, Y" }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Users ({{ users.count }})</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ user.user.email }}</td>
+                                    <td>{% if user.is_tenant_admin %}Admin{% else %}User{% endif %}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-primary">Edit</button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Usage Statistics</h5>
+                    <canvas id="usageChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Add your Chart.js initialization here
+</script>
+{% endblock %}

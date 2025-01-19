@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}عرض التقارير{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'reports/css/reports.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <!-- شريط التصفية -->
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label for="report-type">نوع التقرير:</label>
+            <select id="report-type" class="report-filter">
+                <option value="patient_progress">تقدم المريض</option>
+                <option value="clinic_statistics">إحصائيات العيادة</option>
+                <option value="health_metrics">المؤشرات الصحية</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="date-range">الفترة الزمنية:</label>
+            <select id="date-range" class="report-filter">
+                <option value="week">أسبوع</option>
+                <option value="month">شهر</option>
+                <option value="quarter">ربع سنة</option>
+                <option value="year">سنة</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label for="patient-select">المريض:</label>
+            <select id="patient-select" class="report-filter">
+                <option value="">اختر المريض</option>
+                {% for patient in patients %}
+                <option value="{{ patient.id }}">{{ patient.full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- أزرار التصدير -->
+    <div class="export-buttons">
+        <button class="export-btn" data-format="pdf">
+            <i class="fas fa-file-pdf"></i> PDF
+        </button>
+        <button class="export-btn" data-format="excel">
+            <i class="fas fa-file-excel"></i> Excel
+        </button>
+        <button class="export-btn" data-format="csv">
+            <i class="fas fa-file-csv"></i> CSV
+        </button>
+    </div>
+
+    <!-- رسائل الخطأ -->
+    <div id="error-message" class="error-message" style="display: none;"></div>
+
+    <!-- محتوى التقرير -->
+    <div class="report-content">
+        <!-- معلومات المريض -->
+        <div id="patient-info" class="info-section"></div>
+
+        <!-- الرسوم البيانية -->
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <canvas id="metrics-chart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="progress-chart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="appointments-chart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="trends-chart"></canvas>
+            </div>
+        </div>
+
+        <!-- إحصائيات إضافية -->
+        <div id="additional-stats" class="stats-section">
+            <div id="patients-stats" class="stat-box"></div>
+            <div id="appointments-stats" class="stat-box"></div>
+            <div id="metrics-stats" class="stat-box"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'reports/js/reports.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const viewer = new ReportViewer();
+        // تحميل التقرير الافتراضي
+        viewer.loadReport('clinic_statistics');
+    });
+</script>
+{% endblock %}

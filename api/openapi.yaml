@@ -1,0 +1,99 @@
+openapi: 3.0.3
+info:
+  title: Doctor Syria API
+  version: 2.0.0
+  description: واجهة برمجة التطبيقات لنظام Doctor Syria
+
+servers:
+  - url: https://api.doctor-syria.com/v2
+    description: الخادم الرئيسي
+  - url: https://staging-api.doctor-syria.com/v2
+    description: خادم التجربة
+
+paths:
+  /auth/login:
+    post:
+      summary: تسجيل الدخول
+      tags: [المصادقة]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: تم تسجيل الدخول بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+
+  /appointments:
+    get:
+      summary: قائمة المواعيد
+      tags: [المواعيد]
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: قائمة المواعيد
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Appointment'
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [patient, doctor, admin]
+
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: integer
+        patient:
+          $ref: '#/components/schemas/User'
+        doctor:
+          $ref: '#/components/schemas/User'
+        date:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [scheduled, completed, cancelled]
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

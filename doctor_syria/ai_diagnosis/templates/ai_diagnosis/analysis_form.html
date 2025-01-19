@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">تحليل طبي باستخدام الذكاء الاصطناعي</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-robot"></i> بدء التحليل
+                            </button>
+                            <a href="{% url 'ai_diagnosis:analyze' %}" class="btn btn-secondary">
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Add any JavaScript needed for the form
+    $('#id_analysis_type').on('change', function() {
+        // Update form fields based on analysis type
+        var analysisType = $(this).val();
+        if (analysisType === 'symptoms') {
+            $('#symptom-fields').show();
+        } else {
+            $('#symptom-fields').hide();
+        }
+    });
+});
+</script>
+{% endblock %}

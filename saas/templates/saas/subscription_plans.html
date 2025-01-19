@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-5">Choose Your Subscription Plan</h2>
+    
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        {% for plan in plans %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-header text-center">
+                    <h3 class="my-0 fw-normal">{{ plan.name }}</h3>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title text-center">${{ plan.price }}<small class="text-muted fw-light">/mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        {% for feature in plan.features.all %}
+                        <li><i class="fas fa-check text-success me-2"></i>{{ feature.name }}</li>
+                        {% endfor %}
+                        <li><i class="fas fa-check text-success me-2"></i>{{ plan.max_users }} Users</li>
+                        <li><i class="fas fa-check text-success me-2"></i>{{ plan.max_storage_gb }}GB Storage</li>
+                    </ul>
+                    <button type="button" class="w-100 btn btn-lg btn-primary">Select Plan</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

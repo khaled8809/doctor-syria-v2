@@ -1,0 +1,171 @@
+/* أنماط صفحة عرض التقارير */
+
+.report-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* شريط التصفية */
+.filters-bar {
+    display: flex;
+    gap: 20px;
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-weight: bold;
+    color: #333;
+}
+
+.report-filter {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-width: 200px;
+}
+
+/* أزرار التصدير */
+.export-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.export-btn[data-format="pdf"] {
+    background-color: #f44336;
+    color: white;
+}
+
+.export-btn[data-format="excel"] {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.export-btn[data-format="csv"] {
+    background-color: #2196F3;
+    color: white;
+}
+
+.export-btn:hover {
+    opacity: 0.9;
+}
+
+/* رسائل الخطأ */
+.error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* محتوى التقرير */
+.report-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+/* معلومات المريض */
+.info-section {
+    margin-bottom: 30px;
+    padding: 15px;
+    background-color: #e3f2fd;
+    border-radius: 4px;
+}
+
+.info-section h3 {
+    color: #1976d2;
+    margin-bottom: 10px;
+}
+
+/* الرسوم البيانية */
+.charts-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.chart-wrapper {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* إحصائيات إضافية */
+.stats-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.stat-box {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-right: 4px solid #4CAF50;
+}
+
+.stat-box h4 {
+    color: #2e7d32;
+    margin-bottom: 10px;
+}
+
+/* تحسينات للأجهزة المحمولة */
+@media (max-width: 768px) {
+    .filters-bar {
+        flex-direction: column;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .report-filter {
+        width: 100%;
+    }
+
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* تنسيقات الطباعة */
+@media print {
+    .filters-bar,
+    .export-buttons {
+        display: none;
+    }
+
+    .report-container {
+        padding: 0;
+    }
+
+    .chart-wrapper {
+        page-break-inside: avoid;
+    }
+}

@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ pharmacy.name }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- معلومات الصيدلية -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">معلومات الصيدلية</h3>
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title text-primary mb-4">{{ pharmacy.name }}</h4>
+                    
+                    <div class="info-item mb-3">
+                        <i class="fas fa-map-marked-alt text-muted"></i>
+                        <div>
+                            <h6 class="mb-1">العنوان</h6>
+                            <p class="mb-0">{{ pharmacy.address }}</p>
+                        </div>
+                    </div>
+
+                    <div class="info-item mb-3">
+                        <i class="fas fa-phone text-muted"></i>
+                        <div>
+                            <h6 class="mb-1">رقم الهاتف</h6>
+                            <p class="mb-0">{{ pharmacy.phone_number }}</p>
+                        </div>
+                    </div>
+
+                    <div class="info-item mb-3">
+                        <i class="fas fa-clock text-muted"></i>
+                        <div>
+                            <h6 class="mb-1">ساعات العمل</h6>
+                            <p class="mb-0">{{ pharmacy.working_hours }}</p>
+                        </div>
+                    </div>
+
+                    <div class="status-section mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>الحالة:</span>
+                            <span class="badge {% if pharmacy.is_open %}bg-success{% else %}bg-danger{% endif %} px-3 py-2">
+                                {{ pharmacy.is_open|yesno:"مفتوح,مغلق" }}
+                            </span>
+                        </div>
+                        {% if pharmacy.delivery_available %}
+                        <div class="alert alert-success mb-0">
+                            <i class="fas fa-truck"></i>
+                            خدمة التوصيل متوفرة
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- إضافة خريطة الموقع -->
+            <div class="card mt-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map-marker-alt"></i>
+                        موقع الصيدلية
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="pharmacyMap" style="height: 300px;"></div>
+                </div>
+            </div>
+
+            <!-- إضافة قسم التقييمات -->
+            <div class="card mt-3">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-star"></i>
+                        التقييمات
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="rating-summary mb-3">
+                        <h2 class="text-center mb-0">{{ pharmacy.average_rating|default:"0.0" }}</h2>
+                        <div class="text-center">
+                            {% for i in "12345" %}
+                            <i class="fas fa-star {% if forloop.counter <= pharmacy.average_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                            {% endfor %}
+                        </div>
+                        <p class="text-center text-muted">
+                            ({{ pharmacy.ratings.count }} تقييم)
+                        </p>
+                    </div>
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'pharmacy:add_rating' pharmacy.pk %}" class="rating-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>تقييمك:</label>
+                            <div class="rating-stars mb-2">
+                                {% for i in "12345" %}
+                                <input type="radio" name="rating" value="{{ forloop.counter }}" id="star{{ forloop.counter }}" required>
+                                <label for="star{{ forloop.counter }}">
+                                    <i class="far fa-star"></i>
+                                </label>
+                                {% endfor %}
+                            </div>
+                            <textarea name="comment" class="form-control mb-2" rows="2" placeholder="أضف تعليقاً (اختياري)"></textarea>
+                            <button type="submit" class="btn btn-primary btn-sm">إرسال التقييم</button>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- قائمة الأدوية المتوفرة -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">الأدوية المتوفرة</h3>
+                    <div class="input-group w-50">
+                        <input type="text" id="medicineSearch" class="form-control" placeholder="ابحث عن دواء...">
+                        <button class="btn btn-light" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>اسم الدواء</th>
+                                    <th>الكمية المتوفرة</th>
+                                    <th>السعر</th>
+                                    <th>يحتاج وصفة</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inventory in pharmacy.pharmacyinventory_set.all %}
+                                <tr class="medicine-row">
+                                    <td>{{ inventory.medicine.name }}</td>
+                                    <td>{{ inventory.quantity }}</td>
+                                    <td>{{ inventory.medicine.price }} ل.س</td>
+                                    <td>
+                                        {% if inventory.medicine.requires_prescription %}
+                                        <span class="badge bg-warning">نعم</span>
+                                        {% else %}
+                                        <span class="badge bg-info">لا</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if inventory.quantity > 0 and pharmacy.is_open %}
+                                        <button class="btn btn-sm btn-success add-to-cart" 
+                                                data-medicine-id="{{ inventory.medicine.id }}"
+                                                data-medicine-name="{{ inventory.medicine.name }}">
+                                            <i class="fas fa-cart-plus"></i>
+                                            إضافة للسلة
+                                        </button>
+                                        {% else %}
+                                        <span class="badge bg-danger">غير متوفر</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">لا توجد أدوية متوفرة حالياً</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if pharmacy.is_open %}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-shopping-cart text-primary"></i>
+                            سلة المشتريات
+                        </h5>
+                        <span id="cartTotal" class="h5 text-primary">0 ل.س</span>
+                    </div>
+                    <div id="cartItems" class="mt-3">
+                        <!-- سيتم ملء هذا القسم عبر JavaScript -->
+                    </div>
+                    <div class="text-end mt-3">
+                        <a href="{% url 'pharmacy:medicine_order_create' pharmacy.pk %}" 
+                           class="btn btn-primary" id="checkoutBtn" style="display: none;">
+                            <i class="fas fa-check"></i>
+                            إتمام الطلب
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .info-item i {
+        font-size: 1.2rem;
+        margin-top: 0.2rem;
+    }
+    .badge {
+        font-size: 0.9rem;
+    }
+    .table th {
+        background-color: #f8f9fa;
+    }
+    .medicine-row {
+        vertical-align: middle;
+    }
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+    #pharmacyMap {
+        border-radius: 0 0 0.25rem 0.25rem;
+    }
+    .rating-stars {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: center;
+    }
+    .rating-stars input {
+        display: none;
+    }
+    .rating-stars label {
+        cursor: pointer;
+        padding: 0 0.2em;
+        font-size: 1.5em;
+    }
+    .rating-stars label:hover i,
+    .rating-stars label:hover ~ label i,
+    .rating-stars input:checked ~ label i {
+        color: #ffc107;
+    }
+    .rating-stars i {
+        transition: color 0.2s;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // البحث في الأدوية
+    const searchInput = document.getElementById('medicineSearch');
+    const medicineRows = document.querySelectorAll('.medicine-row');
+
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        
+        medicineRows.forEach(row => {
+            const medicineName = row.querySelector('td').textContent.toLowerCase();
+            row.style.display = medicineName.includes(searchTerm) ? '' : 'none';
+        });
+    });
+
+    // إدارة سلة المشتريات
+    const cartItems = {};
+    let total = 0;
+
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const medicineId = this.dataset.medicineId;
+            const medicineName = this.dataset.medicineName;
+            const price = parseFloat(this.closest('tr').querySelector('td:nth-child(3)').textContent);
+
+            if (!cartItems[medicineId]) {
+                cartItems[medicineId] = {
+                    name: medicineName,
+                    price: price,
+                    quantity: 0
+                };
+            }
+            cartItems[medicineId].quantity++;
+            updateCart();
+        });
+    });
+
+    function updateCart() {
+        const cartItemsDiv = document.getElementById('cartItems');
+        const checkoutBtn = document.getElementById('checkoutBtn');
+        cartItemsDiv.innerHTML = '';
+        total = 0;
+
+        Object.keys(cartItems).forEach(id => {
+            const item = cartItems[id];
+            if (item.quantity > 0) {
+                total += item.price * item.quantity;
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'cart-item';
+                itemDiv.innerHTML = `
+                    <div>
+                        <span>${item.name}</span>
+                        <small class="text-muted">(${item.quantity})</small>
+                    </div>
+                    <div>
+                        <span class="text-primary">${item.price * item.quantity} ل.س</span>
+                        <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeItem('${id}')">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                `;
+                cartItemsDiv.appendChild(itemDiv);
+            }
+        });
+
+        document.getElementById('cartTotal').textContent = `${total} ل.س`;
+        checkoutBtn.style.display = total > 0 ? 'inline-block' : 'none';
+    }
+
+    window.removeItem = function(id) {
+        if (cartItems[id] && cartItems[id].quantity > 0) {
+            cartItems[id].quantity--;
+            updateCart();
+        }
+    };
+
+    // إضافة خريطة الموقع
+    const map = L.map('pharmacyMap').setView([{{ pharmacy.latitude|default:"36.202105" }}, {{ pharmacy.longitude|default:"37.128750" }}], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const marker = L.marker([{{ pharmacy.latitude|default:"36.202105" }}, {{ pharmacy.longitude|default:"37.128750" }}])
+        .addTo(map)
+        .bindPopup("{{ pharmacy.name }}");
+
+    // تحسين نظام التقييم
+    const ratingForm = document.querySelector('.rating-form');
+    if (ratingForm) {
+        const stars = ratingForm.querySelectorAll('.rating-stars i');
+        stars.forEach(star => {
+            star.addEventListener('mouseover', function() {
+                this.classList.remove('far');
+                this.classList.add('fas');
+            });
+            star.addEventListener('mouseout', function() {
+                if (!this.parentElement.previousElementSibling.checked) {
+                    this.classList.remove('fas');
+                    this.classList.add('far');
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

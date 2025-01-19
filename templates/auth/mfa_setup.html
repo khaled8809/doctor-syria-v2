@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "إعداد المصادقة الثنائية" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{% trans "إعداد المصادقة الثنائية" %}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        {% trans "المصادقة الثنائية تضيف طبقة إضافية من الأمان لحسابك" %}
+                    </div>
+
+                    <!-- TOTP Setup -->
+                    <div class="mb-4">
+                        <h4>{% trans "تطبيق المصادقة" %}</h4>
+                        <p>{% trans "استخدم تطبيق المصادقة مثل Google Authenticator أو Authy" %}</p>
+                        
+                        {% if qr_code %}
+                        <div class="text-center mb-3">
+                            <img src="data:image/png;base64,{{ qr_code }}" 
+                                 alt="QR Code"
+                                 class="img-fluid">
+                        </div>
+                        {% endif %}
+                        
+                        <form method="post" action="{% url 'verify_totp' %}" class="mb-3">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="totp_code">{% trans "أدخل الرمز من التطبيق" %}</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="totp_code" 
+                                       name="code" 
+                                       required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                {% trans "تحقق" %}
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- SMS Setup -->
+                    <div class="mb-4">
+                        <h4>{% trans "التحقق عبر الرسائل النصية" %}</h4>
+                        <p>{% trans "سنرسل رمز التحقق إلى رقم هاتفك" %}</p>
+                        
+                        <form method="post" action="{% url 'setup_sms' %}" class="mb-3">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="phone">{% trans "رقم الهاتف" %}</label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phone" 
+                                       name="phone" 
+                                       value="{{ user.phone_number }}"
+                                       required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                {% trans "إعداد SMS" %}
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Email Setup -->
+                    <div class="mb-4">
+                        <h4>{% trans "التحقق عبر البريد الإلكتروني" %}</h4>
+                        <p>{% trans "سنرسل رمز التحقق إلى بريدك الإلكتروني" %}</p>
+                        
+                        <form method="post" action="{% url 'setup_email' %}" class="mb-3">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="email">{% trans "البريد الإلكتروني" %}</label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{{ user.email }}"
+                                       required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                {% trans "إعداد البريد" %}
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Backup Codes -->
+                    <div class="mb-4">
+                        <h4>{% trans "رموز النسخ الاحتياطي" %}</h4>
+                        <p>{% trans "احتفظ بهذه الرموز في مكان آمن لاستخدامها في حالة فقدان الوصول إلى طرق التحقق الأخرى" %}</p>
+                        
+                        {% if backup_codes %}
+                        <div class="alert alert-warning">
+                            <strong>{% trans "رموز النسخ الاحتياطي:" %}</strong>
+                            <ul class="list-unstyled mb-0">
+                                {% for code in backup_codes %}
+                                <li><code>{{ code }}</code></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        <form method="post" action="{% url 'generate_backup_codes' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning">
+                                {% trans "توليد رموز جديدة" %}
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Preferred Method -->
+                    <div class="mb-4">
+                        <h4>{% trans "الطريقة المفضلة" %}</h4>
+                        <form method="post" action="{% url 'set_preferred_method' %}">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <select name="method" class="form-control">
+                                    <option value="totp" {% if preferred_method == 'totp' %}selected{% endif %}>
+                                        {% trans "تطبيق المصادقة" %}
+                                    </option>
+                                    <option value="sms" {% if preferred_method == 'sms' %}selected{% endif %}>
+                                        {% trans "رسائل SMS" %}
+                                    </option>
+                                    <option value="email" {% if preferred_method == 'email' %}selected{% endif %}>
+                                        {% trans "البريد الإلكتروني" %}
+                                    </option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                {% trans "حفظ التفضيلات" %}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Copy backup codes to clipboard
+    const codes = document.querySelectorAll('code');
+    codes.forEach(code => {
+        code.addEventListener('click', function() {
+            const text = this.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const original = this.textContent;
+                this.textContent = '{% trans "تم النسخ!" %}';
+                setTimeout(() => {
+                    this.textContent = original;
+                }, 1000);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

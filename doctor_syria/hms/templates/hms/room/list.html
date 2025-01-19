@@ -1,0 +1,216 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+
+{% block hms_content %}
+<div class="room-list">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">الغرف</h1>
+        <a href="{% url 'hms:room_add' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة غرفة
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>القسم</label>
+                        <select name="department" class="form-control select2">
+                            <option value="">الكل</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if request.GET.department == dept.id|stringformat:"i" %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>الجناح</label>
+                        <select name="ward" class="form-control select2">
+                            <option value="">الكل</option>
+                            {% for ward in wards %}
+                            <option value="{{ ward.id }}" {% if request.GET.ward == ward.id|stringformat:"i" %}selected{% endif %}>
+                                {{ ward.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>نوع الغرفة</label>
+                        <select name="room_type" class="form-control">
+                            <option value="">الكل</option>
+                            {% for type_code, type_name in room_types %}
+                            <option value="{{ type_code }}" {% if request.GET.room_type == type_code %}selected{% endif %}>
+                                {{ type_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>الحالة</label>
+                        <select name="status" class="form-control">
+                            <option value="">الكل</option>
+                            <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>متاحة</option>
+                            <option value="full" {% if request.GET.status == 'full' %}selected{% endif %}>ممتلئة</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 text-left">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> تصفية
+                    </button>
+                    <a href="{% url 'hms:room_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> إعادة تعيين
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Room Grid -->
+    <div class="row">
+        {% for room in rooms %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        غرفة {{ room.room_number }}
+                        <span class="badge badge-info">{{ room.get_room_type_display }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="room-info">
+                        <div class="info-item">
+                            <i class="fas fa-hospital"></i>
+                            <span>{{ room.ward.department.name }} - {{ room.ward.name }}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-money-bill"></i>
+                            <span>{{ room.daily_rate }} ل.س/يوم</span>
+                        </div>
+                    </div>
+
+                    <div class="occupancy-info mt-3">
+                        <h6>الإشغال</h6>
+                        <div class="progress">
+                            <div class="progress-bar {% if room.occupancy_percentage > 90 %}bg-danger
+                                     {% elif room.occupancy_percentage > 70 %}bg-warning
+                                     {% else %}bg-success{% endif %}"
+                                 role="progressbar"
+                                 style="width: {{ room.occupancy_percentage }}%"
+                                 aria-valuenow="{{ room.occupancy_percentage }}"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                                {{ room.current_occupancy }}/{{ room.capacity }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="equipment-list mt-3">
+                        <h6>المعدات</h6>
+                        <ul class="list-unstyled">
+                            {% for item in room.equipment|slice:":3" %}
+                            <li><i class="fas fa-check-circle text-success"></i> {{ item }}</li>
+                            {% endfor %}
+                            {% if room.equipment|length > 3 %}
+                            <li class="text-muted">+ {{ room.equipment|length|add:"-3" }} أخرى...</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="btn-group w-100">
+                        <a href="{% url 'hms:room_detail' room.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i> عرض
+                        </a>
+                        <a href="{% url 'hms:room_edit' room.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-edit"></i> تعديل
+                        </a>
+                        <a href="{% url 'hms:bed_add' %}?room={{ room.pk }}" class="btn btn-outline-success">
+                            <i class="fas fa-bed"></i> إضافة سرير
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                لا يوجد غرف مطابقة للمعايير المحددة.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if rooms.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if rooms.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ rooms.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    السابق
+                </a>
+            </li>
+            {% endif %}
+
+            {% for i in rooms.paginator.page_range %}
+            <li class="page-item {% if rooms.number == i %}active{% endif %}">
+                <a class="page-link" href="?page={{ i }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    {{ i }}
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if rooms.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ rooms.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    التالي
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl'
+        });
+
+        // Dynamic ward loading based on department selection
+        $('select[name="department"]').change(function() {
+            var departmentId = $(this).val();
+            var wardSelect = $('select[name="ward"]');
+            
+            wardSelect.empty().append('<option value="">الكل</option>');
+            
+            if (departmentId) {
+                $.get('/api/wards/', { department: departmentId }, function(data) {
+                    data.forEach(function(ward) {
+                        wardSelect.append(
+                            $('<option></option>')
+                                .attr('value', ward.id)
+                                .text(ward.name)
+                        );
+                    });
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

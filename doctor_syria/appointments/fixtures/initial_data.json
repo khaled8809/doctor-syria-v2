@@ -1,0 +1,92 @@
+[
+    {
+        "model": "accounts.doctor",
+        "pk": 1,
+        "fields": {
+            "user": 3,
+            "specialization": "طب عام",
+            "license_number": "12345",
+            "experience_years": 10,
+            "consultation_fee": "100.00",
+            "available_for_online": true
+        }
+    },
+    {
+        "model": "accounts.patient",
+        "pk": 1,
+        "fields": {
+            "user": 4,
+            "date_of_birth": "1990-01-01",
+            "blood_type": "A+",
+            "allergies": "لا يوجد",
+            "chronic_diseases": "لا يوجد"
+        }
+    },
+    {
+        "model": "appointments.appointment",
+        "pk": 1,
+        "fields": {
+            "doctor": 1,
+            "patient": 1,
+            "appointment_type": "in_person",
+            "date": "2025-01-10",
+            "time": "10:00:00",
+            "status": "pending",
+            "symptoms": "صداع وارتفاع في درجة الحرارة",
+            "notes": "",
+            "created_at": "2025-01-03T00:00:00Z",
+            "updated_at": "2025-01-03T00:00:00Z"
+        }
+    },
+    {
+        "model": "appointments.appointment",
+        "pk": 2,
+        "fields": {
+            "doctor": 1,
+            "patient": 1,
+            "appointment_type": "online",
+            "date": "2025-01-15",
+            "time": "14:00:00",
+            "status": "confirmed",
+            "symptoms": "متابعة",
+            "notes": "",
+            "created_at": "2025-01-03T00:00:00Z",
+            "updated_at": "2025-01-03T00:00:00Z"
+        }
+    },
+    {
+        "model": "appointments.prescription",
+        "pk": 1,
+        "fields": {
+            "appointment": 1,
+            "diagnosis": "التهاب في الجيوب الأنفية",
+            "instructions": "الراحة وشرب الكثير من السوائل",
+            "created_at": "2025-01-03T00:00:00Z",
+            "valid_until": "2025-02-03"
+        }
+    },
+    {
+        "model": "appointments.prescriptionmedicine",
+        "pk": 1,
+        "fields": {
+            "prescription": 1,
+            "medicine_name": "أموكسيسيلين",
+            "dosage": "500mg",
+            "frequency": "3 مرات يومياً",
+            "duration": "7 أيام",
+            "notes": "بعد الطعام"
+        }
+    },
+    {
+        "model": "appointments.prescriptionmedicine",
+        "pk": 2,
+        "fields": {
+            "prescription": 1,
+            "medicine_name": "باراسيتامول",
+            "dosage": "500mg",
+            "frequency": "عند الحاجة",
+            "duration": "7 أيام",
+            "notes": "في حال ارتفاع الحرارة"
+        }
+    }
+]

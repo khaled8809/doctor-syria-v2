@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="text-primary">نظام التشخيص بالذكاء الاصطناعي</h2>
+        </div>
+    </div>
+
+    <!-- AI Tools Section -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                    <h4>تحليل الأعراض</h4>
+                    <p>تحليل الأعراض وتقديم تشخيص أولي باستخدام الذكاء الاصطناعي</p>
+                    <a href="{% url 'ai_diagnosis:analyze' %}" class="btn btn-primary">
+                        بدء التحليل
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-x-ray fa-3x text-success mb-3"></i>
+                    <h4>تحليل الصور الطبية</h4>
+                    <p>تحليل الصور الطبية والأشعة باستخدام تقنيات الرؤية الحاسوبية</p>
+                    <a href="{% url 'ai_diagnosis:analyze-image' %}" class="btn btn-success">
+                        تحليل صورة
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-pills fa-3x text-warning mb-3"></i>
+                    <h4>تحليل التفاعلات الدوائية</h4>
+                    <p>التحقق من التفاعلات المحتملة بين الأدوية</p>
+                    <a href="{% url 'ai_diagnosis:drug-interactions' %}" class="btn btn-warning">
+                        فحص التفاعلات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Analysis Section -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">آخر التحليلات</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>نوع التحليل</th>
+                                    <th>المريض</th>
+                                    <th>نسبة الثقة</th>
+                                    <th>التاريخ</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for analysis in recent_analyses %}
+                                <tr>
+                                    <td>{{ analysis.analysis_type }}</td>
+                                    <td>{{ analysis.patient }}</td>
+                                    <td>{{ analysis.confidence_score }}%</td>
+                                    <td>{{ analysis.created_at }}</td>
+                                    <td>
+                                        <a href="{% url 'ai_diagnosis:analysis-detail' analysis.id %}" 
+                                           class="btn btn-sm btn-primary">
+                                            عرض
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center">لا توجد تحليلات سابقة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">إحصائيات التحليل</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="analysisChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Initialize statistics chart
+    const ctx = document.getElementById('analysisChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['تحليل أعراض', 'تحليل صور', 'تفاعلات دوائية'],
+            datasets: [{
+                label: 'عدد التحليلات',
+                data: [{{ symptom_analysis_count }}, {{ image_analysis_count }}, {{ drug_interaction_count }}],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(255, 206, 86, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 206, 86, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

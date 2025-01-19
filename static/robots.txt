@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /accounts/login/
+Disallow: /accounts/register/
+Disallow: /api/
+Disallow: /media/private/
+
+Sitemap: https://doctor-syria.com/sitemap.xml

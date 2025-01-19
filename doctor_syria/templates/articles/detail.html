@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ article.title }} - دكتور سوريا{% endblock %}
+
+{% block content %}
+<div class="article-detail-page">
+    <div class="container">
+        <article class="article-detail">
+            <header class="article-header">
+                <h1>{{ article.title }}</h1>
+                <div class="article-meta">
+                    <div class="author-info">
+                        {% if article.author.avatar %}
+                            <img src="{{ article.author.avatar.url }}" alt="{{ article.author.get_full_name }}" class="author-avatar">
+                        {% endif %}
+                        <span class="author-name">{{ article.author.get_full_name }}</span>
+                    </div>
+                    <div class="article-date">
+                        <span>نُشر في {{ article.published_at|date:"d/m/Y" }}</span>
+                        {% if article.updated_at != article.published_at %}
+                            <span>آخر تحديث {{ article.updated_at|date:"d/m/Y" }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </header>
+
+            {% if article.image %}
+            <div class="article-featured-image">
+                <img src="{{ article.image.url }}" alt="{{ article.title }}">
+            </div>
+            {% endif %}
+
+            <div class="article-content">
+                {{ article.content|safe }}
+            </div>
+
+            <footer class="article-footer">
+                <div class="share-buttons">
+                    <h3>شارك المقال</h3>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" 
+                       target="_blank" class="share-button facebook">
+                        <i class="fab fa-facebook-f"></i>
+                        فيسبوك
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ article.title }}"
+                       target="_blank" class="share-button twitter">
+                        <i class="fab fa-twitter"></i>
+                        تويتر
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text={{ article.title }} {{ request.build_absolute_uri }}"
+                       target="_blank" class="share-button whatsapp">
+                        <i class="fab fa-whatsapp"></i>
+                        واتساب
+                    </a>
+                </div>
+
+                <div class="related-articles">
+                    <h3>مقالات ذات صلة</h3>
+                    <div class="articles-grid">
+                        {% for related_article in related_articles %}
+                        <article class="article-card">
+                            {% if related_article.image %}
+                                <img src="{{ related_article.image.url }}" alt="{{ related_article.title }}" class="article-image">
+                            {% endif %}
+                            <div class="article-content">
+                                <h4>{{ related_article.title }}</h4>
+                                <p class="article-excerpt">{{ related_article.excerpt }}</p>
+                                <a href="{% url 'core:article_detail' related_article.slug %}" class="btn btn-secondary">اقرأ المزيد</a>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                </div>
+            </footer>
+        </article>
+    </div>
+</div>
+{% endblock %}

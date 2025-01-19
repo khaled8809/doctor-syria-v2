@@ -1,0 +1,98 @@
+[
+    {
+        "model": "pharmacy.medicinecategory",
+        "pk": 1,
+        "fields": {
+            "name": "مضادات حيوية",
+            "description": "مضادات البكتيريا والعدوى"
+        }
+    },
+    {
+        "model": "pharmacy.medicinecategory",
+        "pk": 2,
+        "fields": {
+            "name": "مسكنات",
+            "description": "أدوية تخفيف الألم"
+        }
+    },
+    {
+        "model": "pharmacy.medicinecategory",
+        "pk": 3,
+        "fields": {
+            "name": "فيتامينات ومكملات",
+            "description": "فيتامينات ومكملات غذائية"
+        }
+    },
+    {
+        "model": "pharmacy.medicine",
+        "pk": 1,
+        "fields": {
+            "name": "أموكسيسيلين",
+            "scientific_name": "Amoxicillin",
+            "description": "مضاد حيوي واسع الطيف",
+            "price": "15.00",
+            "requires_prescription": true,
+            "dosage_form": "كبسولات",
+            "strength": "500mg",
+            "manufacturer": 1,
+            "created_at": "2025-01-03T00:00:00Z",
+            "updated_at": "2025-01-03T00:00:00Z"
+        }
+    },
+    {
+        "model": "pharmacy.medicine",
+        "pk": 2,
+        "fields": {
+            "name": "باراسيتامول",
+            "scientific_name": "Paracetamol",
+            "description": "مسكن للألم وخافض للحرارة",
+            "price": "5.00",
+            "requires_prescription": false,
+            "dosage_form": "أقراص",
+            "strength": "500mg",
+            "manufacturer": 1,
+            "created_at": "2025-01-03T00:00:00Z",
+            "updated_at": "2025-01-03T00:00:00Z"
+        }
+    },
+    {
+        "model": "pharmacy.medicine",
+        "pk": 3,
+        "fields": {
+            "name": "فيتامين د",
+            "scientific_name": "Vitamin D3",
+            "description": "مكمل غذائي لتعزيز صحة العظام",
+            "price": "25.00",
+            "requires_prescription": false,
+            "dosage_form": "كبسولات",
+            "strength": "1000IU",
+            "manufacturer": 1,
+            "created_at": "2025-01-03T00:00:00Z",
+            "updated_at": "2025-01-03T00:00:00Z"
+        }
+    },
+    {
+        "model": "pharmacy.medicinecategoryrelation",
+        "pk": 1,
+        "fields": {
+            "medicine": 1,
+            "category": 1
+        }
+    },
+    {
+        "model": "pharmacy.medicinecategoryrelation",
+        "pk": 2,
+        "fields": {
+            "medicine": 2,
+            "category": 2
+        }
+    },
+    {
+        "model": "pharmacy.medicinecategoryrelation",
+        "pk": 3,
+        "fields": {
+            "medicine": 3,
+            "category": 3
+        }
+    }
+]

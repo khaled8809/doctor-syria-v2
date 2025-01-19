@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>الفحوصات الوقائية</h2>
+        <a href="{% url 'preventive_care:checkup-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إضافة فحص جديد
+        </a>
+    </div>
+
+    <div class="row">
+        {% for checkup in checkups %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ checkup.checkup_type }}</h5>
+                    <p class="card-text">
+                        <strong>تاريخ الاستحقاق:</strong> {{ checkup.due_date }}<br>
+                        <strong>الحالة:</strong> 
+                        {% if checkup.completed %}
+                            <span class="badge bg-success">تم الإنجاز</span>
+                        {% else %}
+                            <span class="badge bg-warning">قيد الانتظار</span>
+                        {% endif %}
+                    </p>
+                    {% if checkup.notes %}
+                    <p class="card-text"><small>{{ checkup.notes }}</small></p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                لا يوجد فحوصات وقائية مجدولة حالياً.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

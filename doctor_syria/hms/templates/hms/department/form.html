@@ -1,0 +1,67 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block hms_content %}
+<div class="department-form">
+    <h1 class="page-title">
+        {% if form.instance.pk %}
+        تعديل قسم
+        {% else %}
+        إضافة قسم جديد
+        {% endif %}
+    </h1>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.name|as_crispy_field }}
+                        {{ form.code|as_crispy_field }}
+                        {{ form.department_type|as_crispy_field }}
+                        {{ form.head_doctor|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.capacity|as_crispy_field }}
+                        {{ form.floor|as_crispy_field }}
+                        {{ form.extension_number|as_crispy_field }}
+                        {{ form.is_active|as_crispy_field }}
+                    </div>
+                    <div class="col-12">
+                        {{ form.description|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% if form.instance.pk %}
+                        حفظ التغييرات
+                        {% else %}
+                        إضافة القسم
+                        {% endif %}
+                    </button>
+                    <a href="{% url 'hms:department_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 for dropdowns
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl'
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,8 @@
+# النسخ الاحتياطي اليومي في الساعة 3 صباحاً
+0 3 * * * /app/scripts/backup.sh >> /var/log/doctor_syria/backup.log 2>&1
+
+# فحص الصحة كل 5 دقائق
+*/5 * * * * /app/scripts/healthcheck.sh >> /var/log/doctor_syria/healthcheck.log 2>&1
+
+# تنظيف السجلات القديمة أسبوعياً
+0 0 * * 0 find /var/log/doctor_syria -type f -name "*.log" -mtime +30 -delete

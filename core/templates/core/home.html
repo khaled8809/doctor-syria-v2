@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="hero bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="display-4">مرحباً بك في Doctor Syria</h1>
+                <p class="lead">منصتك الطبية الشاملة للرعاية الصحية في سوريا</p>
+                <a href="{% url 'doctors:list' %}" class="btn btn-light btn-lg">ابحث عن طبيب</a>
+            </div>
+            <div class="col-md-6">
+                <img src="{% static 'images/hero.svg' %}" alt="Doctor Syria" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="features py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">خدماتنا</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-md fa-3x mb-3 text-primary"></i>
+                        <h3>احجز موعد</h3>
+                        <p>احجز موعداً مع أفضل الأطباء في سوريا</p>
+                        <a href="{% url 'appointments:book' %}" class="btn btn-primary">احجز الآن</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clinic-medical fa-3x mb-3 text-primary"></i>
+                        <h3>العيادات</h3>
+                        <p>اكتشف أفضل العيادات والمراكز الطبية</p>
+                        <a href="{% url 'clinics:list' %}" class="btn btn-primary">اكتشف المزيد</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <i class="fas fa-notes-medical fa-3x mb-3 text-primary"></i>
+                        <h3>السجلات الطبية</h3>
+                        <p>تتبع سجلاتك الطبية بسهولة</p>
+                        <a href="{% url 'medical_records:list' %}" class="btn btn-primary">عرض السجلات</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta bg-light py-5">
+    <div class="container text-center">
+        <h2>هل أنت طبيب؟</h2>
+        <p class="lead">انضم إلى شبكتنا الطبية وابدأ في استقبال المرضى عبر الإنترنت</p>
+        <a href="{% url 'doctors:register' %}" class="btn btn-primary btn-lg">سجل كطبيب</a>
+    </div>
+</div>
+{% endblock %}

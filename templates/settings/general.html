@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}الإعدادات العامة{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class="md:grid md:grid-cols-3 md:gap-6">
+        <!-- عنوان الصفحة -->
+        <div class="md:col-span-1">
+            <div class="px-4 sm:px-0">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">الإعدادات العامة</h3>
+                <p class="mt-1 text-sm text-gray-600">
+                    إدارة الإعدادات الأساسية لحسابك والعيادة
+                </p>
+            </div>
+        </div>
+
+        <!-- نموذج الإعدادات -->
+        <div class="mt-5 md:mt-0 md:col-span-2">
+            <form action="#" method="POST">
+                {% csrf_token %}
+                <div class="shadow overflow-hidden sm:rounded-md">
+                    <div class="px-4 py-5 bg-white sm:p-6">
+                        <div class="grid grid-cols-6 gap-6">
+                            <!-- معلومات العيادة -->
+                            <div class="col-span-6 sm:col-span-4">
+                                <label for="clinic_name" class="block text-sm font-medium text-gray-700">اسم العيادة</label>
+                                <input type="text" name="clinic_name" id="clinic_name" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+
+                            <div class="col-span-6 sm:col-span-4">
+                                <label for="email" class="block text-sm font-medium text-gray-700">البريد الإلكتروني</label>
+                                <input type="email" name="email" id="email" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+
+                            <div class="col-span-6 sm:col-span-4">
+                                <label for="phone" class="block text-sm font-medium text-gray-700">رقم الهاتف</label>
+                                <input type="tel" name="phone" id="phone" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+
+                            <!-- إعدادات المواعيد -->
+                            <div class="col-span-6">
+                                <h4 class="text-lg font-medium text-gray-900 mb-4">إعدادات المواعيد</h4>
+
+                                <div class="grid grid-cols-6 gap-6">
+                                    <div class="col-span-6 sm:col-span-3">
+                                        <label for="appointment_duration" class="block text-sm font-medium text-gray-700">مدة الموعد الافتراضية (دقيقة)</label>
+                                        <input type="number" name="appointment_duration" id="appointment_duration" class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                    </div>
+
+                                    <div class="col-span-6 sm:col-span-3">
+                                        <label for="working_hours" class="block text-sm font-medium text-gray-700">ساعات العمل</label>
+                                        <select id="working_hours" name="working_hours" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                            <option>9:00 ص - 5:00 م</option>
+                                            <option>8:00 ص - 4:00 م</option>
+                                            <option>10:00 ص - 6:00 م</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- إعدادات الإشعارات -->
+                            <div class="col-span-6">
+                                <h4 class="text-lg font-medium text-gray-900 mb-4">إعدادات الإشعارات</h4>
+
+                                <div class="space-y-4">
+                                    <div class="flex items-start">
+                                        <div class="flex items-center h-5">
+                                            <input id="email_notifications" name="email_notifications" type="checkbox" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                        </div>
+                                        <div class="mr-3 text-sm">
+                                            <label for="email_notifications" class="font-medium text-gray-700">إشعارات البريد الإلكتروني</label>
+                                            <p class="text-gray-500">استلام إشعارات عبر البريد الإلكتروني للمواعيد الجديدة والتذكيرات</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start">
+                                        <div class="flex items-center h-5">
+                                            <input id="sms_notifications" name="sms_notifications" type="checkbox" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                        </div>
+                                        <div class="mr-3 text-sm">
+                                            <label for="sms_notifications" class="font-medium text-gray-700">إشعارات SMS</label>
+                                            <p class="text-gray-500">استلام إشعارات عبر الرسائل النصية للمواعيد والتحديثات المهمة</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-4 py-3 bg-gray-50 text-left sm:px-6">
+                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            حفظ الإعدادات
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

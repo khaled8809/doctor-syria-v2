@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}500 - خطأ في الخادم{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 text-center">
+        <div>
+            <img class="mx-auto h-48 w-auto animate-pulse" src="{% static 'images/500.svg' %}" alt="500">
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                عذراً، حدث خطأ في الخادم
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                نواجه مشكلة فنية. يرجى المحاولة مرة أخرى لاحقاً
+            </p>
+        </div>
+        <div class="mt-8 space-y-4">
+            <button onclick="window.location.reload()" class="btn btn-primary w-full flex items-center justify-center">
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                إعادة تحميل الصفحة
+            </button>
+            <a href="{% url 'home' %}" class="btn btn-secondary w-full flex items-center justify-center">
+                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                </svg>
+                العودة إلى الصفحة الرئيسية
+            </a>
+            <div class="mt-4">
+                <div class="text-sm text-gray-500">
+                    <p>إذا استمرت المشكلة، يرجى:</p>
+                    <ul class="list-disc list-inside mt-2 space-y-1 text-right">
+                        <li>التحقق من اتصالك بالإنترنت</li>
+                        <li>مسح ذاكرة التخزين المؤقت للمتصفح</li>
+                        <li>التواصل مع فريق الدعم الفني</li>
+                    </ul>
+                </div>
+                <div class="mt-4">
+                    <a href="mailto:support@doctor-syria.com" class="text-blue-600 hover:text-blue-800 flex items-center justify-center">
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        support@doctor-syria.com
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

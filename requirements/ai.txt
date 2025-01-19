@@ -1,0 +1,12 @@
+# AI/ML Dependencies
+numpy>=1.23.5,<2.0.0  # Compatible with TensorFlow 2.15.0
+scikit-learn>=1.4.0
+tensorflow==2.15.0  # Keeping this version for stability with Python 3.11
+
+# Deep Learning Framework Dependencies
+keras==2.15.0  # Keeping this version for compatibility with TensorFlow
+
+# Additional ML Libraries
+h5py==3.12.1
+opt-einsum>=2.3.2
+protobuf>=4.25.5,<5.0.0  # Updated but keeping compatible version

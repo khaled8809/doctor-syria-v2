@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}الصيدليات{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="text-primary">الصيدليات المتوفرة</h2>
+        </div>
+        <div class="col-auto">
+            <div class="input-group">
+                <input type="text" id="searchInput" class="form-control" placeholder="ابحث عن صيدلية...">
+                <button class="btn btn-outline-primary" type="button">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" id="pharmacyList">
+        {% for pharmacy in pharmacies %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 pharmacy-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="card-title text-primary">{{ pharmacy.name }}</h5>
+                        <span class="badge {% if pharmacy.is_open %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ pharmacy.is_open|yesno:"مفتوح,مغلق" }}
+                        </span>
+                    </div>
+                    <p class="card-text">
+                        <i class="fas fa-map-marker-alt text-muted"></i>
+                        {{ pharmacy.address }}
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-phone text-muted"></i>
+                        {{ pharmacy.phone_number }}
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-clock text-muted"></i>
+                        ساعات العمل: {{ pharmacy.working_hours }}
+                    </p>
+                    {% if pharmacy.delivery_available %}
+                    <p class="card-text text-success">
+                        <i class="fas fa-truck"></i>
+                        خدمة التوصيل متوفرة
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'pharmacy:pharmacy_detail' pharmacy.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-info-circle"></i> التفاصيل
+                        </a>
+                        {% if pharmacy.is_open %}
+                        <a href="{% url 'pharmacy:medicine_order_create' pharmacy.pk %}" class="btn btn-success">
+                            <i class="fas fa-shopping-cart"></i> طلب أدوية
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                لا توجد صيدليات متوفرة حالياً.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">السابق</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">التالي</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pharmacy-card {
+        transition: transform 0.2s;
+        border-radius: 15px;
+    }
+    .pharmacy-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    .badge {
+        padding: 0.5em 1em;
+        border-radius: 20px;
+    }
+    .card-text {
+        margin-bottom: 0.75rem;
+    }
+    .card-text i {
+        margin-left: 8px;
+        width: 20px;
+    }
+    .pagination {
+        direction: ltr;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const pharmacyCards = document.querySelectorAll('.pharmacy-card');
+
+    searchInput.addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        
+        pharmacyCards.forEach(card => {
+            const pharmacyName = card.querySelector('.card-title').textContent.toLowerCase();
+            const pharmacyAddress = card.querySelector('.card-text').textContent.toLowerCase();
+            
+            if (pharmacyName.includes(searchTerm) || pharmacyAddress.includes(searchTerm)) {
+                card.closest('.col-md-6').style.display = '';
+            } else {
+                card.closest('.col-md-6').style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

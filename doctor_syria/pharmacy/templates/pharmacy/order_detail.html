@@ -1,0 +1,569 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تفاصيل الطلب #{{ order.id }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- نظام الإشعارات -->
+<div class="notification-container" id="notificationContainer"></div>
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- تفاصيل الطلب الرئيسية -->
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">تفاصيل الطلب #{{ order.id }}</h3>
+                    <span class="badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="text-muted mb-3">معلومات الطلب</h5>
+                            <p><strong>تاريخ الطلب:</strong> {{ order.created_at|date:"Y/m/d H:i" }}</p>
+                            <p><strong>آخر تحديث:</strong> {{ order.updated_at|date:"Y/m/d H:i" }}</p>
+                            <p><strong>حالة الطلب:</strong> {{ order.get_status_display }}</p>
+                            <p><strong>طريقة الدفع:</strong> {{ order.get_payment_method_display }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-muted mb-3">معلومات التوصيل</h5>
+                            <p><strong>العنوان:</strong> {{ order.delivery_address }}</p>
+                            <p><strong>رقم الهاتف:</strong> {{ order.phone_number }}</p>
+                            {% if order.delivery_notes %}
+                            <p><strong>ملاحظات التوصيل:</strong> {{ order.delivery_notes }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- قائمة الأدوية -->
+                    <h5 class="text-muted mb-3">الأدوية المطلوبة</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>الدواء</th>
+                                    <th>الكمية</th>
+                                    <th>السعر</th>
+                                    <th>المجموع</th>
+                                    <th>يحتاج وصفة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items.all %}
+                                <tr>
+                                    <td>{{ item.medicine.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.price }} ل.س</td>
+                                    <td>{{ item.total_price }} ل.س</td>
+                                    <td>
+                                        {% if item.medicine.requires_prescription %}
+                                        <span class="badge bg-warning">نعم</span>
+                                        {% else %}
+                                        <span class="badge bg-info">لا</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>المجموع الفرعي:</strong></td>
+                                    <td colspan="2">{{ order.subtotal }} ل.س</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>رسوم التوصيل:</strong></td>
+                                    <td colspan="2">{{ order.delivery_fee }} ل.س</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>الإجمالي:</strong></td>
+                                    <td colspan="2" class="text-primary"><strong>{{ order.total_amount }} ل.س</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    {% if order.notes %}
+                    <div class="mt-4">
+                        <h5 class="text-muted mb-3">ملاحظات إضافية</h5>
+                        <div class="alert alert-info">
+                            {{ order.notes }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- الوصفة الطبية -->
+            {% if order.prescription %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">الوصفة الطبية</h5>
+                    <button class="btn btn-light btn-sm" onclick="rotatePrescription()">
+                        <i class="fas fa-sync-alt"></i> تدوير الصورة
+                    </button>
+                </div>
+                <div class="card-body text-center">
+                    {% if order.prescription.url|lower|endswith:'.pdf' %}
+                    <div class="pdf-container">
+                        <embed src="{{ order.prescription.url }}" type="application/pdf" width="100%" height="600px">
+                        <a href="{{ order.prescription.url }}" class="btn btn-primary mt-2" download>
+                            <i class="fas fa-download"></i> تحميل PDF
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="prescription-container">
+                        <a href="{{ order.prescription.url }}" data-lightbox="prescription" data-title="الوصفة الطبية">
+                            <img src="{{ order.prescription.url }}" alt="الوصفة الطبية" class="img-fluid prescription-image" id="prescriptionImage">
+                        </a>
+                        <div class="prescription-controls mt-3">
+                            <button class="btn btn-primary" onclick="zoomIn()">
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                            <button class="btn btn-primary" onclick="zoomOut()">
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <a href="{{ order.prescription.url }}" class="btn btn-primary" download>
+                                <i class="fas fa-download"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- سجل التغييرات -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">سجل التغييرات</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for log in order.logs.all %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">{{ log.get_action_display }}</h6>
+                                <p class="timeline-text">{{ log.description }}</p>
+                                <small class="timeline-info">
+                                    <i class="fas fa-user"></i> {{ log.user.get_full_name }}
+                                    <i class="fas fa-clock ms-2"></i> {{ log.created_at|date:"Y/m/d H:i" }}
+                                </small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-muted text-center">لا يوجد سجل تغييرات</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الشريط الجانبي -->
+        <div class="col-lg-4">
+            <!-- حالة الطلب -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">متابعة الطلب</h5>
+                </div>
+                <div class="card-body">
+                    <div class="order-timeline">
+                        <div class="timeline-item {% if order.status != 'cancelled' %}active{% endif %}">
+                            <div class="timeline-point"></div>
+                            <div class="timeline-content">
+                                <h6>تم استلام الطلب</h6>
+                                <small>{{ order.created_at|date:"Y/m/d H:i" }}</small>
+                            </div>
+                        </div>
+                        {% if order.status != 'cancelled' %}
+                        <div class="timeline-item {% if order.status in 'processing,delivering,completed' %}active{% endif %}">
+                            <div class="timeline-point"></div>
+                            <div class="timeline-content">
+                                <h6>قيد التجهيز</h6>
+                                {% if order.processing_time %}
+                                <small>{{ order.processing_time|date:"Y/m/d H:i" }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="timeline-item {% if order.status in 'delivering,completed' %}active{% endif %}">
+                            <div class="timeline-point"></div>
+                            <div class="timeline-content">
+                                <h6>قيد التوصيل</h6>
+                                {% if order.delivery_time %}
+                                <small>{{ order.delivery_time|date:"Y/m/d H:i" }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="timeline-item {% if order.status == 'completed' %}active{% endif %}">
+                            <div class="timeline-point"></div>
+                            <div class="timeline-content">
+                                <h6>تم التسليم</h6>
+                                {% if order.completion_time %}
+                                <small>{{ order.completion_time|date:"Y/m/d H:i" }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="timeline-item active cancelled">
+                            <div class="timeline-point"></div>
+                            <div class="timeline-content">
+                                <h6>تم إلغاء الطلب</h6>
+                                <small>{{ order.updated_at|date:"Y/m/d H:i" }}</small>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- إجراءات الطلب -->
+            {% if user.role == 'pharmacy' and order.status != 'cancelled' and order.status != 'completed' %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">إجراءات الطلب</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'pharmacy:update_order_status' order.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">تحديث الحالة</label>
+                            <select name="status" class="form-select mb-2">
+                                {% if order.status == 'pending' %}
+                                <option value="processing">قبول الطلب</option>
+                                <option value="cancelled">رفض الطلب</option>
+                                {% elif order.status == 'processing' %}
+                                <option value="delivering">بدء التوصيل</option>
+                                {% elif order.status == 'delivering' %}
+                                <option value="completed">تم التسليم</option>
+                                {% endif %}
+                            </select>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-check"></i> تحديث الحالة
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- معلومات الاتصال -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">معلومات الاتصال</h5>
+                </div>
+                <div class="card-body">
+                    {% if user.role == 'pharmacy' %}
+                    <h6>المريض</h6>
+                    <p>
+                        <i class="fas fa-user text-muted"></i>
+                        {{ order.patient.get_full_name }}
+                    </p>
+                    <p>
+                        <i class="fas fa-phone text-muted"></i>
+                        {{ order.phone_number }}
+                    </p>
+                    {% else %}
+                    <h6>الصيدلية</h6>
+                    <p>
+                        <i class="fas fa-store text-muted"></i>
+                        {{ order.pharmacy.name }}
+                    </p>
+                    <p>
+                        <i class="fas fa-phone text-muted"></i>
+                        {{ order.pharmacy.phone_number }}
+                    </p>
+                    <p>
+                        <i class="fas fa-map-marker-alt text-muted"></i>
+                        {{ order.pharmacy.address }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-top-left-radius: 15px !important;
+        border-top-right-radius: 15px !important;
+    }
+    .table th {
+        background-color: #f8f9fa;
+    }
+    .badge {
+        padding: 0.5em 1em;
+        border-radius: 20px;
+    }
+    
+    /* تصميم الجدول الزمني */
+    .order-timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    .order-timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 15px;
+        height: 100%;
+        width: 2px;
+        background: #dee2e6;
+    }
+    .timeline-item {
+        position: relative;
+        padding-left: 40px;
+        margin-bottom: 25px;
+    }
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+    .timeline-point {
+        position: absolute;
+        left: 11px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #dee2e6;
+        border: 2px solid #fff;
+    }
+    .timeline-item.active .timeline-point {
+        background: #007bff;
+    }
+    .timeline-item.cancelled .timeline-point {
+        background: #dc3545;
+    }
+    .timeline-content {
+        padding: 3px 0;
+    }
+    .timeline-content h6 {
+        margin: 0;
+        color: #495057;
+    }
+    .timeline-content small {
+        color: #6c757d;
+    }
+    .timeline-item.active ~ .timeline-item .timeline-point {
+        background: #dee2e6;
+    }
+    
+    /* تصميم الأيقونات */
+    .card-body i {
+        width: 20px;
+        margin-left: 8px;
+    }
+
+    /* تصميم سجل التغييرات */
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 15px;
+        height: 100%;
+        width: 2px;
+        background: #e9ecef;
+    }
+    .timeline-item {
+        position: relative;
+        padding-right: 40px;
+        margin-bottom: 25px;
+    }
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+    .timeline-marker {
+        position: absolute;
+        right: 11px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #007bff;
+        border: 2px solid #fff;
+    }
+    .timeline-content {
+        padding: 3px 0;
+    }
+    .timeline-title {
+        margin: 0;
+        color: #495057;
+    }
+    .timeline-text {
+        margin: 5px 0;
+        color: #6c757d;
+    }
+    .timeline-info {
+        color: #adb5bd;
+    }
+    .timeline-info i {
+        margin-right: 5px;
+    }
+
+    /* تصميم عرض الوصفة الطبية */
+    .prescription-container {
+        position: relative;
+        max-width: 100%;
+        margin: auto;
+    }
+    .prescription-image {
+        max-width: 100%;
+        transition: transform 0.3s ease;
+    }
+    .prescription-controls {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+    .pdf-container {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    /* تصميم الإشعارات */
+    .notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    .notification {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-bottom: 10px;
+        transform: translateX(120%);
+        transition: transform 0.3s ease-in-out;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .notification.show {
+        transform: translateX(0);
+    }
+    .notification i {
+        font-size: 1.2em;
+    }
+    .notification.success {
+        border-right: 4px solid #28a745;
+    }
+    .notification.warning {
+        border-right: 4px solid #ffc107;
+    }
+    .notification.error {
+        border-right: 4px solid #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // نظام الإشعارات
+    window.showNotification = function(message, type = 'success') {
+        const container = document.getElementById('notificationContainer');
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        
+        let icon = 'check-circle';
+        if (type === 'warning') icon = 'exclamation-circle';
+        if (type === 'error') icon = 'times-circle';
+        
+        notification.innerHTML = `
+            <i class="fas fa-${icon}"></i>
+            <span>${message}</span>
+        `;
+        
+        container.appendChild(notification);
+        setTimeout(() => notification.classList.add('show'), 100);
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    };
+
+    // تحديث حالة الطلب
+    const statusForm = document.querySelector('form[action*="update_order_status"]');
+    if (statusForm) {
+        statusForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (confirm('هل أنت متأكد من تحديث حالة الطلب؟')) {
+                try {
+                    const formData = new FormData(this);
+                    const response = await fetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        showNotification('تم تحديث حالة الطلب بنجاح');
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showNotification('حدث خطأ أثناء تحديث الحالة', 'error');
+                    }
+                } catch (error) {
+                    showNotification('حدث خطأ في الاتصال', 'error');
+                }
+            }
+        });
+    }
+});
+
+// وظائف معالجة الوصفة الطبية
+let currentRotation = 0;
+let currentScale = 1;
+
+function rotatePrescription() {
+    const image = document.getElementById('prescriptionImage');
+    if (image) {
+        currentRotation = (currentRotation + 90) % 360;
+        image.style.transform = `rotate(${currentRotation}deg) scale(${currentScale})`;
+    }
+}
+
+function zoomIn() {
+    if (currentScale < 3) {
+        currentScale += 0.2;
+        updatePrescriptionTransform();
+    }
+}
+
+function zoomOut() {
+    if (currentScale > 0.5) {
+        currentScale -= 0.2;
+        updatePrescriptionTransform();
+    }
+}
+
+function updatePrescriptionTransform() {
+    const image = document.getElementById('prescriptionImage');
+    if (image) {
+        image.style.transform = `rotate(${currentRotation}deg) scale(${currentScale})`;
+    }
+}
+
+// تهيئة Lightbox
+lightbox.option({
+    'resizeDuration': 200,
+    'wrapAround': true,
+    'albumLabel': 'صورة %1 من %2'
+});
+</script>
+{% endblock %}

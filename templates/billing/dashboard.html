@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}لوحة تحكم المدفوعات{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'billing/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- إحصائيات سريعة -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-3 col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stat-icon bg-primary">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">إجمالي المدفوعات</h6>
+                            <h3 class="mb-0" id="totalPayments">{{ total_payments }}</h3>
+                            <small class="text-muted">آخر 30 يوم</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stat-icon bg-success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">المدفوعات المكتملة</h6>
+                            <h3 class="mb-0" id="completedPayments">{{ completed_payments }}</h3>
+                            <small class="text-success">{{ completed_percentage }}%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stat-icon bg-warning">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">قيد الانتظار</h6>
+                            <h3 class="mb-0" id="pendingPayments">{{ pending_payments }}</h3>
+                            <small class="text-warning">{{ pending_percentage }}%</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="stat-icon bg-info">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-1">متوسط المدفوعات</h6>
+                            <h3 class="mb-0" id="averagePayment">{{ average_payment }}</h3>
+                            <small class="text-muted">لكل معاملة</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الرسوم البيانية -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">تحليل المدفوعات</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="paymentsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">طرق الدفع</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="paymentMethodsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول المعاملات -->
+    <div class="card">
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="card-title mb-0">آخر المعاملات</h5>
+                </div>
+                <div class="col-auto">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-light" id="exportExcel">
+                            <i class="fas fa-file-excel"></i> تصدير Excel
+                        </button>
+                        <button type="button" class="btn btn-light" id="exportPDF">
+                            <i class="fas fa-file-pdf"></i> تصدير PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- أدوات التصفية -->
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="searchInput" placeholder="بحث...">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="statusFilter">
+                        <option value="">جميع الحالات</option>
+                        <option value="completed">مكتمل</option>
+                        <option value="pending">قيد الانتظار</option>
+                        <option value="failed">فشل</option>
+                        <option value="refunded">مسترد</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="paymentMethodFilter">
+                        <option value="">جميع طرق الدفع</option>
+                        <option value="cash">نقداً</option>
+                        <option value="card">بطاقة ائتمان</option>
+                        <option value="fatura">فاتورة</option>
+                        <option value="bank_transfer">تحويل بنكي</option>
+                        <option value="insurance">تأمين</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="date" class="form-control" id="dateFilter">
+                </div>
+            </div>
+
+            <!-- جدول المعاملات -->
+            <div class="table-responsive">
+                <table class="table table-hover" id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th>رقم المعاملة</th>
+                            <th>المريض</th>
+                            <th>المبلغ</th>
+                            <th>طريقة الدفع</th>
+                            <th>الحالة</th>
+                            <th>التاريخ</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>{{ payment.id }}</td>
+                            <td>{{ payment.invoice.patient.get_full_name }}</td>
+                            <td>{{ payment.amount }}</td>
+                            <td>
+                                <span class="badge bg-{{ payment.get_payment_method_badge }}">
+                                    {{ payment.get_payment_method_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ payment.get_status_badge }}">
+                                    {{ payment.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ payment.created_at|date:"Y-m-d H:i" }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'billing:payment-detail' payment.id %}" 
+                                       class="btn btn-sm btn-light" 
+                                       title="عرض التفاصيل">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if payment.status == 'completed' %}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-light refund-btn" 
+                                            data-payment-id="{{ payment.id }}"
+                                            title="استرداد">
+                                        <i class="fas fa-undo"></i>
+                                    </button>
+                                    {% endif %}
+                                    <a href="{% url 'billing:payment-receipt' payment.id %}" 
+                                       class="btn btn-sm btn-light"
+                                       title="طباعة الإيصال">
+                                        <i class="fas fa-print"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- ترقيم الصفحات -->
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center">
+                    {% if payments.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ payments.previous_page_number }}">السابق</a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in payments.paginator.page_range %}
+                    <li class="page-item {% if num == payments.number %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+                    
+                    {% if payments.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ payments.next_page_number }}">التالي</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة استرداد المدفوعات -->
+<div class="modal fade" id="refundModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">استرداد المدفوعات</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="refundForm">
+                    <input type="hidden" name="payment_id" id="refundPaymentId">
+                    <div class="mb-3">
+                        <label class="form-label">المبلغ</label>
+                        <input type="number" class="form-control" name="amount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">سبب الاسترداد</label>
+                        <textarea class="form-control" name="reason" rows="3" required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="confirmRefundBtn">تأكيد الاسترداد</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="{% static 'billing/js/dashboard.js' %}"></script>
+{% endblock %}

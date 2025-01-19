@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="laboratory-dashboard">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">نظام إدارة المختبر</h1>
+        <div class="actions">
+            <a href="{% url 'laboratory:test_add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> فحص جديد
+            </a>
+            <a href="{% url 'laboratory:sample_add' %}" class="btn btn-info">
+                <i class="fas fa-vial"></i> عينة جديدة
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">فحوصات اليوم</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">{{ today_tests_count }}</h2>
+                        <i class="fas fa-flask fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-title">قيد الانتظار</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">{{ pending_tests_count }}</h2>
+                        <i class="fas fa-hourglass-half fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">مكتملة</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">{{ completed_tests_count }}</h2>
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6 class="card-title">حرجة</h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2 class="mb-0">{{ critical_results_count }}</h2>
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Recent Tests -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title">آخر الفحوصات</h5>
+                    <a href="{% url 'laboratory:test_list' %}" class="btn btn-sm btn-outline-primary">
+                        عرض الكل
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>رقم الفحص</th>
+                                    <th>المريض</th>
+                                    <th>نوع الفحص</th>
+                                    <th>القسم</th>
+                                    <th>الحالة</th>
+                                    <th>الوقت</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in recent_tests %}
+                                <tr>
+                                    <td>{{ test.test_number }}</td>
+                                    <td>{{ test.patient.name }}</td>
+                                    <td>{{ test.get_test_type_display }}</td>
+                                    <td>{{ test.department.name }}</td>
+                                    <td>
+                                        <span class="badge {% if test.status == 'completed' %}badge-success
+                                                   {% elif test.status == 'pending' %}badge-warning
+                                                   {% elif test.status == 'processing' %}badge-info
+                                                   {% else %}badge-danger{% endif %}">
+                                            {{ test.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ test.created_at|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'laboratory:test_detail' test.pk %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if test.status != 'completed' %}
+                                            <a href="{% url 'laboratory:test_edit' test.pk %}" 
+                                               class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            {% endif %}
+                                            <button type="button" class="btn btn-sm btn-outline-info"
+                                                    onclick="printTestReport('{{ test.pk }}')">
+                                                <i class="fas fa-print"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">لا يوجد فحوصات حديثة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Statistics -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">إحصائيات الفحوصات</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="testsChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Critical Results -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">نتائج حرجة</h5>
+                </div>
+                <div class="card-body">
+                    {% for result in critical_results %}
+                    <div class="critical-result">
+                        <div class="d-flex justify-content-between">
+                            <h6>{{ result.test.test_number }}</h6>
+                            <small>{{ result.created_at|date:"Y-m-d H:i" }}</small>
+                        </div>
+                        <p class="mb-1">{{ result.patient.name }}</p>
+                        <p class="mb-1">{{ result.test.get_test_type_display }}</p>
+                        <p class="text-danger mb-0">{{ result.critical_value }}</p>
+                    </div>
+                    {% empty %}
+                    <p class="text-center">لا يوجد نتائج حرجة</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Inventory Status -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title">حالة المخزون</h5>
+                    <a href="{% url 'laboratory:inventory' %}" class="btn btn-sm btn-outline-primary">
+                        إدارة المخزون
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% for item in low_stock_items %}
+                    <div class="inventory-item">
+                        <div class="d-flex justify-content-between">
+                            <span>{{ item.name }}</span>
+                            <span class="badge {% if item.quantity <= item.min_quantity %}badge-danger
+                                       {% elif item.quantity <= item.min_quantity|add:10 %}badge-warning
+                                       {% else %}badge-success{% endif %}">
+                                {{ item.quantity }} {{ item.unit }}
+                            </span>
+                        </div>
+                        <div class="progress mt-1" style="height: 4px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ item.stock_percentage }}%"></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-center">جميع المواد متوفرة بكميات كافية</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Today's Schedule -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">جدول اليوم</h5>
+                </div>
+                <div class="card-body">
+                    {% for shift in today_shifts %}
+                    <div class="shift-item">
+                        <div class="shift-time">{{ shift.start_time|date:"H:i" }} - {{ shift.end_time|date:"H:i" }}</div>
+                        <div class="shift-staff">
+                            {% for staff in shift.staff.all %}
+                            <div class="staff-member">
+                                <img src="{{ staff.photo.url }}" alt="{{ staff.name }}">
+                                <div class="staff-info">
+                                    <span class="staff-name">{{ staff.name }}</span>
+                                    <span class="staff-role">{{ staff.get_role_display }}</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-center">لا يوجد مناوبات لليوم</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .critical-result {
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .critical-result:last-child {
+        border-bottom: none;
+    }
+
+    .inventory-item {
+        margin-bottom: 1rem;
+    }
+
+    .inventory-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .shift-item {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .shift-time {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .staff-member {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .staff-member img {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .staff-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .staff-role {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Tests Statistics Chart
+    const ctx = document.getElementById('testsChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'عدد الفحوصات',
+                data: {{ chart_data }},
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    function printTestReport(testId) {
+        window.open(`{% url 'laboratory:test_report' 0 %}`.replace('0', testId), '_blank');
+    }
+</script>
+{% endblock %}

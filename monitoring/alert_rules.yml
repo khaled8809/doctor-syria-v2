@@ -1,0 +1,112 @@
+groups:
+  - name: doctor_syria_alerts
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "استخدام CPU مرتفع ({{ $value }}%)"
+          description: "استخدام CPU على {{ $labels.instance }} تجاوز 80% لمدة 5 دقائق"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "استخدام الذاكرة مرتفع ({{ $value }}%)"
+          description: "استخدام الذاكرة على {{ $labels.instance }} تجاوز 85%"
+
+      # Disk Space Running Out
+      - alert: LowDiskSpace
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_free_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "مساحة القرص منخفضة ({{ $value }}% مستخدم)"
+          description: "مساحة القرص على {{ $labels.instance }} تجاوزت 85% من السعة الكلية"
+
+      # High Database Connections
+      - alert: HighDatabaseConnections
+        expr: pg_stat_activity_count > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "عدد اتصالات قاعدة البيانات مرتفع ({{ $value }})"
+          description: "عدد اتصالات قاعدة البيانات تجاوز 100 لمدة 5 دقائق"
+
+      # Redis Memory Usage
+      - alert: RedisMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "استخدام ذاكرة Redis مرتفع ({{ $value }}%)"
+          description: "استخدام ذاكرة Redis تجاوز 80% من الحد الأقصى"
+
+      # High Response Time
+      - alert: HighResponseTime
+        expr: rate(nginx_http_request_duration_seconds_sum[5m]) / rate(nginx_http_request_duration_seconds_count[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "زمن الاستجابة مرتفع ({{ $value }}s)"
+          description: "متوسط زمن الاستجابة تجاوز 1 ثانية لمدة 5 دقائق"
+
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: rate(nginx_http_requests_total{status=~"5.."}[5m]) / rate(nginx_http_requests_total[5m]) * 100 > 5
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "معدل الأخطاء مرتفع ({{ $value }}%)"
+          description: "معدل أخطاء HTTP 5xx تجاوز 5% لمدة 5 دقائق"
+
+      # Celery Queue Backlog
+      - alert: CeleryQueueBacklog
+        expr: celery_tasks_total{state="received"} - celery_tasks_total{state="completed"} > 100
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "تراكم مهام Celery ({{ $value }} مهمة)"
+          description: "عدد المهام المتراكمة في قائمة الانتظار تجاوز 100 لمدة 10 دقائق"
+
+      # Database Connection Issues
+      - alert: DatabaseConnectionIssues
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "مشاكل اتصال قاعدة البيانات"
+          description: "مشاكل اتصال قاعدة البيانات على {{ $labels.instance }}"
+
+      # Redis Connection Issues
+      - alert: RedisConnectionIssues
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "مشاكل اتصال Redis"
+          description: "مشاكل اتصال Redis على {{ $labels.instance }}"
+
+      # Celery Worker Down
+      - alert: CeleryWorkerDown
+        expr: celery_workers_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "مشاكل في عمال Celery"
+          description: "مشاكل في عمال Celery على {{ $labels.instance }}"

@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Doctor Syria - المنصة الطبية المتكاملة{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero text-center">
+    <div class="container">
+        <h1 class="display-4 mb-4">مرحباً بكم في Doctor Syria</h1>
+        <p class="lead mb-5">المنصة الطبية المتكاملة لإدارة المستشفيات والعيادات في سوريا</p>
+        {% if not user.is_authenticated %}
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg">
+                <i class="fas fa-user-plus me-2"></i>
+                إنشاء حساب
+            </a>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-sign-in-alt me-2"></i>
+                تسجيل الدخول
+            </a>
+        </div>
+        {% else %}
+        <a href="{% url 'accounts:dashboard' %}" class="btn btn-light btn-lg">
+            <i class="fas fa-tachometer-alt me-2"></i>
+            الذهاب إلى لوحة التحكم
+        </a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">خدماتنا</h2>
+        <div class="row g-4">
+            <!-- Medical Records -->
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-notes-medical feature-icon"></i>
+                        <h3 class="card-title h4">السجلات الطبية</h3>
+                        <p class="card-text">إدارة السجلات الطبية للمرضى بشكل آمن ومنظم</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Appointments -->
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-calendar-check feature-icon"></i>
+                        <h3 class="card-title h4">المواعيد</h3>
+                        <p class="card-text">حجز وإدارة المواعيد مع الأطباء بسهولة</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pharmacy -->
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-pills feature-icon"></i>
+                        <h3 class="card-title h4">الصيدلية</h3>
+                        <p class="card-text">إدارة الأدوية والوصفات الطبية</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Laboratory -->
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-flask feature-icon"></i>
+                        <h3 class="card-title h4">المختبر</h3>
+                        <p class="card-text">إدارة التحاليل المخبرية ونتائجها</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Emergency -->
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-ambulance feature-icon"></i>
+                        <h3 class="card-title h4">الطوارئ</h3>
+                        <p class="card-text">إدارة حالات الطوارئ والإسعاف</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Telemedicine -->
+            <div class="col-md-4">
+                <div class="card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-video feature-icon"></i>
+                        <h3 class="card-title h4">الطب عن بعد</h3>
+                        <p class="card-text">استشارات طبية عن بعد مع الأطباء</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">إحصائيات المنصة</h2>
+        <div class="row text-center">
+            <div class="col-md-3 mb-4">
+                <div class="display-4 text-primary mb-2">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3 class="h4">+500</h3>
+                <p>طبيب</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="display-4 text-primary mb-2">
+                    <i class="fas fa-hospital"></i>
+                </div>
+                <h3 class="h4">+50</h3>
+                <p>مستشفى</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="display-4 text-primary mb-2">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="h4">+10000</h3>
+                <p>مريض</p>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="display-4 text-primary mb-2">
+                    <i class="fas fa-stethoscope"></i>
+                </div>
+                <h3 class="h4">+20000</h3>
+                <p>استشارة طبية</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6 mx-auto text-center">
+                <h2 class="mb-4">تواصل معنا</h2>
+                <p class="mb-5">نحن هنا لمساعدتك. تواصل معنا لأي استفسار أو مساعدة.</p>
+                <div class="d-flex justify-content-center gap-4">
+                    <a href="mailto:info@doctor-syria.com" class="btn btn-primary">
+                        <i class="fas fa-envelope me-2"></i>
+                        راسلنا
+                    </a>
+                    <a href="tel:+963111234567" class="btn btn-outline-primary">
+                        <i class="fas fa-phone me-2"></i>
+                        اتصل بنا
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

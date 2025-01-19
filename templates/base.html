@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}نظام إدارة المستشفى{% endblock %}</title>
+    
+    <!-- Bootstrap RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-hospital-alt me-2"></i>
+                Doctor Syria
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                {% if user.is_authenticated %}
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-1"></i>
+                            لوحة التحكم
+                        </a>
+                    </li>
+                    
+                    <!-- Medical Records -->
+                    {% if user.role in 'doctor,nurse,admin' or user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'medical_records:list' %}">
+                            <i class="fas fa-notes-medical me-1"></i>
+                            السجلات الطبية
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Appointments -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'appointments:list' %}">
+                            <i class="fas fa-calendar-check me-1"></i>
+                            المواعيد
+                        </a>
+                    </li>
+                    
+                    <!-- Pharmacy -->
+                    {% if user.role in 'doctor,pharmacist,admin' or user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pharmacy:dashboard' %}">
+                            <i class="fas fa-pills me-1"></i>
+                            الصيدلية
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Laboratory -->
+                    {% if user.role in 'doctor,lab_technician,admin' or user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'laboratory:dashboard' %}">
+                            <i class="fas fa-flask me-1"></i>
+                            المختبر
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Emergency -->
+                    {% if user.role in 'doctor,nurse,admin' or user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'emergency:dashboard' %}">
+                            <i class="fas fa-ambulance me-1"></i>
+                            الطوارئ
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Telemedicine -->
+                    {% if user.role in 'doctor,patient' or user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'telemedicine:dashboard' %}">
+                            <i class="fas fa-video me-1"></i>
+                            الطب عن بعد
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <!-- User Menu -->
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i>
+                            {{ user.get_full_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                    <i class="fas fa-id-card me-1"></i>
+                                    الملف الشخصي
+                                </a>
+                            </li>
+                            {% if user.role == 'patient' %}
+                            <li>
+                                <a class="dropdown-item" href="{% url 'medical_records:my_records' %}">
+                                    <i class="fas fa-file-medical me-1"></i>
+                                    سجلاتي الطبية
+                                </a>
+                            </li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                                    <i class="fas fa-sign-out-alt me-1"></i>
+                                    تسجيل الخروج
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                {% else %}
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            تسجيل الدخول
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:register' %}">
+                            <i class="fas fa-user-plus me-1"></i>
+                            إنشاء حساب
+                        </a>
+                    </li>
+                </ul>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-auto">
+        <div class="container text-center">
+            <p class="mb-0">&copy; {% now "Y" %} نظام إدارة المستشفى. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <!-- مكتبة مسح الباركود -->
+    <script src="{% static 'js/html5-qrcode.min.js' %}"></script>
+
+</body>
+</html>

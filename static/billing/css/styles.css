@@ -1,0 +1,210 @@
+/* تنسيقات عامة */
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    border: none;
+    border-radius: 0.35rem;
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+/* تنسيقات الإحصائيات */
+.card.bg-primary {
+    background-color: #4e73df !important;
+}
+
+.card.bg-success {
+    background-color: #1cc88a !important;
+}
+
+.card.bg-warning {
+    background-color: #f6c23e !important;
+}
+
+.card.bg-danger {
+    background-color: #e74a3b !important;
+}
+
+/* تنسيقات الجدول */
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    border-bottom: 2px solid #e3e6f0;
+    font-weight: 600;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.table td, .table th {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+/* تنسيقات النموذج */
+.form-control:focus {
+    border-color: #bac8f3;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* تنسيقات الأزرار */
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2653d4;
+}
+
+.btn-success {
+    background-color: #1cc88a;
+    border-color: #1cc88a;
+}
+
+.btn-success:hover {
+    background-color: #17a673;
+    border-color: #169b6b;
+}
+
+.btn-warning {
+    background-color: #f6c23e;
+    border-color: #f6c23e;
+    color: #fff;
+}
+
+.btn-warning:hover {
+    background-color: #f4b619;
+    border-color: #f4b30d;
+    color: #fff;
+}
+
+/* تنسيقات الشارات */
+.badge {
+    padding: 0.5em 0.75em;
+    font-size: 0.75em;
+    font-weight: 600;
+}
+
+/* تنسيقات البحث */
+.input-group .form-control:focus {
+    border-color: #bac8f3;
+    box-shadow: none;
+}
+
+.input-group-text {
+    background-color: #4e73df;
+    border-color: #4e73df;
+    color: #fff;
+}
+
+/* تنسيقات الصفحات */
+.pagination {
+    margin-bottom: 0;
+}
+
+.page-link {
+    color: #4e73df;
+    padding: 0.5rem 0.75rem;
+}
+
+.page-link:hover {
+    color: #224abe;
+    background-color: #eaecf4;
+    border-color: #dddfeb;
+}
+
+.page-item.active .page-link {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+/* تنسيقات النوافذ المنبثقة */
+.modal-content {
+    border: none;
+    border-radius: 0.35rem;
+}
+
+.modal-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.modal-footer {
+    border-top: 1px solid #e3e6f0;
+}
+
+/* تنسيقات الطباعة */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .card {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+    
+    .table td, .table th {
+        padding: 0.5rem !important;
+    }
+}
+
+/* تنسيقات خاصة بالفواتير */
+.invoice-details td {
+    padding: 0.5rem;
+}
+
+.invoice-details strong {
+    color: #5a5c69;
+}
+
+.payments-history {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.payment-item {
+    border-bottom: 1px solid #e3e6f0;
+    padding: 1rem 0;
+}
+
+.payment-item:last-child {
+    border-bottom: none;
+}
+
+/* تنسيقات التأمين */
+.insurance-info {
+    background-color: #f8f9fc;
+    padding: 1rem;
+    border-radius: 0.35rem;
+    margin-top: 1rem;
+}
+
+/* تنسيقات المبالغ */
+.amount {
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 600;
+}
+
+.total-amount {
+    font-size: 1.25rem;
+    color: #4e73df;
+}
+
+/* تنسيقات الحالة */
+.status-badge {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}

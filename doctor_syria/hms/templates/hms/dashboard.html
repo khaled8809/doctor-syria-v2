@@ -1,0 +1,234 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+
+{% block hms_content %}
+<div class="dashboard">
+    <h1 class="page-title">لوحة التحكم</h1>
+
+    <!-- Quick Stats -->
+    <div class="row stats-row">
+        <div class="col-md-3">
+            <div class="stat-card bg-primary">
+                <div class="stat-card-inner">
+                    <i class="fas fa-hospital fa-3x"></i>
+                    <h3>{{ total_departments }}</h3>
+                    <p>الأقسام</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-success">
+                <div class="stat-card-inner">
+                    <i class="fas fa-procedures fa-3x"></i>
+                    <h3>{{ total_patients }}</h3>
+                    <p>المرضى الحاليين</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-info">
+                <div class="stat-card-inner">
+                    <i class="fas fa-bed fa-3x"></i>
+                    <h3>{{ available_beds }}</h3>
+                    <p>الأسرّة المتاحة</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-warning">
+                <div class="stat-card-inner">
+                    <i class="fas fa-exclamation-triangle fa-3x"></i>
+                    <h3>{{ low_inventory.count }}</h3>
+                    <p>تنبيهات المخزون</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Recent Admissions -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">آخر الإدخالات</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>المريض</th>
+                                    <th>القسم</th>
+                                    <th>تاريخ الإدخال</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for admission in recent_admissions %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'hms:admission_detail' admission.pk %}">
+                                            {{ admission.patient.user.get_full_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ admission.bed.room.ward.department.name }}</td>
+                                    <td>{{ admission.admission_date|date:"Y-m-d H:i" }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ admission.get_status_class }}">
+                                            {{ admission.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">لا يوجد إدخالات حديثة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Inventory Alerts -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">تنبيهات المخزون</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>العنصر</th>
+                                    <th>القسم</th>
+                                    <th>الكمية الحالية</th>
+                                    <th>الحد الأدنى</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in low_inventory %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'hms:inventory_detail' item.pk %}">
+                                            {{ item.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ item.department.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>{{ item.minimum_quantity }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">لا يوجد تنبيهات للمخزون</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Equipment Maintenance Due -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">صيانة المعدات المستحقة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>المعدات</th>
+                                    <th>القسم</th>
+                                    <th>تاريخ الصيانة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for equipment in maintenance_due %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'hms:equipment_detail' equipment.pk %}">
+                                            {{ equipment.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ equipment.department.name }}</td>
+                                    <td>{{ equipment.next_maintenance|date:"Y-m-d" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="3" class="text-center">لا يوجد معدات تحتاج للصيانة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Department Occupancy -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">إشغال الأقسام</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="departmentOccupancyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Department Occupancy Chart
+    fetch('{% url "hms:department_stats_api" %}')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('departmentOccupancyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.departments.map(dept => dept.name),
+                    datasets: [{
+                        label: 'المرضى الحاليين',
+                        data: data.departments.map(dept => dept.current_patients),
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+
+    // Real-time updates
+    setInterval(() => {
+        fetch('{% url "hms:bed_availability_api" %}')
+            .then(response => response.json())
+            .then(data => {
+                // Update available beds count
+                document.querySelector('.bg-info h3').textContent = 
+                    data.departments.reduce((total, dept) => total + dept.available_beds, 0);
+            });
+    }, 60000); // Update every minute
+</script>
+{% endblock %}

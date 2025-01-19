@@ -1,0 +1,64 @@
+# Core requirements
+Django>=4.2.9,<5.0.0
+djangorestframework>=3.14.0,<4.0.0
+django-cors-headers==4.3.1
+django-filter>=23.5
+django-allauth>=0.60.1
+drf-yasg>=1.21.7,<2.0.0
+channels>=4.0.0,<5.0.0
+
+# Database and caching
+psycopg2-binary>=2.9.9
+django-redis>=5.4.0,<6.0.0
+redis>=5.0.1
+hiredis>=2.3.2
+django-cacheops>=7.0.1
+
+# Authentication and security
+django-rest-auth>=0.9.5,<1.0.0
+djangorestframework-simplejwt>=5.3.1,<7.0.0
+django-phonenumber-field>=7.3.0
+phonenumbers>=8.13.27
+python-dotenv>=1.0.0
+pyotp>=2.9.0
+django-user-sessions>=2.0.0
+django-axes>=6.3.0
+cryptography>=42.0.2
+django-secure>=1.0.2
+django-csp>=3.7
+django-ratelimit>=3.0.1
+django-honeypot>=1.0.1
+
+# File handling and media
+Pillow>=11.0.0
+python-magic>=0.4.27
+whitenoise>=6.6.0
+django-imagekit>=5.0.0
+django-storages>=1.14.2
+
+# Task Queue and Async
+celery>=5.3.6,<7.0.0
+flower>=2.0.1
+channels-redis>=4.1.0,<6.0.0
+
+# AI and Machine Learning
+opencv-python-headless>=4.9.0.80
+numpy>=1.26.3
+scikit-learn>=1.4.0
+pandas>=2.2.0
+nltk>=3.8.1
+openai>=1.9.0
+
+# Testing and Development
+pytest>=8.0.0
+pytest-django>=4.7.0
+pytest-cov>=4.1.0
+black>=24.1.0
+flake8>=7.0.0
+mypy>=1.8.0
+isort>=5.13.2
+
+# Monitoring and Logging
+sentry-sdk>=1.39.1
+django-debug-toolbar>=4.2.0
+prometheus-client>=0.19.0

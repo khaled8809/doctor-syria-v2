@@ -1,0 +1,494 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}طلبات الأدوية{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- نظام الإشعارات -->
+<div class="notification-container" id="notificationContainer"></div>
+
+<div class="container mt-4">
+    <!-- لوحة الإحصائيات -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card bg-primary text-white">
+                <div class="stats-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ total_orders }}</h3>
+                    <p>إجمالي الطلبات</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card bg-warning text-dark">
+                <div class="stats-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ pending_orders }}</h3>
+                    <p>طلبات قيد الانتظار</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card bg-success text-white">
+                <div class="stats-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ completed_orders }}</h3>
+                    <p>طلبات مكتملة</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card bg-info text-white">
+                <div class="stats-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stats-info">
+                    <h3>{{ total_revenue }} ل.س</h3>
+                    <p>إجمالي المبيعات</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- رأس الصفحة -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">
+            {% if user.role == 'pharmacy' %}
+            الطلبات الواردة
+            {% else %}
+            طلباتي السابقة
+            {% endif %}
+        </h2>
+        {% if user.role == 'patient' %}
+        <a href="{% url 'pharmacy:pharmacy_list' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> طلب جديد
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- فلترة الطلبات -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3" id="filterForm">
+                <div class="col-md-3">
+                    <label class="form-label">حالة الطلب</label>
+                    <select name="status" class="form-select select2">
+                        <option value="">الكل</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>قيد الانتظار</option>
+                        <option value="processing" {% if request.GET.status == 'processing' %}selected{% endif %}>قيد التجهيز</option>
+                        <option value="delivering" {% if request.GET.status == 'delivering' %}selected{% endif %}>قيد التوصيل</option>
+                        <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>مكتمل</option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>ملغي</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">من تاريخ</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ request.GET.date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">إلى تاريخ</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ request.GET.date_to }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">ترتيب حسب</label>
+                    <select name="sort" class="form-select select2">
+                        <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>الأحدث</option>
+                        <option value="oldest" {% if request.GET.sort == 'oldest' %}selected{% endif %}>الأقدم</option>
+                        <option value="amount_high" {% if request.GET.sort == 'amount_high' %}selected{% endif %}>السعر - الأعلى</option>
+                        <option value="amount_low" {% if request.GET.sort == 'amount_low' %}selected{% endif %}>السعر - الأقل</option>
+                    </select>
+                </div>
+                {% if user.role == 'pharmacy' %}
+                <div class="col-md-3">
+                    <label class="form-label">بحث عن مريض</label>
+                    <input type="text" name="patient" class="form-control" placeholder="اسم المريض..." value="{{ request.GET.patient }}">
+                </div>
+                {% endif %}
+                <div class="col-12">
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> تصفية
+                        </button>
+                        <a href="?" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> إعادة تعيين
+                        </a>
+                        {% if user.role == 'pharmacy' %}
+                        <button type="button" class="btn btn-success ms-auto" id="exportBtn">
+                            <i class="fas fa-file-excel"></i> تصدير إلى Excel
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- قائمة الطلبات -->
+    <div class="row">
+        {% for order in orders %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 order-card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">طلب #{{ order.id }}</h5>
+                    <span class="badge status-{{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1">
+                                    <i class="fas fa-calendar text-muted"></i>
+                                    {{ order.created_at|date:"Y/m/d H:i" }}
+                                </p>
+                                <p class="mb-1">
+                                    {% if user.role == 'pharmacy' %}
+                                    <i class="fas fa-user text-muted"></i>
+                                    {{ order.patient.get_full_name }}
+                                    {% else %}
+                                    <i class="fas fa-store text-muted"></i>
+                                    {{ order.pharmacy.name }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1">
+                                    <i class="fas fa-pills text-muted"></i>
+                                    {{ order.items.count }} أدوية
+                                </p>
+                                <p class="mb-1">
+                                    <i class="fas fa-money-bill text-muted"></i>
+                                    {{ order.total_amount }} ل.س
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="medicines-preview">
+                        {% for item in order.items.all|slice:":3" %}
+                        <div class="medicine-item">
+                            <span>{{ item.medicine.name }}</span>
+                            <small class="text-muted">({{ item.quantity }} قطعة)</small>
+                        </div>
+                        {% endfor %}
+                        {% if order.items.count > 3 %}
+                        <div class="text-muted">
+                            + {{ order.items.count|add:"-3" }} أدوية أخرى
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'pharmacy:order_detail' order.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i> عرض التفاصيل
+                        </a>
+                        {% if user.role == 'pharmacy' and order.status == 'pending' %}
+                        <div class="btn-group">
+                            <button class="btn btn-success btn-sm update-status" data-order-id="{{ order.id }}" data-status="processing">
+                                <i class="fas fa-check"></i> قبول
+                            </button>
+                            <button class="btn btn-danger btn-sm update-status" data-order-id="{{ order.id }}" data-status="cancelled">
+                                <i class="fas fa-times"></i> رفض
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                لا توجد طلبات حالياً
+                {% if user.role == 'patient' %}
+                <a href="{% url 'pharmacy:pharmacy_list' %}" class="alert-link">اطلب الآن</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ترقيم الصفحات -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">السابق</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">التالي</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-card {
+        transition: transform 0.2s;
+        border-radius: 15px;
+    }
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-top-left-radius: 15px !important;
+        border-top-right-radius: 15px !important;
+    }
+    .badge {
+        padding: 0.5em 1em;
+        border-radius: 20px;
+    }
+    .status-pending {
+        background-color: #ffc107;
+        color: #000;
+    }
+    .status-processing {
+        background-color: #17a2b8;
+        color: #fff;
+    }
+    .status-delivering {
+        background-color: #007bff;
+        color: #fff;
+    }
+    .status-completed {
+        background-color: #28a745;
+        color: #fff;
+    }
+    .status-cancelled {
+        background-color: #dc3545;
+        color: #fff;
+    }
+    .medicines-preview {
+        background-color: #f8f9fa;
+        padding: 0.5rem;
+        border-radius: 8px;
+    }
+    .medicine-item {
+        padding: 0.25rem 0;
+    }
+    .btn-group .btn {
+        border-radius: 20px;
+        margin: 0 2px;
+    }
+    .pagination {
+        direction: ltr;
+    }
+
+    /* تصميم الإشعارات */
+    .notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+    .notification {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        margin-bottom: 10px;
+        transform: translateX(120%);
+        transition: transform 0.3s ease-in-out;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .notification.show {
+        transform: translateX(0);
+    }
+    .notification i {
+        font-size: 1.2em;
+    }
+    .notification.success {
+        border-right: 4px solid #28a745;
+    }
+    .notification.warning {
+        border-right: 4px solid #ffc107;
+    }
+    .notification.error {
+        border-right: 4px solid #dc3545;
+    }
+
+    /* تصميم لوحة الإحصائيات */
+    .stats-card {
+        border-radius: 15px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: transform 0.2s;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    .stats-icon {
+        font-size: 2em;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.2);
+        border-radius: 12px;
+    }
+    .stats-info h3 {
+        margin: 0;
+        font-size: 1.5em;
+    }
+    .stats-info p {
+        margin: 0;
+        opacity: 0.8;
+    }
+
+    /* تحسينات Select2 */
+    .select2-container--default .select2-selection--single {
+        height: 38px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+        padding-right: 12px;
+        padding-left: 12px;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تهيئة Select2
+    $('.select2').select2({
+        dir: 'rtl',
+        language: 'ar'
+    });
+
+    // نظام الإشعارات
+    function showNotification(message, type = 'success') {
+        const container = document.getElementById('notificationContainer');
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        
+        let icon = 'check-circle';
+        if (type === 'warning') icon = 'exclamation-circle';
+        if (type === 'error') icon = 'times-circle';
+        
+        notification.innerHTML = `
+            <i class="fas fa-${icon}"></i>
+            <span>${message}</span>
+        `;
+        
+        container.appendChild(notification);
+        setTimeout(() => notification.classList.add('show'), 100);
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    }
+
+    // تحديث حالة الطلب مع الإشعارات
+    document.querySelectorAll('.update-status').forEach(button => {
+        button.addEventListener('click', async function() {
+            const orderId = this.dataset.orderId;
+            const status = this.dataset.status;
+            const statusText = status === 'processing' ? 'قبول' : 'رفض';
+            
+            if (confirm(`هل أنت متأكد من ${statusText} الطلب؟`)) {
+                try {
+                    const response = await fetch(`/pharmacy/orders/${orderId}/update-status/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({ status })
+                    });
+                    
+                    if (response.ok) {
+                        showNotification(`تم ${statusText} الطلب بنجاح`, 'success');
+                        setTimeout(() => window.location.reload(), 1000);
+                    } else {
+                        showNotification('حدث خطأ أثناء تحديث الحالة', 'error');
+                    }
+                } catch (error) {
+                    showNotification('حدث خطأ في الاتصال', 'error');
+                }
+            }
+        });
+    });
+
+    // تصدير البيانات إلى Excel
+    document.getElementById('exportBtn')?.addEventListener('click', async function() {
+        try {
+            const response = await fetch('/pharmacy/orders/export?' + new URLSearchParams(new FormData(document.getElementById('filterForm'))));
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'orders_report.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                showNotification('تم تصدير التقرير بنجاح', 'success');
+            } else {
+                showNotification('حدث خطأ أثناء تصدير التقرير', 'error');
+            }
+        } catch (error) {
+            showNotification('حدث خطأ في الاتصال', 'error');
+        }
+    });
+
+    // تحديث تلقائي للطلبات المعلقة
+    if (document.querySelector('[value="pending"]')?.selected) {
+        setInterval(async function() {
+            try {
+                const response = await fetch(window.location.href);
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newOrders = doc.querySelector('#ordersList').innerHTML;
+                const currentOrders = document.querySelector('#ordersList').innerHTML;
+                
+                if (newOrders !== currentOrders) {
+                    document.querySelector('#ordersList').innerHTML = newOrders;
+                    showNotification('تم تحديث قائمة الطلبات', 'info');
+                }
+            } catch (error) {
+                console.error('فشل التحديث التلقائي:', error);
+            }
+        }, 30000); // تحديث كل 30 ثانية
+    }
+});
+</script>
+{% endblock %}

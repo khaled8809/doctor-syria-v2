@@ -1,0 +1,33 @@
+global:
+  slack_api_url: 'https://hooks.slack.com/services/T0123456789/B0123456789/your-webhook-token'
+  resolve_timeout: 5m
+
+route:
+  receiver: 'slack-notifications'
+  group_by: ['alertname', 'instance']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+- name: 'slack-notifications'
+  slack_configs:
+  - channel: '#monitoring-doctor-syria'
+    send_resolved: true
+    icon_emoji: ':warning:'
+    title: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
+    text: >-
+      {{ range .Alerts }}
+      *تفاصيل التنبيه:*
+      {{ if eq .Status "firing" }}🔥{{ else }}✅{{ end }} {{ .Annotations.summary }}
+      
+      *الوصف:* {{ .Annotations.description }}
+      *بدأ في:* {{ .StartsAt | date "2006-01-02 15:04:05" }}
+      {{ if .EndsAt }}*انتهى في:* {{ .EndsAt | date "2006-01-02 15:04:05" }}{{ end }}
+      
+      *القيم:*
+      {{ range .Labels.SortedPairs }}• {{ .Name }}: {{ .Value }}
+      {{ end }}
+      {{ end }}
+    title_link: 'https://monitor.doctor-syria.com/alerts'
+    footer: 'Doctor Syria - نظام المراقبة | {{ .CommonLabels.instance }}'

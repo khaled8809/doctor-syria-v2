@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="emergency-dashboard">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">لوحة تحكم الطوارئ والإسعاف</h1>
+        <div class="actions">
+            <a href="{% url 'emergency:dispatch_new' %}" class="btn btn-danger">
+                <i class="fas fa-ambulance"></i> إرسال إسعاف جديد
+            </a>
+        </div>
+    </div>
+
+    <!-- Active Emergencies -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">حالات الطوارئ النشطة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>رقم الحالة</th>
+                                    <th>الموقع</th>
+                                    <th>نوع الحالة</th>
+                                    <th>سيارة الإسعاف</th>
+                                    <th>وقت الإبلاغ</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for case in active_cases %}
+                                <tr>
+                                    <td>{{ case.case_number }}</td>
+                                    <td>{{ case.location }}</td>
+                                    <td>
+                                        <span class="badge {% if case.priority == 'high' %}badge-danger
+                                                   {% elif case.priority == 'medium' %}badge-warning
+                                                   {% else %}badge-info{% endif %}">
+                                            {{ case.get_case_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ case.ambulance.number }}</td>
+                                    <td>{{ case.reported_time|date:"Y-m-d H:i" }}</td>
+                                    <td>{{ case.get_status_display }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'emergency:case_detail' case.pk %}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'emergency:case_update' case.pk %}" 
+                                               class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">لا يوجد حالات طوارئ نشطة</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ambulance Map -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">خريطة سيارات الإسعاف</h5>
+                </div>
+                <div class="card-body">
+                    <div id="ambulanceMap" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Ambulance Status -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">حالة سيارات الإسعاف</h5>
+                </div>
+                <div class="card-body">
+                    <div class="ambulance-status">
+                        <div class="status-item">
+                            <span class="status-label">متاحة</span>
+                            <span class="status-value text-success">{{ available_ambulances }}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">في مهمة</span>
+                            <span class="status-value text-warning">{{ busy_ambulances }}</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">في الصيانة</span>
+                            <span class="status-value text-danger">{{ maintenance_ambulances }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Shifts -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">المناوبات الحالية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="shifts-list">
+                        {% for shift in current_shifts %}
+                        <div class="shift-item">
+                            <div class="shift-header">
+                                <span class="shift-time">{{ shift.start_time|date:"H:i" }} - {{ shift.end_time|date:"H:i" }}</span>
+                                <span class="badge badge-info">{{ shift.get_shift_type_display }}</span>
+                            </div>
+                            <div class="shift-staff">
+                                {% for staff in shift.staff.all %}
+                                <div class="staff-member">
+                                    <img src="{{ staff.photo.url }}" alt="{{ staff.name }}" class="staff-photo">
+                                    <div class="staff-info">
+                                        <span class="staff-name">{{ staff.name }}</span>
+                                        <span class="staff-role">{{ staff.get_role_display }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-center">لا يوجد مناوبات حالية</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">إحصائيات سريعة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">حالات اليوم</span>
+                            <span class="stat-value">{{ today_cases }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">متوسط وقت الاستجابة</span>
+                            <span class="stat-value">{{ avg_response_time }} دقيقة</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">حالات هذا الشهر</span>
+                            <span class="stat-value">{{ monthly_cases }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">نسبة الإشغال</span>
+                            <span class="stat-value">{{ occupancy_rate }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .ambulance-status {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .status-item {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .status-label {
+        display: block;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .status-value {
+        display: block;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    .shifts-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .shift-item {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+    }
+
+    .shift-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .staff-member {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .staff-photo {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .staff-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .staff-role {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .stat-label {
+        display: block;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .stat-value {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
+<script>
+    // Initialize map
+    function initMap() {
+        const map = new google.maps.Map(document.getElementById('ambulanceMap'), {
+            center: { lat: {{ center_lat }}, lng: {{ center_lng }} },
+            zoom: 12
+        });
+
+        // Add ambulance markers
+        {% for ambulance in ambulances %}
+        new google.maps.Marker({
+            position: { lat: {{ ambulance.lat }}, lng: {{ ambulance.lng }} },
+            map: map,
+            title: '{{ ambulance.number }}',
+            icon: '{% static "emergency/img/ambulance-marker.png" %}'
+        });
+        {% endfor %}
+    }
+
+    // Load map when page is ready
+    $(document).ready(function() {
+        initMap();
+    });
+
+    // Refresh data every minute
+    setInterval(function() {
+        $.get('{% url "emergency:dashboard_data" %}', function(data) {
+            // Update statistics
+            $('.ambulance-status .status-value').each(function() {
+                $(this).text(data.ambulance_status[$(this).data('status')]);
+            });
+
+            // Update map markers
+            updateMapMarkers(data.ambulances);
+        });
+    }, 60000);
+</script>
+{% endblock %}

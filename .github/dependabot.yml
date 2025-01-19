@@ -1,0 +1,66 @@
+version: 2
+updates:
+  # تحديثات تلقائية لحزم Python
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Asia/Damascus"
+    labels:
+      - "dependencies"
+      - "python"
+      - "security"
+    commit-message:
+      prefix: "⬆️ deps"
+      include: "scope"
+    open-pull-requests-limit: 15
+    reviewers:
+      - "khaled8809"
+    assignees:
+      - "khaled8809"
+    target-branch: "main"
+    versioning-strategy:
+      increase: "auto"
+    allow:
+      - dependency-type: "direct"
+      - dependency-type: "indirect"
+    security-updates-only: false
+
+  # تحديثات تلقائية لإجراءات GitHub
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Damascus"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "⬆️ actions"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "khaled8809"
+    assignees:
+      - "khaled8809"
+
+  # تحديثات تلقائية لحزم Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Damascus"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "⬆️ docker"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "khaled8809"
+    assignees:
+      - "khaled8809"

@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}طلب أدوية - {{ pharmacy.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- نموذج الطلب -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">طلب أدوية من {{ pharmacy.name }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" id="orderForm">
+                        {% csrf_token %}
+                        
+                        <!-- معلومات التوصيل -->
+                        <div class="mb-4">
+                            <h5 class="card-title mb-3">معلومات التوصيل</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="delivery_address" class="form-label">عنوان التوصيل</label>
+                                    <textarea name="delivery_address" id="delivery_address" class="form-control" rows="3" required>{{ user.default_address }}</textarea>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone_number" class="form-label">رقم الهاتف للتواصل</label>
+                                    <input type="tel" name="phone_number" id="phone_number" class="form-control" value="{{ user.phone_number }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- قائمة الأدوية المطلوبة -->
+                        <div class="mb-4">
+                            <h5 class="card-title mb-3">الأدوية المطلوبة</h5>
+                            <div id="medicineList">
+                                <!-- سيتم إضافة الأدوية هنا ديناميكياً -->
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-2" id="addMedicineBtn">
+                                <i class="fas fa-plus"></i> إضافة دواء آخر
+                            </button>
+                        </div>
+
+                        <!-- رفع الوصفة الطبية -->
+                        <div class="mb-4">
+                            <h5 class="card-title mb-3">الوصفة الطبية</h5>
+                            <div class="prescription-upload">
+                                <input type="file" name="prescription" id="prescription" class="form-control" accept="image/*,.pdf">
+                                <small class="form-text text-muted">
+                                    يمكنك رفع صورة أو ملف PDF للوصفة الطبية (مطلوب للأدوية التي تحتاج وصفة)
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- ملاحظات إضافية -->
+                        <div class="mb-4">
+                            <h5 class="card-title mb-3">ملاحظات إضافية</h5>
+                            <textarea name="notes" class="form-control" rows="3" placeholder="أي ملاحظات إضافية حول الطلب..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'pharmacy:pharmacy_detail' pharmacy.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right"></i> العودة
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check"></i> تأكيد الطلب
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ملخص الطلب -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">ملخص الطلب</h5>
+                </div>
+                <div class="card-body">
+                    <div id="orderSummary">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>عدد الأدوية:</span>
+                            <span id="totalItems">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>المجموع:</span>
+                            <span id="subtotal">0 ل.س</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>رسوم التوصيل:</span>
+                            <span id="deliveryFee">{{ pharmacy.delivery_fee|default:"0" }} ل.س</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between">
+                            <strong>الإجمالي:</strong>
+                            <strong id="total">0 ل.س</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- معلومات هامة -->
+            <div class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">معلومات هامة</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-info-circle text-info"></i>
+                            يجب رفع وصفة طبية للأدوية التي تتطلب ذلك
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-clock text-info"></i>
+                            وقت التوصيل المتوقع: {{ pharmacy.delivery_time|default:"60" }} دقيقة
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-truck text-info"></i>
+                            منطقة التوصيل: {{ pharmacy.delivery_area|default:"ضمن المدينة" }}
+                        </li>
+                        <li>
+                            <i class="fas fa-phone text-info"></i>
+                            للاستفسار: {{ pharmacy.phone_number }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+    .medicine-item {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    .medicine-item:hover {
+        background-color: #e9ecef;
+    }
+    .remove-medicine {
+        color: #dc3545;
+        cursor: pointer;
+    }
+    .remove-medicine:hover {
+        color: #c82333;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const medicineList = document.getElementById('medicineList');
+    const addMedicineBtn = document.getElementById('addMedicineBtn');
+    let medicineCount = 0;
+
+    // إضافة دواء جديد
+    addMedicineBtn.addEventListener('click', function() {
+        const medicineItem = document.createElement('div');
+        medicineItem.className = 'medicine-item';
+        medicineItem.innerHTML = `
+            <div class="row align-items-center">
+                <div class="col-md-5 mb-2">
+                    <label class="form-label">اسم الدواء</label>
+                    <select name="medicines[${medicineCount}][id]" class="form-select" required>
+                        <option value="">اختر الدواء...</option>
+                        {% for inventory in pharmacy.pharmacyinventory_set.all %}
+                        <option value="{{ inventory.medicine.id }}" 
+                                data-price="{{ inventory.medicine.price }}"
+                                data-requires-prescription="{{ inventory.medicine.requires_prescription }}">
+                            {{ inventory.medicine.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label">الكمية</label>
+                    <input type="number" name="medicines[${medicineCount}][quantity]" class="form-control quantity-input" min="1" value="1" required>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label">السعر</label>
+                    <div class="price">0 ل.س</div>
+                </div>
+                <div class="col-md-1 mb-2 text-end">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <i class="fas fa-times remove-medicine"></i>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        medicineList.appendChild(medicineItem);
+        medicineCount++;
+        updateTotals();
+
+        // إضافة مستمعي الأحداث للعناصر الجديدة
+        const select = medicineItem.querySelector('select');
+        const quantityInput = medicineItem.querySelector('.quantity-input');
+        const removeBtn = medicineItem.querySelector('.remove-medicine');
+
+        select.addEventListener('change', function() {
+            const option = this.options[this.selectedIndex];
+            const price = parseFloat(option.dataset.price || 0);
+            const quantity = parseInt(quantityInput.value);
+            const priceElement = medicineItem.querySelector('.price');
+            priceElement.textContent = `${price * quantity} ل.س`;
+            updateTotals();
+        });
+
+        quantityInput.addEventListener('input', function() {
+            const option = select.options[select.selectedIndex];
+            const price = parseFloat(option.dataset.price || 0);
+            const quantity = parseInt(this.value);
+            const priceElement = medicineItem.querySelector('.price');
+            priceElement.textContent = `${price * quantity} ل.س`;
+            updateTotals();
+        });
+
+        removeBtn.addEventListener('click', function() {
+            medicineItem.remove();
+            updateTotals();
+        });
+    });
+
+    // تحديث المجاميع
+    function updateTotals() {
+        let totalItems = 0;
+        let subtotal = 0;
+        const deliveryFee = parseFloat(document.getElementById('deliveryFee').textContent);
+
+        document.querySelectorAll('.medicine-item').forEach(item => {
+            const quantity = parseInt(item.querySelector('.quantity-input').value);
+            const select = item.querySelector('select');
+            const option = select.options[select.selectedIndex];
+            const price = parseFloat(option.dataset.price || 0);
+
+            totalItems += quantity;
+            subtotal += price * quantity;
+        });
+
+        document.getElementById('totalItems').textContent = totalItems;
+        document.getElementById('subtotal').textContent = `${subtotal} ل.س`;
+        document.getElementById('total').textContent = `${subtotal + deliveryFee} ل.س`;
+    }
+
+    // التحقق من النموذج قبل الإرسال
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+        const medicines = document.querySelectorAll('.medicine-item select');
+        const prescription = document.getElementById('prescription');
+        let requiresPrescription = false;
+
+        medicines.forEach(select => {
+            const option = select.options[select.selectedIndex];
+            if (option.dataset.requiresPrescription === 'true') {
+                requiresPrescription = true;
+            }
+        });
+
+        if (requiresPrescription && !prescription.files.length) {
+            e.preventDefault();
+            alert('يجب رفع وصفة طبية للأدوية التي تتطلب ذلك');
+        }
+    });
+
+    // إضافة أول دواء تلقائياً
+    addMedicineBtn.click();
+});
+</script>
+{% endblock %}

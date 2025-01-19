@@ -1,0 +1,185 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+
+{% block hms_content %}
+<div class="admission-list">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="page-title">حالات الإدخال</h1>
+        <a href="{% url 'hms:admission_add' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إدخال جديد
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>القسم</label>
+                        <select name="department" class="form-control select2">
+                            <option value="">الكل</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if request.GET.department == dept.id|stringformat:"i" %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>الحالة</label>
+                        <select name="status" class="form-control">
+                            <option value="">الكل</option>
+                            <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>نشط</option>
+                            <option value="discharged" {% if request.GET.status == 'discharged' %}selected{% endif %}>خرج</option>
+                            <option value="transferred" {% if request.GET.status == 'transferred' %}selected{% endif %}>محول</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>من تاريخ</label>
+                        <input type="date" name="date_from" class="form-control" 
+                               value="{{ request.GET.date_from }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>إلى تاريخ</label>
+                        <input type="date" name="date_to" class="form-control" 
+                               value="{{ request.GET.date_to }}">
+                    </div>
+                </div>
+                <div class="col-12 text-left">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-filter"></i> تصفية
+                    </button>
+                    <a href="{% url 'hms:admission_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> إعادة تعيين
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admissions Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>رقم الإدخال</th>
+                            <th>المريض</th>
+                            <th>القسم</th>
+                            <th>الغرفة</th>
+                            <th>السرير</th>
+                            <th>تاريخ الإدخال</th>
+                            <th>الطبيب المعالج</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for admission in admissions %}
+                        <tr>
+                            <td>{{ admission.admission_number }}</td>
+                            <td>
+                                <a href="{% url 'patient_detail' admission.patient.pk %}">
+                                    {{ admission.patient.user.get_full_name }}
+                                </a>
+                            </td>
+                            <td>{{ admission.bed.room.ward.department.name }}</td>
+                            <td>{{ admission.bed.room.room_number }}</td>
+                            <td>{{ admission.bed.bed_number }}</td>
+                            <td>{{ admission.admission_date|date:"Y-m-d H:i" }}</td>
+                            <td>{{ admission.admitting_doctor.user.get_full_name }}</td>
+                            <td>
+                                {% if admission.status == 'active' %}
+                                <span class="badge badge-success">نشط</span>
+                                {% elif admission.status == 'discharged' %}
+                                <span class="badge badge-secondary">خرج</span>
+                                {% elif admission.status == 'transferred' %}
+                                <span class="badge badge-info">محول</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'hms:admission_detail' admission.pk %}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    {% if admission.status == 'active' %}
+                                    <a href="{% url 'hms:admission_edit' admission.pk %}" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'hms:discharge_add' %}?admission={{ admission.pk }}" 
+                                       class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-door-open"></i>
+                                    </a>
+                                    <a href="{% url 'hms:transfer_add' %}?admission={{ admission.pk }}" 
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center">لا يوجد حالات إدخال مطابقة للمعايير المحددة.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if admissions.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if admissions.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ admissions.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    السابق
+                </a>
+            </li>
+            {% endif %}
+
+            {% for i in admissions.paginator.page_range %}
+            <li class="page-item {% if admissions.number == i %}active{% endif %}">
+                <a class="page-link" href="?page={{ i }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    {{ i }}
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if admissions.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ admissions.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">
+                    التالي
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl'
+        });
+    });
+</script>
+{% endblock %}

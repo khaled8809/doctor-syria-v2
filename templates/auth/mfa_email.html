@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "رمز التحقق" %} - {{ site_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #007bff;
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+            background-color: white;
+            border-radius: 0 0 8px 8px;
+        }
+        .code {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            padding: 10px;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #666;
+            font-size: 12px;
+        }
+        .note {
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+        }
+        [dir="rtl"] {
+            direction: rtl;
+            text-align: right;
+        }
+    </style>
+</head>
+<body dir="{{ LANGUAGE_BIDI|yesno:'rtl,ltr' }}">
+    <div class="container">
+        <div class="header">
+            <h1>{{ site_name }}</h1>
+        </div>
+        <div class="content">
+            <h2>{% trans "مرحباً" %} {{ user.get_full_name }}</h2>
+            
+            <p>{% trans "لقد طلبت رمز تحقق للدخول إلى حسابك. استخدم الرمز التالي:" %}</p>
+            
+            <div class="code">{{ code }}</div>
+            
+            <p>{% trans "هذا الرمز صالح لمدة 5 دقائق فقط." %}</p>
+            
+            <div class="note">
+                <p>{% trans "إذا لم تطلب هذا الرمز، يرجى تجاهل هذا البريد الإلكتروني وتغيير كلمة المرور الخاصة بك على الفور." %}</p>
+            </div>
+        </div>
+        <div class="footer">
+            <p>{{ site_name }} &copy; {% now "Y" %}</p>
+            <p>{% trans "هذا بريد إلكتروني تلقائي، يرجى عدم الرد عليه." %}</p>
+        </div>
+    </div>
+</body>
+</html>

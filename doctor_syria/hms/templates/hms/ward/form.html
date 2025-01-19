@@ -1,0 +1,69 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block hms_content %}
+<div class="ward-form">
+    <h1 class="page-title">
+        {% if form.instance.pk %}
+        تعديل جناح
+        {% else %}
+        إضافة جناح جديد
+        {% endif %}
+    </h1>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.department|as_crispy_field }}
+                        {{ form.name|as_crispy_field }}
+                        {{ form.ward_type|as_crispy_field }}
+                        {{ form.head_nurse|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.floor|as_crispy_field }}
+                        {{ form.capacity|as_crispy_field }}
+                        {{ form.current_occupancy|as_crispy_field }}
+                        {{ form.is_active|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% if form.instance.pk %}
+                        حفظ التغييرات
+                        {% else %}
+                        إضافة الجناح
+                        {% endif %}
+                    </button>
+                    <a href="{% url 'hms:ward_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+    $(document).ready(function() {
+        // Initialize Select2 for dropdowns
+        $('.select2').select2({
+            theme: 'bootstrap4',
+            dir: 'rtl'
+        });
+
+        // Update current_occupancy max value based on capacity
+        $('#id_capacity').change(function() {
+            $('#id_current_occupancy').attr('max', $(this).val());
+        });
+    });
+</script>
+{% endblock %}

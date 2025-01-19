@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}نظام إدارة المستشفى{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'hms/css/style.css' %}">
+{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <h3>نظام إدارة المستشفى</h3>
+    </div>
+
+    <ul class="list-unstyled components">
+        <li {% if request.resolver_match.url_name == 'dashboard' %}class="active"{% endif %}>
+            <a href="{% url 'hms:dashboard' %}">
+                <i class="fas fa-home"></i> لوحة التحكم
+            </a>
+        </li>
+
+        <li>
+            <a href="#departmentSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-hospital"></i> الأقسام
+            </a>
+            <ul class="collapse list-unstyled" id="departmentSubmenu">
+                <li>
+                    <a href="{% url 'hms:department_list' %}">عرض الأقسام</a>
+                </li>
+                <li>
+                    <a href="{% url 'hms:department_add' %}">إضافة قسم</a>
+                </li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="#wardSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-door-open"></i> الأجنحة
+            </a>
+            <ul class="collapse list-unstyled" id="wardSubmenu">
+                <li>
+                    <a href="{% url 'hms:ward_list' %}">عرض الأجنحة</a>
+                </li>
+                <li>
+                    <a href="{% url 'hms:ward_add' %}">إضافة جناح</a>
+                </li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="#admissionSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-procedures"></i> الإدخال
+            </a>
+            <ul class="collapse list-unstyled" id="admissionSubmenu">
+                <li>
+                    <a href="{% url 'hms:admission_list' %}">عرض الإدخالات</a>
+                </li>
+                <li>
+                    <a href="{% url 'hms:admission_add' %}">إدخال جديد</a>
+                </li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="#equipmentSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-tools"></i> المعدات
+            </a>
+            <ul class="collapse list-unstyled" id="equipmentSubmenu">
+                <li>
+                    <a href="{% url 'hms:equipment_list' %}">عرض المعدات</a>
+                </li>
+                <li>
+                    <a href="{% url 'hms:equipment_add' %}">إضافة معدات</a>
+                </li>
+                <li>
+                    <a href="{% url 'hms:maintenance_list' %}">سجل الصيانة</a>
+                </li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="#inventorySubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-boxes"></i> المخزون
+            </a>
+            <ul class="collapse list-unstyled" id="inventorySubmenu">
+                <li>
+                    <a href="{% url 'hms:inventory_list' %}">عرض المخزون</a>
+                </li>
+                <li>
+                    <a href="{% url 'hms:inventory_add' %}">إضافة عنصر</a>
+                </li>
+            </ul>
+        </li>
+
+        <li>
+            <a href="#reportsSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                <i class="fas fa-chart-bar"></i> التقارير
+            </a>
+            <ul class="collapse list-unstyled" id="reportsSubmenu">
+                <li>
+                    <a href="{% url 'hms:occupancy_report' %}">تقرير الإشغال</a>
+                </li>
+                <li>
+                    <a href="{% url 'hms:admissions_report' %}">تقرير الإدخالات</a>
+                </li>
+                <li>
+                    <a href="{% url 'hms:equipment_report' %}">تقرير المعدات</a>
+                </li>
+                <li>
+                    <a href="{% url 'hms:inventory_report' %}">تقرير المخزون</a>
+                </li>
+            </ul>
+        </li>
+    </ul>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% block hms_content %}{% endblock %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'hms/js/main.js' %}"></script>
+{% endblock %}

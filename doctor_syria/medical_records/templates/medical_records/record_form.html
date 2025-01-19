@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if form.instance.pk %}تعديل سجل طبي{% else %}إنشاء سجل طبي جديد{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+                {% if form.instance.pk %}تعديل سجل طبي{% else %}إنشاء سجل طبي جديد{% endif %}
+            </h3>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.patient.id_for_label }}" class="form-label">المريض</label>
+                        {{ form.patient }}
+                        {% if form.patient.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.patient.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.date.id_for_label }}" class="form-label">تاريخ الزيارة</label>
+                        {{ form.date }}
+                        {% if form.date.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.date.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.diagnosis.id_for_label }}" class="form-label">التشخيص</label>
+                    {{ form.diagnosis }}
+                    {% if form.diagnosis.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.diagnosis.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.treatment.id_for_label }}" class="form-label">العلاج</label>
+                    {{ form.treatment }}
+                    {% if form.treatment.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.treatment.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label">ملاحظات</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.notes.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'medical_records:record_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> حفظ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+    .form-control {
+        border-radius: 8px;
+    }
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+    }
+    textarea.form-control {
+        min-height: 100px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // تفعيل التحقق من صحة النموذج
+    var forms = document.getElementsByClassName('needs-validation');
+    Array.prototype.filter.call(forms, function(form) {
+        form.addEventListener('submit', function(event) {
+            if (form.checkValidity() === false) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+});
+</script>
+{% endblock %}

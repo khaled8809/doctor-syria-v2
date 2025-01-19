@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تفاصيل الفاتورة{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'billing/css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3">تفاصيل الفاتورة #<span id="invoiceNumber"></span></h1>
+                <div class="btn-group">
+                    <button class="btn btn-primary me-2" id="printInvoiceBtn">
+                        <i class="fas fa-print"></i> طباعة
+                    </button>
+                    <button class="btn btn-success me-2" id="downloadPdfBtn">
+                        <i class="fas fa-file-pdf"></i> تحميل PDF
+                    </button>
+                    <button class="btn btn-warning" id="editInvoiceBtn">
+                        <i class="fas fa-edit"></i> تعديل
+                    </button>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- تفاصيل الفاتورة -->
+                <div class="col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">معلومات الفاتورة</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-sm-6">
+                                    <strong>المريض:</strong>
+                                    <p id="patientName" class="mb-0"></p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong>الطبيب:</strong>
+                                    <p id="doctorName" class="mb-0"></p>
+                                </div>
+                            </div>
+                            <div class="row mb-4">
+                                <div class="col-sm-6">
+                                    <strong>تاريخ الإنشاء:</strong>
+                                    <p id="createdAt" class="mb-0"></p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <strong>تاريخ الاستحقاق:</strong>
+                                    <p id="dueDate" class="mb-0"></p>
+                                </div>
+                            </div>
+                            
+                            <!-- جدول العناصر -->
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>الوصف</th>
+                                            <th>الكمية</th>
+                                            <th>السعر</th>
+                                            <th>المجموع</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="invoiceItems">
+                                        <!-- سيتم ملء العناصر عن طريق JavaScript -->
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>المجموع الفرعي:</strong></td>
+                                            <td id="subtotal"></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>الضريبة:</strong></td>
+                                            <td id="tax"></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>الخصم:</strong></td>
+                                            <td id="discount"></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3" class="text-end"><strong>المجموع الكلي:</strong></td>
+                                            <td id="total"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- معلومات الدفع والحالة -->
+                <div class="col-lg-4">
+                    <!-- حالة الفاتورة -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">حالة الفاتورة</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong>الحالة:</strong>
+                                <span id="invoiceStatus" class="badge ms-2"></span>
+                            </div>
+                            <div class="mb-3">
+                                <strong>طريقة الدفع:</strong>
+                                <span id="paymentMethod"></span>
+                            </div>
+                            {% if not invoice.paid_at %}
+                            <button class="btn btn-success w-100" id="processPaymentBtn">
+                                معالجة الدفع
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- سجل المدفوعات -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">سجل المدفوعات</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="paymentsHistory">
+                                <!-- سيتم ملء سجل المدفوعات عن طريق JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- معلومات التأمين -->
+                    <div class="card mb-4" id="insuranceSection" style="display: none;">
+                        <div class="card-header">
+                            <h5 class="mb-0">معلومات التأمين</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="insuranceInfo">
+                                <!-- سيتم ملء معلومات التأمين عن طريق JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نموذج معالجة الدفع -->
+<div class="modal fade" id="processPaymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">معالجة الدفع</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="processPaymentForm">
+                    <div class="mb-3">
+                        <label class="form-label">طريقة الدفع</label>
+                        <select class="form-select" name="payment_method" required>
+                            <option value="cash">نقداً</option>
+                            <option value="card">بطاقة ائتمان (Stripe)</option>
+                            <option value="fatura">بطاقة ائتمان (Fatura)</option>
+                            <option value="bank_transfer">تحويل بنكي</option>
+                            <option value="insurance">تأمين</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">المبلغ</label>
+                        <input type="number" class="form-control" name="amount" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">ملاحظات</label>
+                        <textarea class="form-control" name="notes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" id="confirmPaymentBtn">تأكيد الدفع</button>
+                <a href="#" class="btn btn-success" id="stripePaymentBtn" style="display: none;">
+                    الدفع عبر Stripe
+                </a>
+                <a href="#" class="btn btn-success" id="faturaPaymentBtn" style="display: none;">
+                    الدفع عبر Fatura
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="{% static 'billing/js/invoice-detail.js' %}"></script>
+<script>
+    // إضافة معالج تغيير طريقة الدفع
+    document.querySelector('select[name="payment_method"]').addEventListener('change', function(e) {
+        const stripeBtn = document.getElementById('stripePaymentBtn');
+        const faturaBtn = document.getElementById('faturaPaymentBtn');
+        const confirmBtn = document.getElementById('confirmPaymentBtn');
+        
+        stripeBtn.style.display = 'none';
+        faturaBtn.style.display = 'none';
+        confirmBtn.style.display = 'block';
+        
+        if (e.target.value === 'card') {
+            stripeBtn.style.display = 'block';
+            confirmBtn.style.display = 'none';
+        } else if (e.target.value === 'fatura') {
+            faturaBtn.style.display = 'block';
+            confirmBtn.style.display = 'none';
+        }
+    });
+
+    // معالجة الدفع عبر Fatura
+    document.getElementById('faturaPaymentBtn').addEventListener('click', async function(e) {
+        e.preventDefault();
+        
+        try {
+            // إنشاء سجل دفع جديد
+            const form = document.getElementById('processPaymentForm');
+            const formData = new FormData(form);
+            
+            const response = await fetch(`/api/billing/payments/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                },
+                body: JSON.stringify({
+                    invoice: invoiceData.id,
+                    amount: formData.get('amount'),
+                    payment_method: 'fatura',
+                    notes: formData.get('notes')
+                })
+            });
+            
+            if (response.ok) {
+                const payment = await response.json();
+                
+                // إنشاء دفع Fatura
+                const faturaResponse = await fetch(`/api/billing/payments/${payment.id}/create_fatura_payment/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken()
+                    }
+                });
+                
+                if (faturaResponse.ok) {
+                    const faturaData = await faturaResponse.json();
+                    // توجيه المستخدم إلى صفحة الدفع
+                    window.location.href = faturaData.payment_url;
+                } else {
+                    throw new Error('فشل إنشاء دفع Fatura');
+                }
+            } else {
+                throw new Error('فشل إنشاء سجل الدفع');
+            }
+        } catch (error) {
+            showAlert('حدث خطأ أثناء تجهيز الدفع', 'error');
+        }
+    });
+</script>
+{% endblock %}

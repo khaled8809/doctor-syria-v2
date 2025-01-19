@@ -1,0 +1,378 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="emergency-case-detail">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title">حالة طارئة #{{ case.case_number }}</h1>
+            <p class="text-muted">{{ case.get_case_type_display }}</p>
+        </div>
+        <div class="actions">
+            {% if case.status != 'completed' and case.status != 'cancelled' %}
+            <a href="{% url 'emergency:case_update' case.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تحديث الحالة
+            </a>
+            {% endif %}
+            <button type="button" class="btn btn-info" onclick="printCaseReport()">
+                <i class="fas fa-print"></i> طباعة التقرير
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Case Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات الحالة</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <th>رقم الحالة</th>
+                                    <td>{{ case.case_number }}</td>
+                                </tr>
+                                <tr>
+                                    <th>نوع الحالة</th>
+                                    <td>{{ case.get_case_type_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>الأولوية</th>
+                                    <td>
+                                        <span class="badge {% if case.priority == 'high' %}badge-danger
+                                                   {% elif case.priority == 'medium' %}badge-warning
+                                                   {% else %}badge-info{% endif %}">
+                                            {{ case.get_priority_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>الحالة</th>
+                                    <td>
+                                        <span class="badge {% if case.status == 'completed' %}badge-success
+                                                   {% elif case.status == 'cancelled' %}badge-danger
+                                                   {% else %}badge-warning{% endif %}">
+                                            {{ case.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <th>وقت البلاغ</th>
+                                    <td>{{ case.reported_time|date:"Y-m-d H:i" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>وقت الوصول</th>
+                                    <td>{{ case.arrival_time|date:"Y-m-d H:i"|default:"-" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>وقت الاستجابة</th>
+                                    <td>{{ case.response_time }} دقيقة</td>
+                                </tr>
+                                <tr>
+                                    <th>سيارة الإسعاف</th>
+                                    <td>{{ case.ambulance.number|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات الموقع</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div id="locationMap" style="height: 300px;"></div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <th>العنوان</th>
+                                    <td>{{ case.location }}</td>
+                                </tr>
+                                <tr>
+                                    <th>المنطقة</th>
+                                    <td>{{ case.district }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <th>خط العرض</th>
+                                    <td>{{ case.latitude }}</td>
+                                </tr>
+                                <tr>
+                                    <th>خط الطول</th>
+                                    <td>{{ case.longitude }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات المريض</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <th>الاسم</th>
+                                    <td>{{ case.patient_name }}</td>
+                                </tr>
+                                <tr>
+                                    <th>العمر</th>
+                                    <td>{{ case.patient_age }}</td>
+                                </tr>
+                                <tr>
+                                    <th>الجنس</th>
+                                    <td>{{ case.get_patient_gender_display }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table">
+                                <tr>
+                                    <th>رقم الهاتف</th>
+                                    <td>{{ case.contact_phone }}</td>
+                                </tr>
+                                <tr>
+                                    <th>المؤمن عليه</th>
+                                    <td>{{ case.is_insured|yesno:"نعم,لا" }}</td>
+                                </tr>
+                                <tr>
+                                    <th>رقم التأمين</th>
+                                    <td>{{ case.insurance_number|default:"-" }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">المعلومات الطبية</h5>
+                </div>
+                <div class="card-body">
+                    <div class="medical-info">
+                        <h6>الأعراض الرئيسية</h6>
+                        <p>{{ case.symptoms }}</p>
+
+                        <h6>التشخيص الأولي</h6>
+                        <p>{{ case.initial_diagnosis }}</p>
+
+                        <h6>الإجراءات المتخذة</h6>
+                        <ul>
+                            {% for action in case.medical_actions.all %}
+                            <li>{{ action.action }} - {{ action.timestamp|date:"H:i" }}</li>
+                            {% empty %}
+                            <li>لا يوجد إجراءات مسجلة</li>
+                            {% endfor %}
+                        </ul>
+
+                        <h6>الملاحظات</h6>
+                        <p>{{ case.notes|default:"لا يوجد ملاحظات" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Emergency Team -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">فريق الطوارئ</h5>
+                </div>
+                <div class="card-body">
+                    {% for member in case.team_members.all %}
+                    <div class="team-member">
+                        <img src="{{ member.photo.url }}" alt="{{ member.name }}" class="member-photo">
+                        <div class="member-info">
+                            <h6>{{ member.name }}</h6>
+                            <p>{{ member.get_role_display }}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-center">لم يتم تعيين فريق بعد</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Case Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">التسلسل الزمني</h5>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for event in case.timeline.all %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6>{{ event.get_event_type_display }}</h6>
+                                <p>{{ event.description }}</p>
+                                <small>{{ event.timestamp|date:"Y-m-d H:i" }}</small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-center">لا يوجد أحداث مسجلة</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .team-member {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .member-photo {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        margin-right: 1rem;
+        object-fit: cover;
+    }
+
+    .member-info h6 {
+        margin: 0;
+    }
+
+    .member-info p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .timeline {
+        position: relative;
+        padding: 1rem 0;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 1rem;
+        height: 100%;
+        width: 2px;
+        background: #dee2e6;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 3rem;
+        margin-bottom: 2rem;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: 0.35rem;
+        width: 1.3rem;
+        height: 1.3rem;
+        border-radius: 50%;
+        background: #0d6efd;
+        border: 3px solid #fff;
+    }
+
+    .timeline-content {
+        padding: 0.5rem 1rem;
+        background: #f8f9fa;
+        border-radius: 0.5rem;
+    }
+
+    .timeline-content h6 {
+        margin: 0;
+        color: #0d6efd;
+    }
+
+    .timeline-content p {
+        margin: 0.5rem 0;
+    }
+
+    .timeline-content small {
+        color: #6c757d;
+    }
+
+    .medical-info h6 {
+        color: #0d6efd;
+        margin-top: 1rem;
+    }
+
+    .medical-info ul {
+        padding-left: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}"></script>
+<script>
+    // Initialize map
+    function initMap() {
+        const location = { lat: {{ case.latitude }}, lng: {{ case.longitude }} };
+        const map = new google.maps.Map(document.getElementById('locationMap'), {
+            center: location,
+            zoom: 15
+        });
+
+        // Add marker for emergency location
+        new google.maps.Marker({
+            position: location,
+            map: map,
+            title: 'موقع الحالة الطارئة'
+        });
+
+        // Add marker for ambulance if assigned
+        {% if case.ambulance %}
+        new google.maps.Marker({
+            position: { lat: {{ case.ambulance.lat }}, lng: {{ case.ambulance.lng }} },
+            map: map,
+            title: 'سيارة الإسعاف {{ case.ambulance.number }}',
+            icon: '{% static "emergency/img/ambulance-marker.png" %}'
+        });
+        {% endif %}
+    }
+
+    // Print case report
+    function printCaseReport() {
+        window.open('{% url "emergency:case_report" case.pk %}', '_blank');
+    }
+
+    $(document).ready(function() {
+        initMap();
+    });
+</script>
+{% endblock %}

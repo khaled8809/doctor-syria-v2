@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تفاصيل السجل الطبي{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">تفاصيل السجل الطبي</h3>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <h5 class="text-muted">المريض</h5>
+                        <p class="h6">{{ record.patient.get_full_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5 class="text-muted">الطبيب المعالج</h5>
+                        <p class="h6">{{ record.doctor.get_full_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5 class="text-muted">تاريخ الزيارة</h5>
+                        <p class="h6">{{ record.date|date:"Y/m/d" }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <h5 class="text-muted">التشخيص</h5>
+                        <p class="h6">{{ record.diagnosis }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h5 class="text-muted">العلاج</h5>
+                        <p class="h6">{{ record.treatment }}</p>
+                    </div>
+                    {% if record.notes %}
+                    <div class="mb-3">
+                        <h5 class="text-muted">ملاحظات</h5>
+                        <p class="h6">{{ record.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <a href="{% url 'medical_records:record_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-right"></i> العودة للقائمة
+                    </a>
+                </div>
+                {% if user.role == 'doctor' and record.doctor == user.doctor %}
+                <div>
+                    <a href="{% url 'medical_records:record_update' record.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                    <a href="{% url 'medical_records:record_delete' record.pk %}" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> حذف
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .card-header {
+        border-top-left-radius: 15px;
+        border-top-right-radius: 15px;
+    }
+    .text-muted {
+        font-size: 0.9rem;
+        margin-bottom: 0.2rem;
+    }
+    .h6 {
+        font-size: 1.1rem;
+    }
+</style>
+{% endblock %}

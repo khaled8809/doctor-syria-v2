@@ -1,0 +1,124 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+venv-3.11/
+
+# Environment Variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+.vs/
+*.swp
+*.swo
+.DS_Store
+
+# Database
+*.db
+*.sqlite3
+
+# Temporary files
+*.bak
+*.tmp
+*~
+
+# Coverage
+.coverage
+htmlcov/
+
+# pytest
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Local development settings
+/local/
+
+# Compiled translations
+*.mo
+*.pot
+
+# Redis
+*.rdb
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Production Environment Files
+.env.production
+.env.staging
+
+# SSL/Certificates
+*.pem
+*.key
+*.crt
+*.cer
+*.der
+*.priv
+
+# Logs and Backups
+logs/
+backups/
+*.log.
+*.backup
+*.bak
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Coverage and Test Reports
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+test-reports/

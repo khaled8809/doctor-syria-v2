@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}الدفع عبر البطاقة{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'billing/css/styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">الدفع عبر البطاقة</h3>
+                </div>
+                <div class="card-body">
+                    <!-- معلومات الفاتورة -->
+                    <div class="mb-4">
+                        <h5>تفاصيل الفاتورة</h5>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <p><strong>رقم الفاتورة:</strong> <span id="invoiceNumber"></span></p>
+                                <p><strong>المريض:</strong> <span id="patientName"></span></p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p><strong>المبلغ:</strong> <span id="amount"></span></p>
+                                <p><strong>التاريخ:</strong> <span id="date"></span></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- نموذج الدفع -->
+                    <form id="payment-form">
+                        <!-- البطاقات المحفوظة -->
+                        <div class="mb-3" id="saved-cards-section" style="display: none;">
+                            <label class="form-label">البطاقات المحفوظة</label>
+                            <select class="form-select" id="saved-cards">
+                                <option value="">اختر بطاقة محفوظة</option>
+                            </select>
+                        </div>
+
+                        <!-- أو استخدام بطاقة جديدة -->
+                        <div class="mb-3">
+                            <label class="form-label">بطاقة جديدة</label>
+                            <div id="card-element" class="form-control">
+                                <!-- Stripe Card Element -->
+                            </div>
+                            <div id="card-errors" class="invalid-feedback" style="display: none;"></div>
+                        </div>
+
+                        <!-- حفظ البطاقة للمستقبل -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="save-card">
+                            <label class="form-check-label" for="save-card">
+                                حفظ البطاقة للمدفوعات المستقبلية
+                            </label>
+                        </div>
+
+                        <!-- زر الدفع -->
+                        <button type="submit" class="btn btn-primary w-100" id="submit-button">
+                            <span id="button-text">دفع <span id="payment-amount"></span></span>
+                            <span id="spinner" class="spinner-border spinner-border-sm" style="display: none;"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- معلومات الأمان -->
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    <i class="fas fa-lock"></i>
+                    جميع المعاملات آمنة ومشفرة
+                </p>
+                <img src="{% static 'billing/images/stripe-badges.png' %}" alt="Stripe" class="img-fluid" style="max-width: 300px;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة نجاح الدفع -->
+<div class="modal fade" id="success-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تم الدفع بنجاح</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                </div>
+                <h4>شكراً لك!</h4>
+                <p>تم معالجة الدفع بنجاح.</p>
+                <p class="mb-0">رقم المعاملة: <span id="transaction-id"></span></p>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-primary" id="view-invoice-btn">عرض الفاتورة</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    // تهيئة Stripe
+    const stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
+    const elements = stripe.elements();
+    
+    // تهيئة عنصر البطاقة
+    const card = elements.create('card', {
+        style: {
+            base: {
+                fontSize: '16px',
+                color: '#32325d',
+                '::placeholder': {
+                    color: '#aab7c4'
+                }
+            },
+            invalid: {
+                color: '#dc3545',
+                iconColor: '#dc3545'
+            }
+        }
+    });
+    card.mount('#card-element');
+
+    // معالجة أخطاء البطاقة
+    card.addEventListener('change', function(event) {
+        const displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+            displayError.style.display = 'block';
+        } else {
+            displayError.textContent = '';
+            displayError.style.display = 'none';
+        }
+    });
+
+    // معالجة تقديم النموذج
+    const form = document.getElementById('payment-form');
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        setLoading(true);
+
+        try {
+            // إنشاء نية الدفع
+            const response = await fetch(`/api/billing/payments/${paymentId}/create_payment_intent/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken()
+                }
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                // تأكيد الدفع مع Stripe
+                const result = await stripe.confirmCardPayment(data.client_secret, {
+                    payment_method: {
+                        card: card,
+                        billing_details: {
+                            name: '{{ user.get_full_name }}'
+                        }
+                    },
+                    setup_future_usage: document.getElementById('save-card').checked ? 'off_session' : null
+                });
+
+                if (result.error) {
+                    showError(result.error.message);
+                } else {
+                    // تأكيد الدفع مع الخادم
+                    await confirmPayment(result.paymentIntent.id);
+                }
+            } else {
+                throw new Error(data.error || 'حدث خطأ أثناء معالجة الدفع');
+            }
+        } catch (error) {
+            showError(error.message);
+        }
+
+        setLoading(false);
+    });
+
+    // تأكيد الدفع مع الخادم
+    async function confirmPayment(paymentIntentId) {
+        const response = await fetch(`/api/billing/payments/${paymentId}/confirm_payment/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: JSON.stringify({ payment_intent_id: paymentIntentId })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            showSuccess(paymentIntentId);
+        } else {
+            throw new Error(data.error || 'فشل تأكيد الدفع');
+        }
+    }
+
+    // إظهار رسالة نجاح
+    function showSuccess(transactionId) {
+        document.getElementById('transaction-id').textContent = transactionId;
+        document.getElementById('view-invoice-btn').href = `/billing/invoices/${invoiceId}/`;
+        $('#success-modal').modal('show');
+    }
+
+    // إظهار رسالة خطأ
+    function showError(message) {
+        const errorElement = document.getElementById('card-errors');
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+
+    // تحميل البطاقات المحفوظة
+    async function loadSavedCards() {
+        try {
+            const response = await fetch('/api/billing/payment-methods/');
+            const cards = await response.json();
+
+            if (cards.length > 0) {
+                const select = document.getElementById('saved-cards');
+                cards.forEach(card => {
+                    const option = document.createElement('option');
+                    option.value = card.id;
+                    option.textContent = `${card.card.brand} **** ${card.card.last4}`;
+                    select.appendChild(option);
+                });
+                document.getElementById('saved-cards-section').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error loading saved cards:', error);
+        }
+    }
+
+    // تبديل حالة التحميل
+    function setLoading(isLoading) {
+        const button = document.getElementById('submit-button');
+        const spinner = document.getElementById('spinner');
+        const buttonText = document.getElementById('button-text');
+
+        if (isLoading) {
+            button.disabled = true;
+            spinner.style.display = 'inline-block';
+            buttonText.style.opacity = '0.5';
+        } else {
+            button.disabled = false;
+            spinner.style.display = 'none';
+            buttonText.style.opacity = '1';
+        }
+    }
+
+    // الحصول على CSRF token
+    function getCsrfToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
+    // تحميل البيانات الأولية
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSavedCards();
+        
+        // عرض معلومات الفاتورة
+        document.getElementById('invoiceNumber').textContent = '{{ invoice.invoice_number }}';
+        document.getElementById('patientName').textContent = '{{ invoice.patient_name }}';
+        document.getElementById('amount').textContent = formatCurrency({{ invoice.total }});
+        document.getElementById('date').textContent = formatDate('{{ invoice.created_at }}');
+        document.getElementById('payment-amount').textContent = formatCurrency({{ invoice.total }});
+    });
+
+    // دوال مساعدة
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('ar-SA', {
+            style: 'currency',
+            currency: 'SAR'
+        }).format(amount);
+    }
+
+    function formatDate(date) {
+        return new Date(date).toLocaleDateString('ar-SA');
+    }
+</script>
+{% endblock %}

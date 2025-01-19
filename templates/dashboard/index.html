@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}لوحة التحكم{% endblock %}
+
+{% block extra_css %}
+<style>
+.dashboard-card {
+    transition: transform 0.2s;
+}
+.dashboard-card:hover {
+    transform: translateY(-5px);
+}
+.stat-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1 class="h3">
+            <i class="fas fa-tachometer-alt me-2"></i>
+            لوحة التحكم
+        </h1>
+        <p class="text-muted">مرحباً بك، {{ user.get_full_name|default:user.username }}</p>
+    </div>
+</div>
+
+<!-- الإحصائيات السريعة -->
+<div class="row g-4 mb-4">
+    {% if user.role == 'doctor' or user.is_staff %}
+    <div class="col-md-6 col-lg-3">
+        <div class="card dashboard-card h-100 border-primary border-start border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-muted">المواعيد اليوم</h6>
+                        <h2 class="card-title mb-0">{{ today_appointments_count }}</h2>
+                    </div>
+                    <div class="stat-icon text-primary">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                </div>
+                <a href="{% url 'appointments' %}" class="btn btn-sm btn-outline-primary mt-3">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    عرض المواعيد
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if user.role == 'pharmacist' or user.is_staff %}
+    <div class="col-md-6 col-lg-3">
+        <div class="card dashboard-card h-100 border-success border-start border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-muted">الوصفات الجديدة</h6>
+                        <h2 class="card-title mb-0">{{ new_prescriptions_count }}</h2>
+                    </div>
+                    <div class="stat-icon text-success">
+                        <i class="fas fa-prescription"></i>
+                    </div>
+                </div>
+                <a href="{% url 'prescriptions' %}" class="btn btn-sm btn-outline-success mt-3">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    عرض الوصفات
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if user.is_staff %}
+    <div class="col-md-6 col-lg-3">
+        <div class="card dashboard-card h-100 border-info border-start border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-muted">المرضى النشطين</h6>
+                        <h2 class="card-title mb-0">{{ active_patients_count }}</h2>
+                    </div>
+                    <div class="stat-icon text-info">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <a href="{% url 'patients' %}" class="btn btn-sm btn-outline-info mt-3">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    عرض المرضى
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-3">
+        <div class="card dashboard-card h-100 border-warning border-start border-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-muted">الأطباء</h6>
+                        <h2 class="card-title mb-0">{{ doctors_count }}</h2>
+                    </div>
+                    <div class="stat-icon text-warning">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                </div>
+                <a href="{% url 'staff' %}" class="btn btn-sm btn-outline-warning mt-3">
+                    <i class="fas fa-arrow-left me-1"></i>
+                    عرض الموظفين
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- المهام والتنبيهات -->
+<div class="row g-4">
+    {% if user.role == 'doctor' or user.is_staff %}
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-transparent">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calendar me-2"></i>
+                    المواعيد القادمة
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_appointments %}
+                <div class="list-group list-group-flush">
+                    {% for appointment in upcoming_appointments %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ appointment.patient.get_full_name }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                {{ appointment.scheduled_time|date:"g:i a" }}
+                            </small>
+                        </div>
+                        <p class="mb-1">{{ appointment.reason }}</p>
+                        <small class="text-muted">
+                            <i class="fas fa-calendar-day me-1"></i>
+                            {{ appointment.scheduled_time|date:"l, j F" }}
+                        </small>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center my-4">
+                    <i class="fas fa-calendar-times mb-2 d-block" style="font-size: 2rem;"></i>
+                    لا توجد مواعيد قادمة
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-transparent">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bell me-2"></i>
+                    التنبيهات
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if notifications %}
+                <div class="list-group list-group-flush">
+                    {% for notification in notifications %}
+                    <div class="list-group-item">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ notification.title }}</h6>
+                            <small class="text-muted">{{ notification.created_at|timesince }}</small>
+                        </div>
+                        <p class="mb-1">{{ notification.message }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center my-4">
+                    <i class="fas fa-bell-slash mb-2 d-block" style="font-size: 2rem;"></i>
+                    لا توجد تنبيهات جديدة
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

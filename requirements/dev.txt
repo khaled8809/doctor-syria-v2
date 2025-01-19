@@ -1,0 +1,20 @@
+-r base.txt
+
+# Development Tools
+black==24.8.0
+flake8==7.1.1
+mypy==1.10.1
+
+# Testing
+pytest==8.3.4
+pytest-django==4.9.0
+factory-boy==3.3.1
+Faker==33.3.0
+coverage==7.4.1
+
+# Documentation
+sphinx==7.1.2
+sphinx-rtd-theme==3.0.2
+
+# Monitoring
+sentry-sdk==1.40.5  # تحديث لإصلاح مشكلة تسرب متغيرات البيئة

@@ -1,0 +1,223 @@
+{% extends 'hms/base.html' %}
+{% load static %}
+
+{% block hms_content %}
+<div class="room-detail">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="page-title">غرفة {{ room.room_number }}</h1>
+            <p class="text-muted">{{ room.ward.department.name }} - {{ room.ward.name }}</p>
+        </div>
+        <div class="actions">
+            <a href="{% url 'hms:room_edit' room.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i> تعديل الغرفة
+            </a>
+            <a href="{% url 'hms:bed_add' %}?room={{ room.pk }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> إضافة سرير
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Room Info -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات الغرفة</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tr>
+                            <th>النوع</th>
+                            <td>{{ room.get_room_type_display }}</td>
+                        </tr>
+                        <tr>
+                            <th>السعة</th>
+                            <td>{{ room.capacity }}</td>
+                        </tr>
+                        <tr>
+                            <th>الإشغال الحالي</th>
+                            <td>{{ room.current_occupancy }}</td>
+                        </tr>
+                        <tr>
+                            <th>السعر اليومي</th>
+                            <td>{{ room.daily_rate }} ل.س</td>
+                        </tr>
+                        <tr>
+                            <th>الحالة</th>
+                            <td>
+                                {% if room.is_active %}
+                                <span class="badge badge-success">نشط</span>
+                                {% else %}
+                                <span class="badge badge-danger">غير نشط</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Equipment List -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">المعدات</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for item in room.equipment %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ item }}
+                            <span class="badge badge-primary badge-pill">1</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item">لا يوجد معدات مسجلة</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Beds and Patients -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">الأسرّة والمرضى</h5>
+                </div>
+                <div class="card-body">
+                    <div class="bed-grid">
+                        {% for bed in room.bed_set.all %}
+                        <div class="bed-card {% if bed.status == 'available' %}bg-success
+                                 {% elif bed.status == 'occupied' %}bg-danger
+                                 {% elif bed.status == 'reserved' %}bg-warning
+                                 {% else %}bg-secondary{% endif %}">
+                            <div class="bed-header">
+                                <h6>سرير {{ bed.bed_number }}</h6>
+                                <span class="badge badge-light">{{ bed.get_status_display }}</span>
+                            </div>
+                            
+                            {% if bed.status == 'occupied' %}
+                            {% with admission=bed.current_admission %}
+                            <div class="bed-patient">
+                                <p><strong>المريض:</strong> {{ admission.patient.user.get_full_name }}</p>
+                                <p><strong>تاريخ الإدخال:</strong> {{ admission.admission_date|date:"Y-m-d" }}</p>
+                                <p><strong>الطبيب:</strong> {{ admission.admitting_doctor.user.get_full_name }}</p>
+                                <a href="{% url 'hms:admission_detail' admission.pk %}" class="btn btn-sm btn-light">
+                                    التفاصيل
+                                </a>
+                            </div>
+                            {% endwith %}
+                            {% endif %}
+
+                            <div class="bed-footer">
+                                <div class="btn-group">
+                                    {% if bed.status == 'available' %}
+                                    <a href="{% url 'hms:admission_add' %}?bed={{ bed.pk }}" 
+                                       class="btn btn-sm btn-light">
+                                        <i class="fas fa-user-plus"></i> إدخال مريض
+                                    </a>
+                                    {% endif %}
+                                    <button type="button" class="btn btn-sm btn-light" data-toggle="modal" 
+                                            data-target="#bedHistoryModal{{ bed.pk }}">
+                                        <i class="fas fa-history"></i> السجل
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bed History Modal -->
+                        <div class="modal fade" id="bedHistoryModal{{ bed.pk }}" tabindex="-1" role="dialog">
+                            <div class="modal-dialog modal-lg" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">سجل سرير {{ bed.bed_number }}</h5>
+                                        <button type="button" class="close" data-dismiss="modal">
+                                            <span>&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="table-responsive">
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>المريض</th>
+                                                        <th>تاريخ الإدخال</th>
+                                                        <th>تاريخ الخروج</th>
+                                                        <th>الطبيب</th>
+                                                        <th>التشخيص</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for admission in bed.admission_set.all|dictsortreversed:"admission_date" %}
+                                                    <tr>
+                                                        <td>{{ admission.patient.user.get_full_name }}</td>
+                                                        <td>{{ admission.admission_date|date:"Y-m-d" }}</td>
+                                                        <td>
+                                                            {% if admission.actual_discharge_date %}
+                                                            {{ admission.actual_discharge_date|date:"Y-m-d" }}
+                                                            {% else %}
+                                                            -
+                                                            {% endif %}
+                                                        </td>
+                                                        <td>{{ admission.admitting_doctor.user.get_full_name }}</td>
+                                                        <td>{{ admission.diagnosis|truncatechars:50 }}</td>
+                                                    </tr>
+                                                    {% empty %}
+                                                    <tr>
+                                                        <td colspan="5" class="text-center">لا يوجد سجل سابق</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="alert alert-info">
+                            لا يوجد أسرّة مضافة في هذه الغرفة
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+{{ block.super }}
+<style>
+    .bed-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .bed-card {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        color: white;
+    }
+
+    .bed-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .bed-patient {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .bed-footer {
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
