@@ -1,0 +1,3 @@
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/khaled8809/doctor-syria-v2-frontend.git
